@@ -12,7 +12,7 @@ export default async function RehberProfilPage() {
 
   const profile = await prisma.rehberProfile.findUnique({
     where: { userId: session.user.id },
-    include: { tours: true },
+    include: { tours: true, licenses: true },
   });
 
   return (
