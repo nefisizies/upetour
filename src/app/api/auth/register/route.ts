@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 import { Role } from "@prisma/client";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,6 +52,9 @@ export async function POST(req: NextRequest) {
         data: { userId: user.id, slug, companyName: name },
       });
     }
+
+    // Hoşgeldiniz maili — hata olursa kaydı engellemez
+    sendWelcomeEmail({ to: email, name, role: role as "REHBER" | "ACENTE" }).catch(() => null);
 
     return NextResponse.json({ success: true });
   } catch {
