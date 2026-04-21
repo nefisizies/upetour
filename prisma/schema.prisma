@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  REHBER
+  ACENTE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  role          Role
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  rehberProfile    RehberProfile?
+  acenteProfile    AcenteProfile?
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  givenReviews     Review[]  @relation("GivenReviews")
+  receivedReviews  Review[]  @relation("ReceivedReviews")
+}
+
+model RehberProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug            String   @unique
+  name            String
+  bio             String?
+  city            String?
+  photoUrl        String?
+  languages       String[]
+  specialties     String[]
+  experienceYears Int      @default(0)
+  isAvailable     Boolean  @default(true)
+  tours           Tour[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AcenteProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug        String   @unique
+  companyName String
+  description String?
+  city        String?
+  logoUrl     String?
+  website     String?
+  ilanlar     Ilan[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Tour {
+  id          String        @id @default(cuid())
+  rehberId    String
+  rehber      RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  duration    String?
+  location    String?
+  priceRange  String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+}
+
+model Ilan {
+  id          String        @id @default(cuid())
+  acenteId    String
+  acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  location    String?
+  languages   String[]
+  budget      String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  from       User     @relation("SentMessages", fields: [fromUserId], references: [id])
+  to         User     @relation("ReceivedMessages", fields: [toUserId], references: [id])
+  content    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  reviewerId String
+  revieweeId String
+  reviewer   User     @relation("GivenReviews", fields: [reviewerId], references: [id])
+  reviewee   User     @relation("ReceivedReviews", fields: [revieweeId], references: [id])
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+}
