@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Compass, Building2, LayoutDashboard, User, MessageCircle, FileText, Search, LogOut } from "lucide-react";
+import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/Logo";
 
 const rehberLinks = [
   { href: "/dashboard/rehber", label: "Genel Bakış", icon: LayoutDashboard },
@@ -24,16 +25,11 @@ const acenteLinks = [
 export function DashboardNav({ role, email }: { role: string; email: string }) {
   const pathname = usePathname();
   const links = role === "REHBER" ? rehberLinks : acenteLinks;
-  const Icon = role === "REHBER" ? Compass : Building2;
-
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 text-[#0a7ea4] font-bold text-lg">
-            <Icon className="w-5 h-5" />
-            TurBağ
-          </Link>
+          <Logo size="sm" />
           <div className="hidden md:flex items-center gap-1">
             {links.map(({ href, label, icon: NavIcon }) => (
               <Link

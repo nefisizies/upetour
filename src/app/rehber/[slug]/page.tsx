@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MapPin, Globe, Star, CheckCircle, ArrowLeft } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default async function RehberProfilPublic({
   params,
@@ -25,7 +26,8 @@ export default async function RehberProfilPublic({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-4 h-14 flex items-center gap-3">
+      <nav className="bg-white border-b border-gray-200 px-4 h-14 flex items-center gap-4">
+        <Logo size="sm" />
         <Link href="/kesfet/rehberler" className="text-gray-500 hover:text-gray-900 flex items-center gap-1 text-sm">
           <ArrowLeft className="w-4 h-4" /> Rehberler
         </Link>

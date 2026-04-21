@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Compass, Building2 } from "lucide-react";
 import { Suspense } from "react";
+import { Logo } from "@/components/Logo";
 
 function KayitForm() {
   const router = useRouter();
@@ -52,9 +53,7 @@ function KayitForm() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <Link href="/" className="text-2xl font-bold text-[#0a7ea4] mb-8">
-        TurBağ
-      </Link>
+      <Logo className="mb-8" size="md" />
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <h1 className="text-xl font-bold text-gray-900 mb-1">Hesap Oluştur</h1>
         <p className="text-sm text-gray-500 mb-6">Rol seç ve üye ol</p>

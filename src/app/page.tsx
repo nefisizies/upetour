@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MapPin, Users, Star, MessageCircle, Shield, Zap } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default function Home() {
   return (
@@ -7,9 +8,7 @@ export default function Home() {
       {/* Navbar */}
       <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-[#0a7ea4]">
-            TurBağ
-          </Link>
+          <Logo size="md" />
           <div className="flex items-center gap-3">
             <Link
               href="/giris"
@@ -79,7 +78,7 @@ export default function Home() {
       {/* Features */}
       <section className="py-20 px-4 max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-          Neden TurBağ?
+          Neden RehberSepeti?
         </h2>
         <p className="text-center text-gray-500 mb-14 max-w-xl mx-auto">
           Hem rehberler hem acenteler için özel olarak tasarlanmış araçlar
@@ -146,8 +145,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 text-center text-sm text-gray-400">
-        <p>© 2025 TurBağ. Tüm hakları saklıdır.</p>
+      <footer className="border-t border-gray-100 py-8 px-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Logo size="sm" />
+          <p className="text-sm text-gray-400">© 2025 RehberSepeti. Tüm hakları saklıdır.</p>
+        </div>
       </footer>
     </div>
   );

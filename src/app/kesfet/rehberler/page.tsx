@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { MapPin, Globe, Star, CheckCircle } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 export default async function RehberlerPage({
   searchParams,
@@ -27,9 +28,9 @@ export default async function RehberlerPage({
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navbar placeholder */}
-      <nav className="bg-white border-b border-gray-200 px-4 h-14 flex items-center">
-        <Link href="/" className="text-[#0a7ea4] font-bold text-lg">TurBağ</Link>
-        <span className="text-gray-300 mx-3">/</span>
+      <nav className="bg-white border-b border-gray-200 px-4 h-14 flex items-center gap-3">
+        <Logo size="sm" />
+        <span className="text-gray-300">/</span>
         <span className="text-gray-600 text-sm">Rehber Ara</span>
       </nav>
 

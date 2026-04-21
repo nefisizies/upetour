@@ -6,7 +6,7 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TurBağ — Rehberler & Acenteler",
+  title: "RehberSepeti — Rehberler & Acenteler",
   description: "Tur rehberlerini ve seyahat acentelerini buluşturan platform",
 };
 
