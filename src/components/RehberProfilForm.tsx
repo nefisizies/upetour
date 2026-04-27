@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { RehberProfile, Tour, RehberLicense } from "@prisma/client";
 import { COUNTRY_LICENSES, COUNTRY_NAMES } from "@/lib/licenses";
-import { CheckCircle, Clock, XCircle, Plus, Trash2 } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Plus, Trash2, Camera } from "lucide-react";
 
 type FormState = {
   name: string;
@@ -14,6 +14,7 @@ type FormState = {
   specialties: string[];
   experienceYears: number;
   operatingCountries: string[];
+  photoUrl: string;
 };
 
 type Props = {
@@ -51,6 +52,7 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
     experienceYears: profile?.experienceYears ?? 0,
     isAvailable: profile?.isAvailable ?? true,
     operatingCountries: profile?.operatingCountries ?? [],
+    photoUrl: profile?.photoUrl ?? "",
   });
 
   const [licenses, setLicenses] = useState<{ country: string; licenseNo: string }[]>([]);
@@ -124,6 +126,34 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
       {/* Temel Bilgiler */}
       <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Temel Bilgiler</h2>
+
+        {/* Profil Fotoğrafı */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Profil Fotoğrafı</label>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-2xl bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+              {form.photoUrl ? (
+                <img src={form.photoUrl} alt="Profil" className="w-full h-full object-cover" />
+              ) : (
+                <Camera className="w-7 h-7 text-gray-300" />
+              )}
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <input
+                type="url"
+                value={form.photoUrl}
+                onChange={(e) => updateForm({ ...form, photoUrl: e.target.value })}
+                placeholder="Fotoğraf URL'si yapıştır (https://...)"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
+              />
+              <p className="text-xs text-gray-400">
+                Fotoğrafını bir yere yükle (Google Drive, Imgur vb.) ve linkini buraya yapıştır.
+                Yakında doğrudan yükleme özelliği eklenecek.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
           <input type="text" value={form.name} onChange={(e) => updateForm({ ...form, name: e.target.value })}

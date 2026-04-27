@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, bio, city, languages, specialties, experienceYears, isAvailable, operatingCountries, licenses } = body;
+  const { name, bio, city, languages, specialties, experienceYears, isAvailable, operatingCountries, licenses, photoUrl } = body;
 
   const profile = await prisma.rehberProfile.update({
     where: { userId: session.user.id },
@@ -24,6 +24,7 @@ export async function PUT(req: NextRequest) {
       experienceYears: experienceYears !== undefined ? Number(experienceYears) : undefined,
       isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : undefined,
       operatingCountries: operatingCountries ?? undefined,
+      photoUrl: photoUrl || null,
     },
   });
 

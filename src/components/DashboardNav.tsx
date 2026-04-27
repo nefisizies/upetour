@@ -29,7 +29,7 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Logo size="sm" />
+          <Logo size="sm" href={role === "REHBER" ? "/kesfet/ilanlar" : "/dashboard/acente"} />
           <div className="hidden md:flex items-center gap-1">
             {links.map(({ href, label, icon: NavIcon }) => (
               <Link
