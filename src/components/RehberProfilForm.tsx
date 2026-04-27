@@ -21,8 +21,18 @@ type Props = {
   onFormChange?: (form: FormState) => void;
 };
 
-const DILLER = ["Türkçe", "İngilizce", "Almanca", "Fransızca", "Rusça", "Arapça", "İspanyolca", "İtalyanca", "Japonca", "Çince"];
-const UZMANLIKLAR = ["Tarihi Turlar", "Doğa Turları", "Gastronomi", "Kültür Turları", "Macera", "Tekne Turları", "Şehir Turları", "Müze Turları", "Arkeoloji", "Trekking"];
+const POPULER_DILLER = ["Türkçe", "İngilizce", "Almanca", "Fransızca", "Rusça", "Arapça", "İspanyolca", "İtalyanca", "Japonca", "Çince", "Portekizce", "Korece", "Hollandaca", "Lehçe", "İsveççe"];
+
+const UZMANLIKLAR = [
+  "Tarihi Turlar", "Kültür Turları", "Müze Turları", "Arkeoloji",
+  "Doğa Turları", "Trekking", "Macera Turları", "Dağ Turları",
+  "Gastronomi Turları", "Şarap Turları", "Sokak Lezzetleri",
+  "Şehir Turları", "Tekne Turları", "Bisiklet Turları",
+  "Fuar Turları", "Kongre & MICE Turları", "Kurumsal Turlar",
+  "Günübirlik Turlar", "Özel Turlar", "Grup Turları",
+  "Çocuk & Aile Turları", "Engelli Dostu Turlar",
+  "Fotografi Turları", "Gece Turları",
+];
 
 const STATUS_UI = {
   PENDING:  { icon: <Clock className="w-3.5 h-3.5" />,        label: "Doğrulama Bekliyor", color: "text-yellow-600 bg-yellow-50 border-yellow-200" },
@@ -47,6 +57,7 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [ozelDil, setOzelDil] = useState("");
 
   function updateForm(next: typeof form) {
     setForm(next);
@@ -139,15 +150,58 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
       </div>
 
       {/* Diller */}
-      <div className="bg-white border border-gray-100 rounded-xl p-6">
-        <h2 className="font-semibold text-gray-900 mb-3">Konuştuğum Diller</h2>
+      <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-gray-900">Konuştuğum Diller</h2>
+          <p className="text-xs text-gray-500 mt-0.5">Popüler dillerden seç veya kendin ekle</p>
+        </div>
         <div className="flex flex-wrap gap-2">
-          {DILLER.map((d) => (
+          {POPULER_DILLER.map((d) => (
             <button key={d} type="button" onClick={() => updateForm({ ...form, languages: toggleArray(form.languages, d) })}
               className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${form.languages.includes(d) ? "bg-[#0a7ea4] text-white border-[#0a7ea4]" : "border-gray-200 text-gray-600 hover:border-[#0a7ea4]"}`}>
               {d}
             </button>
           ))}
+          {/* Popüler listede olmayan ama eklenmiş diller */}
+          {form.languages.filter(l => !POPULER_DILLER.includes(l)).map((d) => (
+            <button key={d} type="button" onClick={() => updateForm({ ...form, languages: toggleArray(form.languages, d) })}
+              className="text-sm px-3 py-1.5 rounded-full border bg-[#0a7ea4] text-white border-[#0a7ea4]">
+              {d} ✕
+            </button>
+          ))}
+        </div>
+        {/* Özel dil ekleme */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={ozelDil}
+            onChange={(e) => setOzelDil(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                const dil = ozelDil.trim();
+                if (dil && !form.languages.includes(dil)) {
+                  updateForm({ ...form, languages: [...form.languages, dil] });
+                }
+                setOzelDil("");
+              }
+            }}
+            placeholder="Başka bir dil yaz, Enter'a bas..."
+            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const dil = ozelDil.trim();
+              if (dil && !form.languages.includes(dil)) {
+                updateForm({ ...form, languages: [...form.languages, dil] });
+              }
+              setOzelDil("");
+            }}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-colors font-medium"
+          >
+            Ekle
+          </button>
         </div>
       </div>
 
@@ -215,16 +269,17 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
                   </div>
 
                   {!existing && (
-                    <div>
+                    <div className="space-y-1.5">
                       <input
                         type="text"
                         value={licenseEntry?.licenseNo ?? ""}
                         onChange={(e) => setLicenseNo(code, e.target.value)}
-                        placeholder={`${cfg.licenseType} numarası`}
+                        placeholder={code === "TR" ? "Örn: TR-12345" : `${cfg.licenseType} numarası`}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] bg-white"
                       />
+                      <p className="text-xs text-gray-400">{cfg.description}</p>
                       {cfg.required && (
-                        <p className="text-xs text-orange-600 mt-1">
+                        <p className="text-xs text-orange-600">
                           ⚠️ Bu ülkede hizmet vermek için zorunlu — belge olmadan profil bu ülkede görünmez.
                         </p>
                       )}

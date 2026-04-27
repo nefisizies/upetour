@@ -10,8 +10,8 @@ export const COUNTRY_LICENSES: CountryLicense[] = [
   {
     country: "TR",
     flag: "🇹🇷",
-    licenseType: "Turizm Bakanlığı Turist Rehberi Kimlik Kartı",
-    description: "T.C. Kültür ve Turizm Bakanlığı tarafından verilen zorunlu rehber kartı",
+    licenseType: "Turist Rehberi Kimlik Kartı",
+    description: "T.C. Kültür ve Turizm Bakanlığı tarafından verilen zorunlu rehber kimlik kartı. Kart numarası TR ile başlar (örn. TR-12345).",
     required: true,
   },
   {
