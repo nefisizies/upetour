@@ -6,8 +6,19 @@ import type { RehberProfile, Tour, RehberLicense } from "@prisma/client";
 import { COUNTRY_LICENSES, COUNTRY_NAMES } from "@/lib/licenses";
 import { CheckCircle, Clock, XCircle, Plus, Trash2 } from "lucide-react";
 
+type FormState = {
+  name: string;
+  bio: string;
+  city: string;
+  languages: string[];
+  specialties: string[];
+  experienceYears: number;
+  operatingCountries: string[];
+};
+
 type Props = {
   profile: (RehberProfile & { tours: Tour[]; licenses: RehberLicense[] }) | null;
+  onFormChange?: (form: FormState) => void;
 };
 
 const DILLER = ["Türkçe", "İngilizce", "Almanca", "Fransızca", "Rusça", "Arapça", "İspanyolca", "İtalyanca", "Japonca", "Çince"];
@@ -19,7 +30,7 @@ const STATUS_UI = {
   REJECTED: { icon: <XCircle className="w-3.5 h-3.5" />,      label: "Reddedildi",         color: "text-red-600 bg-red-50 border-red-200" },
 };
 
-export function RehberProfilForm({ profile }: Props) {
+export function RehberProfilForm({ profile, onFormChange }: Props) {
   const router = useRouter();
   const [form, setForm] = useState({
     name: profile?.name ?? "",
@@ -37,13 +48,18 @@ export function RehberProfilForm({ profile }: Props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  function updateForm(next: typeof form) {
+    setForm(next);
+    onFormChange?.(next);
+  }
+
   function toggleArray(arr: string[], val: string) {
     return arr.includes(val) ? arr.filter((v) => v !== val) : [...arr, val];
   }
 
   function toggleCountry(code: string) {
     const next = toggleArray(form.operatingCountries, code);
-    setForm({ ...form, operatingCountries: next });
+    updateForm({ ...form, operatingCountries: next });
 
     const cfg = COUNTRY_LICENSES.find((c) => c.country === code);
     if (!next.includes(code)) {
@@ -99,25 +115,25 @@ export function RehberProfilForm({ profile }: Props) {
         <h2 className="font-semibold text-gray-900">Temel Bilgiler</h2>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-          <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+          <input type="text" value={form.name} onChange={(e) => updateForm({ ...form, name: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
-          <input type="text" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })}
+          <input type="text" value={form.city} onChange={(e) => updateForm({ ...form, city: e.target.value })}
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
             placeholder="İstanbul, Antalya, Kapadokya..." />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Hakkımda</label>
-          <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={4}
+          <textarea value={form.bio} onChange={(e) => updateForm({ ...form, bio: e.target.value })} rows={4}
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] resize-none"
             placeholder="Kendinizi kısaca tanıtın..." />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Deneyim (Yıl)</label>
           <input type="number" min={0} max={50} value={form.experienceYears}
-            onChange={(e) => setForm({ ...form, experienceYears: Number(e.target.value) })}
+            onChange={(e) => updateForm({ ...form, experienceYears: Number(e.target.value) })}
             className="w-32 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]" />
         </div>
       </div>
@@ -127,7 +143,7 @@ export function RehberProfilForm({ profile }: Props) {
         <h2 className="font-semibold text-gray-900 mb-3">Konuştuğum Diller</h2>
         <div className="flex flex-wrap gap-2">
           {DILLER.map((d) => (
-            <button key={d} type="button" onClick={() => setForm({ ...form, languages: toggleArray(form.languages, d) })}
+            <button key={d} type="button" onClick={() => updateForm({ ...form, languages: toggleArray(form.languages, d) })}
               className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${form.languages.includes(d) ? "bg-[#0a7ea4] text-white border-[#0a7ea4]" : "border-gray-200 text-gray-600 hover:border-[#0a7ea4]"}`}>
               {d}
             </button>
@@ -140,7 +156,7 @@ export function RehberProfilForm({ profile }: Props) {
         <h2 className="font-semibold text-gray-900 mb-3">Uzmanlık Alanlarım</h2>
         <div className="flex flex-wrap gap-2">
           {UZMANLIKLAR.map((u) => (
-            <button key={u} type="button" onClick={() => setForm({ ...form, specialties: toggleArray(form.specialties, u) })}
+            <button key={u} type="button" onClick={() => updateForm({ ...form, specialties: toggleArray(form.specialties, u) })}
               className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${form.specialties.includes(u) ? "bg-[#0a7ea4] text-white border-[#0a7ea4]" : "border-gray-200 text-gray-600 hover:border-[#0a7ea4]"}`}>
               {u}
             </button>
@@ -233,7 +249,7 @@ export function RehberProfilForm({ profile }: Props) {
           <p className="font-medium text-gray-900">Müsaitlik Durumu</p>
           <p className="text-sm text-gray-500">Kapalıyken acenteler mesaj gönderemez</p>
         </div>
-        <button type="button" onClick={() => setForm({ ...form, isAvailable: !form.isAvailable })}
+        <button type="button" onClick={() => updateForm({ ...form, isAvailable: !form.isAvailable })}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isAvailable ? "bg-[#0a7ea4]" : "bg-gray-200"}`}>
           <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${form.isAvailable ? "translate-x-6" : "translate-x-1"}`} />
         </button>

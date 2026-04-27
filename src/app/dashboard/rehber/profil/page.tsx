@@ -4,8 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { RehberProfilForm } from "@/components/RehberProfilForm";
-import { WelcomeBanner } from "@/components/WelcomeBanner";
+import { RehberProfilSayfasi } from "@/components/RehberProfilSayfasi";
 
 export default async function RehberProfilPage({
   searchParams,
@@ -24,16 +23,7 @@ export default async function RehberProfilPage({
 
   return (
     <div className="max-w-2xl">
-      {isYeni && (
-        <WelcomeBanner
-          name={profile?.name ?? ""}
-          dashboardHref="/dashboard/rehber"
-        />
-      )}
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        {isYeni ? "Profilini Tamamla" : "Profilimi Düzenle"}
-      </h1>
-      <RehberProfilForm profile={profile} />
+      <RehberProfilSayfasi profile={profile} isYeni={isYeni} />
     </div>
   );
 }
