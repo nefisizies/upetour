@@ -57,7 +57,9 @@ export async function POST(req: NextRequest) {
     sendWelcomeEmail({ to: email, name, role: role as "REHBER" | "ACENTE" }).catch(() => null);
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Sunucu hatası." }, { status: 500 });
+  } catch (err) {
+    console.error("[KAYIT HATASI]", err);
+    const message = err instanceof Error ? err.message : "Sunucu hatası.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
