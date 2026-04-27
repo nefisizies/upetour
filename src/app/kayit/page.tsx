@@ -47,7 +47,8 @@ function KayitForm() {
       redirect: false,
     });
 
-    router.push("/dashboard");
+    const profilUrl = form.role === "REHBER" ? "/dashboard/rehber/profil?yeni=1" : "/dashboard/acente/profil?yeni=1";
+    router.push(profilUrl);
     router.refresh();
   }
 
