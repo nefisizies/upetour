@@ -47,8 +47,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as unknown as { role: string }).role;
-        const remember = (user as unknown as { rememberMe: boolean }).rememberMe;
-        token.exp = Math.floor(Date.now() / 1000) + (remember ? REMEMBER_ME_AGE : DEFAULT_AGE);
+        token.rememberMe = (user as unknown as { rememberMe: boolean }).rememberMe;
+        const age = token.rememberMe ? REMEMBER_ME_AGE : DEFAULT_AGE;
+        token.exp = Math.floor(Date.now() / 1000) + age;
       }
       return token;
     },

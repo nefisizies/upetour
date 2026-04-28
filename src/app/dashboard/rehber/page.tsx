@@ -32,7 +32,7 @@ export default async function RehberDashboard() {
 
   const profile = await prisma.rehberProfile.findUnique({
     where: { userId: session.user.id },
-    include: { tours: true, licenses: true },
+    include: { tours: true, licenses: true, languages: true },
   });
 
   const [unreadCount, totalMessages, reviewData, sonMesajlar, sonIlanlar] = await Promise.all([
