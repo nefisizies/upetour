@@ -1,17 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 
 export default function GirisPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [form, setForm] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#0a7ea4] border-t-transparent rounded-full animate-spin" /></div>;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
