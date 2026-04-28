@@ -43,7 +43,7 @@ model RehberProfile {
   bio              String?
   city             String?
   photoUrl         String?
-  languages        String[]
+  languages        RehberDil[]
   specialties      String[]
   experienceYears  Int      @default(0)
   isAvailable      Boolean  @default(true)
@@ -52,6 +52,19 @@ model RehberProfile {
   licenses         RehberLicense[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model RehberDil {
+  id         String   @id @default(cuid())
+  rehberId   String
+  rehber     RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  dil        String
+  seviye     String?  // A1, A2, B1, B2, C1, C2, Anadil
+  sertifika  String?  // IELTS, TOEFL, YDS, vb.
+  sonuc      String?  // 7.5, 90, vb.
+  createdAt  DateTime @default(now())
+
+  @@unique([rehberId, dil])
 }
 
 model RehberLicense {

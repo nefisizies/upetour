@@ -11,7 +11,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, bio, city, languages, specialties, experienceYears, isAvailable, operatingCountries, licenses, photoUrl } = body;
+  const { name, bio, city, diller, specialties, experienceYears, isAvailable, operatingCountries, licenses, photoUrl } = body;
 
   const profile = await prisma.rehberProfile.update({
     where: { userId: session.user.id },
@@ -19,7 +19,6 @@ export async function PUT(req: NextRequest) {
       name: name || undefined,
       bio: bio || undefined,
       city: city || undefined,
-      languages: languages ?? undefined,
       specialties: specialties ?? undefined,
       experienceYears: experienceYears !== undefined ? Number(experienceYears) : undefined,
       isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : undefined,
@@ -27,6 +26,36 @@ export async function PUT(req: NextRequest) {
       photoUrl: photoUrl || null,
     },
   });
+
+  // Dil kayıtlarını güncelle: mevcut olanları upsert et, listede olmayanları sil
+  if (Array.isArray(diller)) {
+    // Listede olmayan dilleri sil
+    await prisma.rehberDil.deleteMany({
+      where: {
+        rehberId: profile.id,
+        dil: { notIn: diller.map((d: { dil: string }) => d.dil) },
+      },
+    });
+
+    for (const entry of diller as { dil: string; seviye: string; sertifika: string; sonuc: string }[]) {
+      if (!entry.dil) continue;
+      await prisma.rehberDil.upsert({
+        where: { rehberId_dil: { rehberId: profile.id, dil: entry.dil } },
+        create: {
+          rehberId: profile.id,
+          dil: entry.dil,
+          seviye: entry.seviye || null,
+          sertifika: entry.sertifika || null,
+          sonuc: entry.sonuc || null,
+        },
+        update: {
+          seviye: entry.seviye || null,
+          sertifika: entry.sertifika || null,
+          sonuc: entry.sonuc || null,
+        },
+      });
+    }
+  }
 
   // Yeni lisansları kaydet (zaten kayıtlı olanları atla)
   if (Array.isArray(licenses)) {

@@ -3,15 +3,15 @@
 import { useState, useCallback } from "react";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { RehberProfilForm } from "./RehberProfilForm";
-import type { RehberProfile, Tour, RehberLicense } from "@prisma/client";
+import type { RehberProfile, Tour, RehberLicense, RehberDil } from "@prisma/client";
 
-type Profile = (RehberProfile & { tours: Tour[]; licenses: RehberLicense[] }) | null;
+type Profile = (RehberProfile & { tours: Tour[]; licenses: RehberLicense[]; languages: RehberDil[] }) | null;
 
 function hesaplaCompletion(form: {
   name: string;
   bio: string;
   city: string;
-  languages: string[];
+  diller: { dil: string }[];
   specialties: string[];
   experienceYears: number;
   operatingCountries: string[];
@@ -20,7 +20,7 @@ function hesaplaCompletion(form: {
     !!form.name,
     !!form.bio,
     !!form.city,
-    form.languages.length > 0,
+    form.diller.length > 0,
     form.specialties.length > 0,
     form.experienceYears > 0,
     form.operatingCountries.length > 0,
@@ -41,7 +41,7 @@ export function RehberProfilSayfasi({
       name: profile?.name ?? "",
       bio: profile?.bio ?? "",
       city: profile?.city ?? "",
-      languages: profile?.languages ?? [],
+      diller: profile?.languages ?? [],
       specialties: profile?.specialties ?? [],
       experienceYears: profile?.experienceYears ?? 0,
       operatingCountries: profile?.operatingCountries ?? [],
@@ -53,7 +53,7 @@ export function RehberProfilSayfasi({
       name: string;
       bio: string;
       city: string;
-      languages: string[];
+      diller: { dil: string }[];
       specialties: string[];
       experienceYears: number;
       operatingCountries: string[];
