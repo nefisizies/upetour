@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type MiniEtkinlik = { baslangic: Date | string; bitis: Date | string | null; tur: string };
 
@@ -10,10 +12,35 @@ function toDateStr(d: Date) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1
 const GUNLER = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
 const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 
-export function MiniTakvim({ etkinlikler, yil, ay }: { etkinlikler: MiniEtkinlik[]; yil: number; ay: number }) {
+export function MiniTakvim({
+  etkinlikler: initialEtkinlikler,
+  yil: yilProp,
+  ay: ayProp,
+}: {
+  etkinlikler: MiniEtkinlik[];
+  yil: number;
+  ay: number;
+}) {
   const router = useRouter();
-  const bugunStr = toDateStr(new Date());
+  const [yil, setYil] = useState(yilProp);
+  const [ay, setAy] = useState(ayProp);
+  const [etkinlikler, setEtkinlikler] = useState(initialEtkinlikler);
+  const ilkRender = useRef(true);
 
+  useEffect(() => {
+    if (ilkRender.current) { ilkRender.current = false; return; }
+    fetch(`/api/takvim?yil=${yil}&ay=${ay}`)
+      .then((r) => r.json())
+      .then(setEtkinlikler);
+  }, [yil, ay]);
+
+  function ayDegistir(fark: number) {
+    const d = new Date(yil, ay - 1 + fark, 1);
+    setYil(d.getFullYear());
+    setAy(d.getMonth() + 1);
+  }
+
+  const bugunStr = toDateStr(new Date());
   const ilkGun = new Date(yil, ay - 1, 1);
   const baslangicOffset = (ilkGun.getDay() + 6) % 7;
   const ayGunSayisi = new Date(yil, ay, 0).getDate();
@@ -41,9 +68,26 @@ export function MiniTakvim({ etkinlikler, yil, ay }: { etkinlikler: MiniEtkinlik
 
   return (
     <div className="select-none">
-      <p className="text-[11px] font-semibold text-gray-400 mb-2 text-center">
-        {AYLAR[ay - 1]} {yil}
-      </p>
+      {/* Ay navigasyonu */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={() => ayDegistir(-1)}
+          className="p-0.5 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
+        </button>
+        <p className="text-[11px] font-semibold text-gray-500">
+          {AYLAR[ay - 1]} {yil}
+        </p>
+        <button
+          onClick={() => ayDegistir(1)}
+          className="p-0.5 rounded hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+        >
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Gün grid */}
       <div className="grid grid-cols-7 gap-px">
         {GUNLER.map((g) => (
           <div key={g} className="text-[9px] text-center text-gray-300 font-medium pb-1">{g}</div>

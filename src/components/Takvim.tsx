@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Trash2, Calendar, Clock } from "lucide-react";
 
 type Etkinlik = {
@@ -35,6 +35,8 @@ export function Takvim() {
   const [vurgulananTarih] = useState<string | null>(urlTarih);
   const [etkinlikler, setEtkinlikler] = useState<Etkinlik[]>([]);
   const [yukleniyor, setYukleniyor] = useState(false);
+  const [yuklendi, setYuklendi] = useState(false);
+  const pendingAcma = useRef(urlTarih());
 
   // Modal state
   const [modal, setModal] = useState<{ mod: "ekle" | "duzenle"; etkinlik?: Etkinlik; tarih?: string } | null>(null);
@@ -48,9 +50,17 @@ export function Takvim() {
     const data = await res.json();
     setEtkinlikler(data);
     setYukleniyor(false);
+    setYuklendi(true);
   }, [yil, ay]);
 
   useEffect(() => { etkinlikleriYukle(); }, [etkinlikleriYukle]);
+
+  // Seçili günün modalını ilk yüklemeden sonra otomatik aç
+  useEffect(() => {
+    if (!yuklendi) return;
+    const t = pendingAcma.current;
+    if (t) { pendingAcma.current = null; modalAc(t); }
+  }, [yuklendi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function ayDegistir(fark: number) {
     const d = new Date(yil, ay - 1 + fark, 1);
