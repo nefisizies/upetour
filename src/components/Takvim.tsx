@@ -196,39 +196,30 @@ export function Takvim() {
                   {gunEtkinlikleri.slice(0, 3).map((ge) => {
                     const { etkinlik: e, pozisyon } = ge;
                     const isRez = e.tur === "REZERVASYON";
-                    if (pozisyon === "devam") {
+                    const chipBase = isRez
+                      ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                      : "bg-[#0a7ea4]/10 text-[#0a7ea4] hover:bg-[#0a7ea4]/20";
+                    const barBase = isRez
+                      ? "bg-purple-200 hover:bg-purple-300"
+                      : "bg-[#0a7ea4]/20 hover:bg-[#0a7ea4]/30";
+
+                    if (pozisyon === "baslangic" || pozisyon === "tekgun") {
                       return (
                         <div key={e.id}
                           onClick={(ev) => { ev.stopPropagation(); duzenleAc(e); }}
-                          className={`h-5 -mx-2 cursor-pointer ${isRez ? "bg-purple-200 hover:bg-purple-300" : "bg-[#0a7ea4]/20 hover:bg-[#0a7ea4]/30"}`}
-                        />
-                      );
-                    }
-                    if (pozisyon === "bitis") {
-                      return (
-                        <div key={e.id}
-                          onClick={(ev) => { ev.stopPropagation(); duzenleAc(e); }}
-                          className={`h-5 -ml-2 mr-1 rounded-r-md cursor-pointer ${isRez ? "bg-purple-200 hover:bg-purple-300" : "bg-[#0a7ea4]/20 hover:bg-[#0a7ea4]/30"}`}
-                        />
-                      );
-                    }
-                    if (pozisyon === "baslangic") {
-                      return (
-                        <div key={e.id}
-                          onClick={(ev) => { ev.stopPropagation(); duzenleAc(e); }}
-                          className={`text-xs px-1.5 py-0.5 rounded-l-md -mr-2 truncate font-medium cursor-pointer ${isRez ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "bg-[#0a7ea4]/10 text-[#0a7ea4] hover:bg-[#0a7ea4]/20"}`}
+                          className={`text-xs px-1.5 py-0.5 rounded truncate font-medium cursor-pointer ${chipBase}`}
                         >
                           {e.baslik}
                         </div>
                       );
                     }
+                    // devam veya bitis: renkli bar, başlık yok
                     return (
                       <div key={e.id}
                         onClick={(ev) => { ev.stopPropagation(); duzenleAc(e); }}
-                        className={`text-xs px-1.5 py-0.5 rounded truncate font-medium cursor-pointer ${isRez ? "bg-purple-100 text-purple-700 hover:bg-purple-200" : "bg-[#0a7ea4]/10 text-[#0a7ea4] hover:bg-[#0a7ea4]/20"}`}
-                      >
-                        {e.baslik}
-                      </div>
+                        title={e.baslik}
+                        className={`h-5 w-full rounded-sm cursor-pointer ${barBase} ${pozisyon === "bitis" ? "opacity-70" : ""}`}
+                      />
                     );
                   })}
                   {gunEtkinlikleri.length > 3 && (
