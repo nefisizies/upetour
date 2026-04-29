@@ -8,7 +8,7 @@ import Link from "next/link";
 import {
   User, Star, MessageCircle, ArrowRight, AlertCircle,
   MapPin, Globe, Briefcase, CheckCircle, Clock, TrendingUp,
-  FileText, ChevronRight, Sparkles,
+  FileText, ChevronRight, Sparkles, CalendarDays,
 } from "lucide-react";
 
 function TamamlanmaBar({ yuzde }: { yuzde: number }) {
@@ -35,7 +35,7 @@ export default async function RehberDashboard() {
     include: { tours: true, licenses: true, languages: true },
   });
 
-  const [unreadCount, totalMessages, reviewData, sonMesajlar, sonIlanlar] = await Promise.all([
+  const [unreadCount, totalMessages, reviewData, sonMesajlar, sonIlanlar, yaklasanEtkinlikler] = await Promise.all([
     prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
     prisma.message.count({ where: { toUserId: session.user.id } }),
     prisma.review.aggregate({
@@ -55,6 +55,17 @@ export default async function RehberDashboard() {
       take: 4,
       include: { acente: true },
     }),
+    profile ? prisma.takvimEtkinlik.findMany({
+      where: {
+        rehberId: profile.id,
+        OR: [
+          { bitis: { gte: new Date() } },
+          { baslangic: { gte: new Date() }, bitis: null },
+        ],
+      },
+      orderBy: { baslangic: "asc" },
+      take: 4,
+    }) : Promise.resolve([]),
   ]);
 
   // Profil tamamlanma yüzdesi
@@ -189,6 +200,65 @@ export default async function RehberDashboard() {
           <div className="text-xs text-gray-500 mt-1">Profil Gücü</div>
           <div className="text-xs text-gray-400 mt-0.5">{profilTam ? "Tamamlandı" : "Geliştir"}</div>
         </div>
+      </div>
+
+      {/* Yaklaşan Etkinlikler */}
+      <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-[#0a7ea4]" /> Yaklaşan Etkinlikler
+          </h2>
+          <Link href="/dashboard/rehber/takvim" className="text-xs text-[#0a7ea4] hover:underline">
+            Takvime git
+          </Link>
+        </div>
+        {yaklasanEtkinlikler.length === 0 ? (
+          <div className="px-6 py-8 text-center">
+            <CalendarDays className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+            <p className="text-sm text-gray-400">Yaklaşan etkinlik yok</p>
+            <Link href="/dashboard/rehber/takvim" className="text-xs text-[#0a7ea4] hover:underline mt-1 inline-block">
+              Etkinlik ekle
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {yaklasanEtkinlikler.map((e) => {
+              const bas = new Date(e.baslangic);
+              const bit = e.bitis ? new Date(e.bitis) : null;
+              const bugun = new Date();
+              bugun.setHours(0,0,0,0);
+              const basGun = new Date(bas); basGun.setHours(0,0,0,0);
+              const fark = Math.ceil((basGun.getTime() - bugun.getTime()) / 86400000);
+              const etiket = fark === 0 ? "Bugün" : fark === 1 ? "Yarın" : `${fark} gün sonra`;
+              const acil = fark <= 1;
+              return (
+                <Link key={e.id} href="/dashboard/rehber/takvim"
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+                  <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center shrink-0 ${e.tur === "REZERVASYON" ? "bg-purple-50" : "bg-[#0a7ea4]/10"}`}>
+                    <span className={`text-xs font-bold leading-none ${e.tur === "REZERVASYON" ? "text-purple-600" : "text-[#0a7ea4]"}`}>
+                      {String(bas.getDate()).padStart(2,"0")}
+                    </span>
+                    <span className={`text-[10px] leading-none mt-0.5 ${e.tur === "REZERVASYON" ? "text-purple-400" : "text-[#0a7ea4]/70"}`}>
+                      {["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"][bas.getMonth()]}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{e.baslik}</p>
+                    {bit && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {bas.toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} – {bit.toLocaleDateString("tr-TR",{day:"numeric",month:"short"})}
+                      </p>
+                    )}
+                    {e.notlar && <p className="text-xs text-gray-400 truncate">{e.notlar}</p>}
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${acil ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-500"}`}>
+                    {etiket}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Alt İki Kolon */}

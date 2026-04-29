@@ -19,10 +19,16 @@ export async function GET(req: Request) {
   const profile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
   if (!profile) return NextResponse.json([]);
 
+  // Ay içinde başlayan VEYA ay içinde biten (çok günlü) etkinlikler
   const etkinlikler = await prisma.takvimEtkinlik.findMany({
     where: {
       rehberId: profile.id,
-      baslangic: { gte: baslangic, lt: bitis },
+      baslangic: { lt: bitis },
+      OR: [
+        { bitis: null },
+        { bitis: { gte: baslangic } },
+        { baslangic: { gte: baslangic } },
+      ],
     },
     orderBy: { baslangic: "asc" },
   });
