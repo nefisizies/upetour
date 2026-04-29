@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut } from "lucide-react";
+import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 
 const rehberLinks = [
   { href: "/dashboard/rehber", label: "Genel Bakış", icon: LayoutDashboard },
   { href: "/dashboard/rehber/profil", label: "Profilim", icon: User },
+  { href: "/dashboard/rehber/takvim", label: "Takvim", icon: CalendarDays },
   { href: "/dashboard/rehber/mesajlar", label: "Mesajlar", icon: MessageCircle },
   { href: "/kesfet/ilanlar", label: "İlanlar", icon: Search },
 ];
