@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Globe, Star, CheckCircle, ArrowLeft } from "lucide-react";
+import { MapPin, Globe, Star, CheckCircle, ArrowLeft, Building2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 export default async function RehberProfilPublic({
@@ -19,6 +19,11 @@ export default async function RehberProfilPublic({
       tours: { where: { isActive: true } },
       user: { select: { createdAt: true } },
       languages: { select: { dil: true, seviye: true } },
+      referanslar: {
+        where: { durum: "ONAYLANDI" },
+        include: { acente: { select: { companyName: true, city: true, slug: true } } },
+        orderBy: { updatedAt: "desc" },
+      },
       _count: { select: { tours: true } },
     },
   });
@@ -93,6 +98,26 @@ export default async function RehberProfilPublic({
             Mesaj Gönder
           </Link>
         </div>
+
+        {/* Referans Acenteler */}
+        {rehber.referanslar.length > 0 && (
+          <div className="bg-white border border-gray-100 rounded-2xl p-6">
+            <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-[#0a7ea4]" /> Çalıştığı Acenteler
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {rehber.referanslar.map((r) => (
+                <div key={r.id} className="flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{r.acente.companyName}</p>
+                    {r.acente.city && <p className="text-xs text-gray-400">{r.acente.city}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Turlar */}
         {rehber.tours.length > 0 && (

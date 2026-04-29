@@ -3,9 +3,14 @@
 import { useState, useCallback } from "react";
 import { WelcomeBanner } from "./WelcomeBanner";
 import { RehberProfilForm } from "./RehberProfilForm";
-import type { RehberProfile, Tour, RehberLicense, RehberDil } from "@prisma/client";
+import type { RehberProfile, Tour, RehberLicense, RehberDil, Referans, AcenteProfile } from "@prisma/client";
 
-type Profile = (RehberProfile & { tours: Tour[]; licenses: RehberLicense[]; languages: RehberDil[] }) | null;
+type Profile = (RehberProfile & {
+  tours: Tour[];
+  licenses: RehberLicense[];
+  languages: RehberDil[];
+  referanslar: (Referans & { acente: Pick<AcenteProfile, "companyName" | "city"> })[];
+}) | null;
 
 function hesaplaCompletion(form: {
   name: string;

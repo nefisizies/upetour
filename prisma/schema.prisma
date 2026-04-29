@@ -18,6 +18,12 @@ enum LicenseStatus {
   REJECTED
 }
 
+enum ReferansDurum {
+  BEKLIYOR
+  ONAYLANDI
+  REDDEDILDI
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -50,6 +56,7 @@ model RehberProfile {
   operatingCountries String[]
   tours            Tour[]
   licenses         RehberLicense[]
+  referanslar      Referans[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -90,8 +97,23 @@ model AcenteProfile {
   logoUrl     String?
   website     String?
   ilanlar     Ilan[]
+  referanslar Referans[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Referans {
+  id        String        @id @default(cuid())
+  rehberId  String
+  acenteId  String
+  durum     ReferansDurum @default(BEKLIYOR)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+
+  @@unique([rehberId, acenteId])
 }
 
 model Tour {

@@ -16,7 +16,15 @@ export default async function RehberProfilPage({
 
   const profile = await prisma.rehberProfile.findUnique({
     where: { userId: session.user.id },
-    include: { tours: true, licenses: true, languages: true },
+    include: {
+      tours: true,
+      licenses: true,
+      languages: true,
+      referanslar: {
+        include: { acente: { select: { companyName: true, city: true } } },
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 
   const isYeni = searchParams.yeni === "1" || !profile?.bio;

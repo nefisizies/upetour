@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import type { RehberProfile, Tour, RehberLicense, RehberDil } from "@prisma/client";
+import type { RehberProfile, Tour, RehberLicense, RehberDil, Referans, AcenteProfile } from "@prisma/client";
 import { COUNTRY_LICENSES, COUNTRY_NAMES } from "@/lib/licenses";
 import { POPULER_DILLER, SEVIYELER, getSertifikalar } from "@/lib/diller";
-import { CheckCircle, Clock, XCircle, Camera, X, Plus, ChevronDown } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Camera, X, Plus, ChevronDown, Building2, Search } from "lucide-react";
+
+type ReferansWithAcente = Referans & { acente: Pick<AcenteProfile, "companyName" | "city"> };
+type AcenteOption = Pick<AcenteProfile, "id" | "companyName" | "city">;
 
 type DilEntry = { dil: string; seviye: string; sertifika: string; sonuc: string };
 
@@ -22,7 +25,7 @@ type FormState = {
 };
 
 type Props = {
-  profile: (RehberProfile & { tours: Tour[]; licenses: RehberLicense[]; languages: RehberDil[] }) | null;
+  profile: (RehberProfile & { tours: Tour[]; licenses: RehberLicense[]; languages: RehberDil[]; referanslar: ReferansWithAcente[] }) | null;
   onFormChange?: (form: FormState) => void;
 };
 
@@ -69,6 +72,14 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
+  // Referans state
+  const [referanslar, setReferanslar] = useState<ReferansWithAcente[]>(profile?.referanslar ?? []);
+  const [acenteArama, setAcenteArama] = useState("");
+  const [acenteSonuclar, setAcenteSonuclar] = useState<AcenteOption[]>([]);
+  const [acenteYukleniyor, setAcenteYukleniyor] = useState(false);
+  const [referansEkleniyor, setReferansEkleniyor] = useState(false);
+  const aramaTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function updateForm(next: typeof form) {
     setForm(next);
     onFormChange?.(next);
@@ -110,6 +121,39 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
 
   function setLicenseNo(country: string, val: string) {
     setLicenses((prev) => prev.map((l) => (l.country === country ? { ...l, licenseNo: val } : l)));
+  }
+
+  function acenteAramaGuncelle(val: string) {
+    setAcenteArama(val);
+    if (aramaTimeout.current) clearTimeout(aramaTimeout.current);
+    if (!val.trim()) { setAcenteSonuclar([]); return; }
+    aramaTimeout.current = setTimeout(async () => {
+      setAcenteYukleniyor(true);
+      const res = await fetch(`/api/acenteler?q=${encodeURIComponent(val)}`);
+      const data = await res.json();
+      setAcenteSonuclar(data);
+      setAcenteYukleniyor(false);
+    }, 300);
+  }
+
+  async function referansEkle(acente: AcenteOption) {
+    setReferansEkleniyor(true);
+    const res = await fetch("/api/referans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ acenteId: acente.id }),
+    });
+    setReferansEkleniyor(false);
+    if (!res.ok) return;
+    const yeni = await res.json();
+    setReferanslar((prev) => [yeni, ...prev]);
+    setAcenteArama("");
+    setAcenteSonuclar([]);
+  }
+
+  async function referansSil(id: string) {
+    await fetch(`/api/referans/${id}`, { method: "DELETE" });
+    setReferanslar((prev) => prev.filter((r) => r.id !== id));
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -341,6 +385,94 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
             })}
           </div>
         )}
+      </div>
+
+      {/* Referanslar */}
+      <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#0a7ea4]" /> Çalıştığım Acenteler
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">Seçtiğiniz acente onayladıktan sonra profilinizde görünür.</p>
+        </div>
+
+        {/* Mevcut referanslar */}
+        {referanslar.length > 0 && (
+          <div className="space-y-2">
+            {referanslar.map((r) => (
+              <div key={r.id} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{r.acente.companyName}</p>
+                  {r.acente.city && <p className="text-xs text-gray-400">{r.acente.city}</p>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {r.durum === "BEKLIYOR" && (
+                    <span className="inline-flex items-center gap-1 text-xs text-yellow-600 bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded-full">
+                      <Clock className="w-3 h-3" /> Onay Bekliyor
+                    </span>
+                  )}
+                  {r.durum === "ONAYLANDI" && (
+                    <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                      <CheckCircle className="w-3 h-3" /> Onaylandı
+                    </span>
+                  )}
+                  {r.durum === "REDDEDILDI" && (
+                    <span className="inline-flex items-center gap-1 text-xs text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                      <XCircle className="w-3 h-3" /> Reddedildi
+                    </span>
+                  )}
+                  {r.durum !== "ONAYLANDI" && (
+                    <button type="button" onClick={() => referansSil(r.id)}
+                      className="text-gray-300 hover:text-red-400 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Acente arama */}
+        <div className="relative">
+          <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2 gap-2 focus-within:ring-2 focus-within:ring-[#0a7ea4] bg-white">
+            <Search className="w-4 h-4 text-gray-400 shrink-0" />
+            <input
+              type="text"
+              value={acenteArama}
+              onChange={(e) => acenteAramaGuncelle(e.target.value)}
+              placeholder="Acente adıyla ara..."
+              className="flex-1 text-sm outline-none"
+            />
+            {acenteYukleniyor && <div className="w-3.5 h-3.5 border-2 border-[#0a7ea4] border-t-transparent rounded-full animate-spin shrink-0" />}
+          </div>
+
+          {acenteSonuclar.length > 0 && (
+            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              {acenteSonuclar
+                .filter((a) => !referanslar.find((r) => r.acenteId === a.id))
+                .map((a) => (
+                  <button key={a.id} type="button"
+                    disabled={referansEkleniyor}
+                    onClick={() => referansEkle(a)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors text-left">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{a.companyName}</p>
+                      {a.city && <p className="text-xs text-gray-400">{a.city}</p>}
+                    </div>
+                    <Plus className="w-4 h-4 text-[#0a7ea4]" />
+                  </button>
+                ))}
+              {acenteSonuclar.filter((a) => !referanslar.find((r) => r.acenteId === a.id)).length === 0 && (
+                <p className="text-sm text-gray-400 px-4 py-3">Tüm sonuçlar zaten eklendi.</p>
+              )}
+            </div>
+          )}
+
+          {acenteArama.trim() && !acenteYukleniyor && acenteSonuclar.length === 0 && (
+            <p className="text-xs text-gray-400 mt-1.5 px-1">Sistemde kayıtlı acente bulunamadı.</p>
+          )}
+        </div>
       </div>
 
       {/* Müsaitlik */}
