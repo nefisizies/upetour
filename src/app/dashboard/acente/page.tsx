@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { FileText, MessageCircle, Users, ArrowRight, AlertCircle, Plus } from "lucide-react";
+import { FileText, MessageCircle, Users, ArrowRight, AlertCircle, Plus, Building2 } from "lucide-react";
 
 export default async function AcenteDashboard() {
   const session = await getServerSession(authOptions);
@@ -16,9 +16,10 @@ export default async function AcenteDashboard() {
     include: { ilanlar: true },
   });
 
-  const unreadCount = await prisma.message.count({
-    where: { toUserId: session.user.id, isRead: false },
-  });
+  const [unreadCount, bekleyenReferansCount] = await Promise.all([
+    prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
+    profile ? prisma.referans.count({ where: { acenteId: profile.id, durum: "BEKLIYOR" } }) : Promise.resolve(0),
+  ]);
 
   const activeIlanCount = profile?.ilanlar.filter((i) => i.isActive).length ?? 0;
 
@@ -51,17 +52,23 @@ export default async function AcenteDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Aktif İlan", value: activeIlanCount, icon: FileText, href: "/dashboard/acente/ilanlar" },
-          { label: "Okunmamış Mesaj", value: unreadCount, icon: MessageCircle, href: "/dashboard/acente/mesajlar" },
-          { label: "Toplam İlan", value: profile?.ilanlar.length ?? 0, icon: Users, href: "/dashboard/acente/ilanlar" },
+          { label: "Aktif İlan", value: activeIlanCount, icon: FileText, href: "/dashboard/acente/ilanlar", badge: 0 },
+          { label: "Okunmamış Mesaj", value: unreadCount, icon: MessageCircle, href: "/dashboard/acente/mesajlar", badge: 0 },
+          { label: "Toplam İlan", value: profile?.ilanlar.length ?? 0, icon: Users, href: "/dashboard/acente/ilanlar", badge: 0 },
+          { label: "Referans İstekleri", value: bekleyenReferansCount, icon: Building2, href: "/dashboard/acente/profil", badge: bekleyenReferansCount },
         ].map((card) => (
           <Link
             key={card.label}
             href={card.href}
-            className="bg-white border border-gray-100 rounded-xl p-5 hover:shadow-sm transition-shadow"
+            className="relative bg-white border border-gray-100 rounded-xl p-5 hover:shadow-sm transition-shadow"
           >
+            {card.badge > 0 && (
+              <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                {card.badge}
+              </span>
+            )}
             <card.icon className="w-5 h-5 text-[#0a7ea4] mb-3" />
             <div className="text-2xl font-bold text-gray-900">{card.value}</div>
             <div className="text-xs text-gray-500 mt-1">{card.label}</div>
