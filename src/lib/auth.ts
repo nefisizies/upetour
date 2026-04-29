@@ -9,6 +9,7 @@ const DEFAULT_AGE = 24 * 60 * 60;           // 1 gün
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as never,
+  // maxAge burada en uzun değer — gerçek süre jwt callback'te token.exp ile kontrol edilir
   session: { strategy: "jwt", maxAge: REMEMBER_ME_AGE },
   pages: {
     signIn: "/giris",
@@ -45,16 +46,22 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // İlk giriş: token oluşturulurken süreyi ve rememberMe'yi kaydet
         token.id = user.id;
         token.role = (user as unknown as { role: string }).role;
         token.rememberMe = (user as unknown as { rememberMe: boolean }).rememberMe;
-        const age = token.rememberMe ? REMEMBER_ME_AGE : DEFAULT_AGE;
-        token.exp = Math.floor(Date.now() / 1000) + age;
+        token.expiresAt = Date.now() + (token.rememberMe ? REMEMBER_ME_AGE : DEFAULT_AGE) * 1000;
       }
+
+      // Her istekte: manuel süre kontrolü — NextAuth sliding session'ı engelle
+      if (token.expiresAt && Date.now() > (token.expiresAt as number)) {
+        return {} as typeof token; // boş token → session geçersiz → login sayfasına
+      }
+
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      if (token?.id) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
       }

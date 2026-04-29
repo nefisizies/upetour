@@ -9,18 +9,18 @@ export default function Home() {
       <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Logo size="md" />
-          <div className="flex items-center gap-3">
-            <Link
-              href="/giris"
-              className="text-sm text-gray-600 hover:text-gray-900 font-medium px-4 py-2"
-            >
+          <div className="flex items-center gap-2">
+            <Link href="/giris"
+              className="text-sm text-gray-600 hover:text-gray-900 font-medium px-4 py-2">
               Giriş Yap
             </Link>
-            <Link
-              href="/kayit"
-              className="text-sm bg-[#0a7ea4] text-white font-medium px-4 py-2 rounded-lg hover:bg-[#065f7d] transition-colors"
-            >
-              Üye Ol
+            <Link href="/kayit?rol=REHBER"
+              className="text-sm border border-[#0a7ea4] text-[#0a7ea4] font-medium px-3 py-2 rounded-lg hover:bg-[#0a7ea4]/5 transition-colors hidden sm:block">
+              Rehber Kaydı
+            </Link>
+            <Link href="/kayit?rol=ACENTE"
+              className="text-sm bg-[#0a7ea4] text-white font-medium px-3 py-2 rounded-lg hover:bg-[#065f7d] transition-colors">
+              Acente Kaydı
             </Link>
           </div>
         </div>

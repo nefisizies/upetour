@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Compass, Building2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 export default function GirisPage() {
@@ -115,12 +116,21 @@ export default function GirisPage() {
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-500 mt-6">
-          Hesabın yok mu?{" "}
-          <Link href="/kayit" className="text-[#0a7ea4] font-medium hover:underline">
-            Kayıt Ol
-          </Link>
-        </p>
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="text-xs text-center text-gray-400 mb-3">Hesabın yok mu? Rolünü seç:</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/kayit?rol=REHBER"
+              className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 hover:border-[#0a7ea4] hover:bg-[#0a7ea4]/5 transition-all group">
+              <Compass className="w-5 h-5 text-gray-400 group-hover:text-[#0a7ea4]" />
+              <span className="text-xs font-medium text-gray-500 group-hover:text-[#0a7ea4]">Tur Rehberi</span>
+            </Link>
+            <Link href="/kayit?rol=ACENTE"
+              className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 hover:border-[#0a7ea4] hover:bg-[#0a7ea4]/5 transition-all group">
+              <Building2 className="w-5 h-5 text-gray-400 group-hover:text-[#0a7ea4]" />
+              <span className="text-xs font-medium text-gray-500 group-hover:text-[#0a7ea4]">Seyahat Acentesi</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
