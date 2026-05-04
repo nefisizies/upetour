@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { RehberProfilSayfasi } from "@/components/RehberProfilSayfasi";
 import { RehberKarti } from "@/components/RehberKarti";
+import { HesapAyarlari } from "@/components/HesapAyarlari";
 
 export default async function RehberProfilPage({
   searchParams,
@@ -43,9 +44,10 @@ export default async function RehberProfilPage({
 
   return (
     <div className="flex gap-8 items-start">
-      {/* Sol: Form */}
-      <div className="flex-1 min-w-0">
+      {/* Sol: Form + Hesap Ayarları */}
+      <div className="flex-1 min-w-0 space-y-6">
         <RehberProfilSayfasi profile={profile} isYeni={isYeni} />
+        <HesapAyarlari mevcutEmail={session.user.email} />
       </div>
 
       {/* Sağ: Kart önizleme */}

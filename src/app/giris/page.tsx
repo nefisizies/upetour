@@ -103,7 +103,7 @@ export default function GirisPage() {
               className="w-4 h-4 rounded border-gray-300 text-[#0a7ea4] accent-[#0a7ea4] cursor-pointer"
             />
             <label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer select-none">
-              Beni hatırla
+              Beni hatırla <span className="text-gray-400 text-xs">({rememberMe ? "30 gün" : "1 gün"})</span>
             </label>
           </div>
 

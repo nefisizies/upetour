@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { AcenteProfilSayfasi } from "@/components/AcenteProfilSayfasi";
+import { HesapAyarlari } from "@/components/HesapAyarlari";
 
 export default async function AcenteProfilPage({
   searchParams,
@@ -38,6 +39,7 @@ export default async function AcenteProfilPage({
         </div>
       )}
       <AcenteProfilSayfasi profile={profile} />
+      <HesapAyarlari mevcutEmail={session.user.email} />
     </div>
   );
 }
