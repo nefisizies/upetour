@@ -6,27 +6,20 @@ test.describe("Takvim", () => {
     await loginAsRehber(page);
   });
 
-  test("mini takvimde güne tıklayınca etkinlik ekleme modalı açılır", async ({ page }) => {
+  test("mini takvimde güne tıklayınca popup modal açılır", async ({ page }) => {
     await page.goto("/dashboard/rehber");
-    await page.waitForLoadState("networkidle");
-
     // Mini takvimde bir gün bul ve tıkla
-    const miniCalendar = page.locator("text=Yaklaşan Etkinlikler").locator("..").locator("..");
-    const dayButton = miniCalendar.locator("button").filter({ hasText: /^\d+$/ }).first();
+    const dayButton = page.locator(".w-52 button").filter({ hasText: /^\d+$/ }).first();
     const dayText = await dayButton.innerText();
     await dayButton.click();
-
-    // Takvim sayfasına gitmeli
-    await page.waitForURL("**/takvim**", { timeout: 5000 });
-
-    // Modal açılmış olmalı
+    // Popup modal açılmalı
     await expect(page.locator("text=Etkinlik Ekle")).toBeVisible({ timeout: 5000 });
-    console.log(`✅ Gün ${dayText} tıklandı, modal açıldı`);
+    console.log(`✅ Mini takvim gün ${dayText} tıklandı, popup açıldı`);
   });
 
   test("takvimde güne tıklayınca etkinlik ekleme modalı açılır", async ({ page }) => {
     await page.goto("/dashboard/rehber/takvim");
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
 
     // Bugünü bul (mavi daire olan)
     const todayCell = page.locator(".bg-\\[\\#0a7ea4\\].text-white").first();
@@ -46,7 +39,7 @@ test.describe("Takvim", () => {
 
   test("çok günlü etkinlik tüm günleri boyuyor", async ({ page }) => {
     await page.goto("/dashboard/rehber/takvim");
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
 
     // Test etkinliği oluştur: bugünden 3 gün sonrasına kadar
     const today = new Date();
@@ -62,7 +55,7 @@ test.describe("Takvim", () => {
     await page.fill('input[placeholder*="Kapadokya"]', "TEST ÇOKGÜNLÜ");
     await page.locator('input[type="datetime-local"]').nth(1).fill(`${endDateStr}T18:00`);
     await page.locator("button", { hasText: "Kaydet" }).click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForTimeout(500);
 
     // Başlangıç gününde chip görünmeli
     const startCell = cells.filter({ hasText: String(today.getDate()) }).first();

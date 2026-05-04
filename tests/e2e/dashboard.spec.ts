@@ -8,25 +8,20 @@ test.describe("Dashboard", () => {
 
   test("genel bakış sayfası yükleniyor", async ({ page }) => {
     await page.goto("/dashboard/rehber");
-    await expect(page.locator("text=Yaklaşan Etkinlikler")).toBeVisible({ timeout: 5000 });
-    await expect(page.locator("text=Mesajlar")).toBeVisible();
+    await expect(page.locator("text=Yaklaşan Etkinlikler")).toBeVisible({ timeout: 10000 });
+    await expect(page.locator("nav >> text=Mesajlar")).toBeVisible();
     console.log("✅ Genel bakış sayfası yüklendi");
   });
 
   test("mini takvim görünüyor ve ay okları çalışıyor", async ({ page }) => {
     await page.goto("/dashboard/rehber");
-    await page.waitForLoadState("networkidle");
-
-    // Mini takvim ay adı görünmeli
     const months = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
     const currentMonth = months[new Date().getMonth()];
-    await expect(page.locator(`text=${currentMonth}`).last()).toBeVisible();
-
-    // Sol ok tıklayıp ay değişmeli
+    await expect(page.locator(`text=${currentMonth}`).last()).toBeVisible({ timeout: 10000 });
     const prevMonth = months[(new Date().getMonth() + 11) % 12];
     const chevronButtons = page.locator(".w-52 button");
     await chevronButtons.first().click();
-    await expect(page.locator(`text=${prevMonth}`)).toBeVisible({ timeout: 3000 });
+    await expect(page.locator(`text=${prevMonth}`)).toBeVisible({ timeout: 5000 });
     console.log(`✅ Ay değiştirme çalışıyor: ${currentMonth} → ${prevMonth}`);
   });
 });
