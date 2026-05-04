@@ -5,7 +5,6 @@ const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 export async function loginAsRehber(page: Page) {
   await page.goto("/giris");
-  await page.waitForLoadState("networkidle");
   await page.fill('input[type="email"]', EMAIL);
   await page.fill('input[type="password"]', PASSWORD);
   await page.click('button[type="submit"]');
