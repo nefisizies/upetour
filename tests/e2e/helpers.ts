@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "uras@onaymuhendislik.com";
+const EMAIL = process.env.TEST_EMAIL ?? "uras.aydinlioglu@gmail.com";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 export async function loginAsRehber(page: Page) {

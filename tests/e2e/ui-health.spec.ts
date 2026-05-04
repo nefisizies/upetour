@@ -17,16 +17,50 @@ test.describe("UI Sağlık Kontrolleri", () => {
     console.log("✅ Giriş sayfası düzgün yükleniyor");
   });
 
-  test("giriş formu submit sonrası tepki veriyor", async ({ page }) => {
-    await page.goto("/giris");
-    await page.fill('input[type="email"]', "test@test.com");
-    await page.fill('input[type="password"]', "wrongpassword");
-    await page.click('button[type="submit"]');
-    // Ya hata mesajı ya da yönlendirme olmalı — sayfa donmamalı
-    await Promise.race([
-      page.waitForURL("**/dashboard/**", { timeout: 15000 }).catch(() => {}),
-      page.waitForSelector("text=Giriş Yap", { timeout: 15000 }).catch(() => {}),
-    ]);
-    console.log("✅ Login formu tepki veriyor");
+  test("giriş çalışıyor ve dashboard'a yönlendiriyor", async ({ page }) => {
+    await loginAsRehber(page);
+    await expect(page).toHaveURL(/dashboard/);
+    console.log("✅ Giriş ve yönlendirme çalışıyor");
+  });
+
+  test.describe("Giriş sonrası", () => {
+    test.beforeEach(async ({ page }) => {
+      await loginAsRehber(page);
+    });
+
+    test("dashboard hatasız yükleniyor", async ({ page }) => {
+      await page.goto("/dashboard/rehber");
+      await expect(page.locator("text=500")).not.toBeVisible();
+      await expect(page.locator("text=404")).not.toBeVisible();
+      console.log("✅ Dashboard hatasız yükleniyor");
+    });
+
+    test("profil kartı — fotoğraf banner arkasında kalmamalı", async ({ page }) => {
+      await page.goto("/dashboard/rehber/profil");
+      const kart = page.locator("text=Acentelere böyle görünüyorsunuz");
+      await expect(kart).toBeVisible({ timeout: 10000 });
+      const banner = page.locator("a.bg-gradient-to-r").first();
+      const avatarContainer = page.locator(".-mt-10").first();
+      const avatarBox = await avatarContainer.boundingBox();
+      const bannerBox = await banner.boundingBox();
+      if (avatarBox && bannerBox) {
+        expect(avatarBox.y, "Avatar banner üstüne çıkmalı").toBeLessThan(bannerBox.y + bannerBox.height);
+      }
+      console.log("✅ Profil kartı görünümü sağlıklı");
+    });
+
+    test("takvim sayfası yükleniyor", async ({ page }) => {
+      await page.goto("/dashboard/rehber/takvim");
+      await expect(page.locator("text=Takvimim")).toBeVisible({ timeout: 10000 });
+      console.log("✅ Takvim sayfası yükleniyor");
+    });
+
+    test("nav linkleri görünür", async ({ page }) => {
+      await page.goto("/dashboard/rehber");
+      for (const link of ["Profilim", "Takvim", "Mesajlar"]) {
+        await expect(page.locator(`nav >> text=${link}`)).toBeVisible();
+      }
+      console.log("✅ Nav linkleri görünür");
+    });
   });
 });
