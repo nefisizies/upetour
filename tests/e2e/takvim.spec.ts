@@ -13,7 +13,7 @@ test.describe("Takvim", () => {
     const dayText = await dayButton.innerText();
     await dayButton.click();
     // Popup modal açılmalı
-    await expect(page.locator("text=Etkinlik Ekle")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("button:has-text('Etkinlik Ekle'), [role='dialog'] >> text=Etkinlik Ekle").first()).toBeVisible({ timeout: 5000 });
     console.log(`✅ Mini takvim gün ${dayText} tıklandı, popup açıldı`);
   });
 
