@@ -94,8 +94,8 @@ jobs:
         run: npx playwright test
         env:
           TEST_URL: https://turbag-app-production.up.railway.app
-          TEST_EMAIL: uras@onaymuhendislik.com
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          TEST_EMAIL: ci-test@turbag.app
+          TEST_PASSWORD: CiTest2026
 
       - name: Test raporunu kaydet (hata varsa)
         if: failure()

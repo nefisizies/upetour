@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "uras.aydinlioglu@gmail.com";
-const PASSWORD = process.env.TEST_PASSWORD ?? "";
+const EMAIL = process.env.TEST_EMAIL ?? "ci-test@turbag.app";
+const PASSWORD = process.env.TEST_PASSWORD ?? "CiTest2026";
 
 export async function loginAsRehber(page: Page) {
   await page.goto("/giris");
