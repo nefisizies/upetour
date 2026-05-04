@@ -73,7 +73,7 @@ test.describe("Takvim", () => {
     const nextCell = cells.filter({ hasText: String(nextDay) }).first();
     await expect(nextCell.locator(".bg-\\[\\#0a7ea4\\]\\/20, .bg-purple-200")).toBeVisible({ timeout: 3000 });
 
-    console.log(`✅ Çok günlü etkinlik ${startDateStr} - ${endDateStr} arası boyandı`);
+    console.log(`✅ Çok günlü etkinlik ${startDate} - ${endDateStr} arası boyandı`);
 
     // Temizle
     await startCell.locator("text=TEST ÇOKGÜNLÜ").click();

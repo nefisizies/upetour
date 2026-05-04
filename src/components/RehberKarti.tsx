@@ -20,15 +20,15 @@ export function RehberKarti({
   const verifiedLicenses = profile?.licenses.filter((l) => l.status === "VERIFIED") ?? [];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
 
       {/* Üst bant — profile git linki */}
       <Link
         href={profile?.slug ? `/rehber/${profile.slug}` : "#"}
         target="_blank"
-        className="block h-16 bg-gradient-to-r from-[#0a7ea4] to-[#1a9bc4] relative group"
+        className="block h-16 bg-gradient-to-r from-[#0a7ea4] to-[#1a9bc4] relative group rounded-t-2xl overflow-hidden"
       >
-        <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-t-2xl">
+        <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
           <span className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 px-3 py-1.5 rounded-full">
             <ExternalLink className="w-3.5 h-3.5" /> Profile Git
           </span>
@@ -37,7 +37,7 @@ export function RehberKarti({
 
       {/* Fotoğraf + temel bilgi */}
       <div className="px-5 pb-5">
-        <div className="-mt-10 mb-4 flex items-end justify-between">
+        <div className="-mt-10 mb-4 flex items-end justify-between relative z-10">
           <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md bg-[#0a7ea4]/10 flex items-center justify-center overflow-hidden shrink-0">
             {profile?.photoUrl ? (
               <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
