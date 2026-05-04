@@ -24,6 +24,9 @@ Kullanıcı akışlarını, bileşen tutarlılığını ve görsel hiyerarşiyi 
 - Input'lar: `border border-gray-200 rounded-lg px-3 py-2`
 - Badge/chip: `rounded-full text-xs px-2 py-0.5`
 
+## Bilinen CSS Tuzakları
+- **overflow-hidden + negatif margin**: Kart container'ına `overflow-hidden` eklenince `-mt-*` ile üst bandı aşan avatar fotoğrafı banner arkasında kalır. Çözüm: overflow-hidden sadece banner'a, avatar container'ına `relative z-10`.
+
 ## Tamamlanan UX Çalışmaları
 - **Wave background**: Gün batımı + deniz dalgaları animasyonu — tatil platformu temasıyla uyumlu
 - **Mini takvim popup**: Günün etkinlikleri + form tek popup'ta
