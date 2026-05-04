@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ─── 1. BUILD KONTROLü ────────────────────────────────────────────────
+  # ─── 1. BUILD KONTROLü ──────────────────────────────────────────────
   build-check:
     name: Build Kontrolü
     runs-on: ubuntu-latest
@@ -27,10 +27,6 @@ jobs:
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
-      - name: TypeScript kontrol
-        run: npx tsc --noEmit || true
-        # Lokal Prisma TS hataları beklenen — build fail'e dönüştürme
-
       - name: Next.js build
         run: npm run build
         env:
@@ -39,7 +35,7 @@ jobs:
           NEXTAUTH_URL: "http://localhost:3000"
           NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "dkcrf1xw7"
 
-  # ─── 2. RAILWAY DEPLOY BEKLE & DOĞRULA ───────────────────────────────
+  # ─── 2. RAILWAY DEPLOY BEKLE & DOĞRULA ──────────────────────────────
   deploy-check:
     name: Railway Deploy Doğrula
     runs-on: ubuntu-latest
@@ -47,46 +43,36 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Railway deploy tamamlanana kadar bekle
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Railway deploy bekleniyor..."
-          RAILWAY_TOKEN="${{ secrets.RAILWAY_TOKEN }}"
           SERVICE_ID="a3d955ad-2f33-4fa1-9405-b3bcf59bed53"
           PROJECT_ID="6f0d59bc-6df0-4118-bcb8-4be3aafc90c1"
-          COMMIT_SHA="${{ github.sha }}"
 
           for i in $(seq 1 24); do
             RESULT=$(curl -s -X POST https://backboard.railway.app/graphql/v2 \
               -H "Authorization: Bearer $RAILWAY_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"query\": \"{ deployments(input: { serviceId: \\\"$SERVICE_ID\\\", projectId: \\\"$PROJECT_ID\\\" }) { edges { node { id status createdAt } } } }\"}" \
-              | python3 -c "
-import sys,json
-d=json.load(sys.stdin)
-deps=d['data']['deployments']['edges']
-if deps:
-    n=deps[0]['node']
-    print(n['status'])
-else:
-    print('UNKNOWN')
-")
+              -d "{\"query\":\"{deployments(input:{serviceId:\\\"$SERVICE_ID\\\",projectId:\\\"$PROJECT_ID\\\"}){edges{node{id status}}}}\"}" \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); e=d['data']['deployments']['edges']; print(e[0]['node']['status'] if e else 'UNKNOWN')")
+
             echo "[$i/24] Deploy durumu: $RESULT"
+
             if [ "$RESULT" = "SUCCESS" ]; then
-              echo "✅ Deploy başarılı"
+              echo "Deploy basarili"
               exit 0
             elif [ "$RESULT" = "FAILED" ] || [ "$RESULT" = "CRASHED" ]; then
-              echo "❌ Deploy FAILED — Railway loglarını kontrol et"
+              echo "Deploy FAILED"
               exit 1
             fi
             sleep 15
           done
-          echo "⚠️ Deploy 6 dakikada tamamlanmadı"
+          echo "Deploy 6 dakikada tamamlanmadi"
           exit 1
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
-  # ─── 3. E2E TESTLER ───────────────────────────────────────────────────
+  # ─── 3. E2E TESTLER ─────────────────────────────────────────────────
   e2e-tests:
-    name: E2E Testler (Playwright)
+    name: E2E Testler
     runs-on: ubuntu-latest
     needs: deploy-check
     timeout-minutes: 15
@@ -105,7 +91,6 @@ else:
         run: npx playwright install chromium --with-deps
 
       - name: E2E testleri çalıştır
-        id: e2e
         run: npx playwright test
         env:
           TEST_URL: https://turbag-app-production.up.railway.app
@@ -120,31 +105,22 @@ else:
           path: playwright-report/
           retention-days: 7
 
-  # ─── 4. SONUÇ BİLDİRİMİ ──────────────────────────────────────────────
+  # ─── 4. SONUÇ ───────────────────────────────────────────────────────
   notify:
-    name: Sonuç Bildir
+    name: Sonuc
     runs-on: ubuntu-latest
     needs: [build-check, deploy-check, e2e-tests]
     if: always()
     steps:
-      - name: Sonucu özetle
+      - name: Ozet
         run: |
-          BUILD="${{ needs.build-check.result }}"
-          DEPLOY="${{ needs.deploy-check.result }}"
-          E2E="${{ needs.e2e-tests.result }}"
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "CI SONUÇ RAPORU"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "Build kontrolü : $BUILD"
-          echo "Railway deploy  : $DEPLOY"
-          echo "E2E testler     : $E2E"
-          echo "Commit          : ${{ github.sha }}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          if [ "$BUILD" = "failure" ] || [ "$DEPLOY" = "failure" ] || [ "$E2E" = "failure" ]; then
-            echo "❌ CI BAŞARISIZ — kontrol gerekiyor"
+          echo "BUILD   : ${{ needs.build-check.result }}"
+          echo "DEPLOY  : ${{ needs.deploy-check.result }}"
+          echo "E2E     : ${{ needs.e2e-tests.result }}"
+          if [ "${{ needs.build-check.result }}" = "failure" ] || \
+             [ "${{ needs.deploy-check.result }}" = "failure" ] || \
+             [ "${{ needs.e2e-tests.result }}" = "failure" ]; then
+            echo "CI BASARISIZ"
             exit 1
-          else
-            echo "✅ HER ŞEY TAMAM"
           fi
+          echo "TUMU TAMAM"
