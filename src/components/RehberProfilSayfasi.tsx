@@ -37,9 +37,11 @@ function hesaplaCompletion(form: {
 export function RehberProfilSayfasi({
   profile,
   isYeni,
+  adminMode = false,
 }: {
   profile: Profile;
   isYeni: boolean;
+  adminMode?: boolean;
 }) {
   const [completion, setCompletion] = useState(() =>
     hesaplaCompletion({
@@ -80,7 +82,12 @@ export function RehberProfilSayfasi({
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
         {isYeni ? "Profilini Tamamla" : "Profilimi Düzenle"}
       </h1>
-      <RehberProfilForm profile={profile} onFormChange={handleFormChange} />
+      {adminMode && (
+        <div className="mb-4 flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <span>⚡</span> Admin Modu — değişiklikler yalnızca &quot;Admin Kaydet&quot; ile kaydedilir
+        </div>
+      )}
+      <RehberProfilForm profile={profile} onFormChange={handleFormChange} adminMode={adminMode} />
     </>
   );
 }

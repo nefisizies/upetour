@@ -9,6 +9,7 @@ export default async function DashboardPage() {
 
   if (session.user.role === "REHBER") redirect("/dashboard/rehber");
   if (session.user.role === "ACENTE") redirect("/dashboard/acente");
+  if (session.user.role === "ADMIN") redirect("/dashboard/admin");
 
   redirect("/giris");
 }

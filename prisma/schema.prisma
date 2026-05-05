@@ -10,6 +10,15 @@ datasource db {
 enum Role {
   REHBER
   ACENTE
+  ADMIN
+}
+
+model SiteSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
 }
 
 enum LicenseStatus {

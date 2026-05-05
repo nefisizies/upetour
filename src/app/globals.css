@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
+/* ── Design Tokens (overridden by SiteSettings via <html style>) ── */
 :root {
   --primary: #0a7ea4;
-  --primary-dark: #065f7d;
+  --sidebar-bg: #ffffff;
+  --font-family: 'Inter', sans-serif;
+  --card-radius: 1rem;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --font-inter:   'Inter', sans-serif;
+  --font-nunito:  'Nunito', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+/* Apply dynamic font */
+body { font-family: var(--font-family); }
+
+/* Dynamic primary color — override Tailwind's hardcoded classes */
+.text-\[#0a7ea4\]      { color: var(--primary) !important; }
+.bg-\[#0a7ea4\]        { background-color: var(--primary) !important; }
+.border-\[#0a7ea4\]    { border-color: var(--primary) !important; }
+.ring-\[#0a7ea4\]      { --tw-ring-color: var(--primary) !important; }
+.hover\:bg-\[#065f7d\]:hover  { background-color: color-mix(in srgb, var(--primary) 80%, black) !important; }
+.focus\:ring-\[#0a7ea4\]:focus { --tw-ring-color: var(--primary) !important; }
+.bg-\[#0a7ea4\]\/10    { background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important; }
+.bg-\[#0a7ea4\]\/5     { background-color: color-mix(in srgb, var(--primary) 5%, transparent) !important; }
+.text-\[#0a7ea4\]\/80  { color: color-mix(in srgb, var(--primary) 80%, transparent) !important; }
+
+/* Dynamic card style */
+.bg-white.rounded-2xl, .bg-white.rounded-xl {
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--card-shadow) !important;
 }
 
 @keyframes wave-slow {

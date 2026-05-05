@@ -27,6 +27,7 @@ type FormState = {
 type Props = {
   profile: (RehberProfile & { tours: Tour[]; licenses: RehberLicense[]; languages: RehberDil[]; referanslar: ReferansWithAcente[] }) | null;
   onFormChange?: (form: FormState) => void;
+  adminMode?: boolean;
 };
 
 const UZMANLIKLAR = [
@@ -46,7 +47,7 @@ const STATUS_UI = {
   REJECTED: { icon: <XCircle className="w-3.5 h-3.5" />,      label: "Reddedildi",         color: "text-red-600 bg-red-50 border-red-200" },
 };
 
-export function RehberProfilForm({ profile, onFormChange }: Props) {
+export function RehberProfilForm({ profile, onFormChange, adminMode = false }: Props) {
   const router = useRouter();
 
   const [form, setForm] = useState<FormState>({
@@ -501,8 +502,12 @@ export function RehberProfilForm({ profile, onFormChange }: Props) {
       </div>
 
       <button type="submit" disabled={saving}
-        className="w-full bg-[#0a7ea4] text-white font-medium py-2.5 rounded-lg hover:bg-[#065f7d] transition-colors disabled:opacity-60">
-        {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+        className={`w-full font-medium py-2.5 rounded-lg transition-colors disabled:opacity-60 ${
+          adminMode
+            ? "bg-amber-500 hover:bg-amber-600 text-white"
+            : "bg-[#0a7ea4] hover:bg-[#065f7d] text-white"
+        }`}>
+        {saving ? "Kaydediliyor..." : adminMode ? "⚡ Admin Kaydet" : "Değişiklikleri Kaydet"}
       </button>
     </form>
   );

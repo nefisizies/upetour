@@ -14,7 +14,8 @@ export default async function RehberProfilPage({
   searchParams: { yeni?: string };
 }) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "REHBER") redirect("/dashboard");
+  const isAdmin = !!session?.user.adminId;
+  if (!session || (session.user.role !== "REHBER" && !isAdmin)) redirect("/dashboard");
 
   const [profile, acenteBaglantiSayisi] = await Promise.all([
     prisma.rehberProfile.findUnique({
@@ -46,8 +47,8 @@ export default async function RehberProfilPage({
     <div className="flex gap-8 items-start">
       {/* Sol: Form + Hesap Ayarları */}
       <div className="flex-1 min-w-0 space-y-6">
-        <RehberProfilSayfasi profile={profile} isYeni={isYeni} />
-        <HesapAyarlari mevcutEmail={session.user.email} />
+        <RehberProfilSayfasi profile={profile} isYeni={isYeni} adminMode={isAdmin} />
+        <HesapAyarlari mevcutEmail={session.user.email} adminMode={isAdmin} />
       </div>
 
       {/* Sağ: Kart önizleme */}

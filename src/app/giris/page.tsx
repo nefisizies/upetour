@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Compass, Building2 } from "lucide-react";
+import { Compass, Building2, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 export default function GirisPage() {
@@ -17,7 +17,8 @@ export default function GirisPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      if (session?.user.role === "ADMIN") router.replace("/dashboard/admin");
+      else router.replace("/dashboard");
     }
   }, [status, router]);
 
@@ -44,7 +45,11 @@ export default function GirisPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Role-based redirect after login
+    const { getSession } = await import("next-auth/react");
+    const sess = await getSession();
+    if (sess?.user.role === "ADMIN") router.push("/dashboard/admin");
+    else router.push("/dashboard");
     router.refresh();
   }
 
@@ -118,7 +123,7 @@ export default function GirisPage() {
 
         <div className="mt-6 pt-6 border-t border-gray-100">
           <p className="text-xs text-center text-gray-400 mb-3">Hesabın yok mu? Rolünü seç:</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-3">
             <Link href="/kayit?rol=REHBER"
               className="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 border-gray-200 hover:border-[#0a7ea4] hover:bg-[#0a7ea4]/5 transition-all group">
               <Compass className="w-5 h-5 text-gray-400 group-hover:text-[#0a7ea4]" />
@@ -130,6 +135,15 @@ export default function GirisPage() {
               <span className="text-xs font-medium text-gray-500 group-hover:text-[#0a7ea4]">Seyahat Acentesi</span>
             </Link>
           </div>
+          {/* Admin hint — subtle, not prominent */}
+          <button
+            type="button"
+            onClick={() => setForm({ email: "uras@turbag.app", password: "" })}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-gray-300 hover:text-gray-500 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Sistem Yöneticisi
+          </button>
         </div>
       </div>
     </div>

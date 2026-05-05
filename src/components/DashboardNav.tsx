@@ -27,7 +27,7 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
   const pathname = usePathname();
   const links = role === "REHBER" ? rehberLinks : acenteLinks;
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-white/40 sticky top-0 z-30">
+    <nav className="backdrop-blur-md border-b border-white/40 sticky top-0 z-30" style={{ backgroundColor: "color-mix(in srgb, var(--sidebar-bg) 80%, transparent)" }}>
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Logo size="sm" href={role === "REHBER" ? "/dashboard/rehber" : "/dashboard/acente"} />

@@ -424,11 +424,31 @@ function ThemeLayer({ theme }: { theme: Theme }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function WaveBackground() {
-  const [base, setBase] = useState(0);
+  // Read initial bg_theme from <html data-bg-theme> (set server-side from DB)
+  const [base, setBase] = useState(() => {
+    if (typeof document === "undefined") return 0;
+    const stored = document.documentElement.getAttribute("data-bg-theme");
+    const idx = THEMES.indexOf(stored as Theme);
+    return idx >= 0 ? idx : 0;
+  });
   const [incoming, setIncoming] = useState<number | null>(null);
   const [incomingVisible, setIncomingVisible] = useState(false);
-  const baseRef = useRef(0);
+  const baseRef = useRef(base);
   const busyRef = useRef(false);
+
+  // Sync when data-bg-theme attribute changes (admin theme customizer)
+  useEffect(() => {
+    const obs = new MutationObserver(() => {
+      const stored = document.documentElement.getAttribute("data-bg-theme");
+      const idx = THEMES.indexOf(stored as Theme);
+      if (idx >= 0 && idx !== baseRef.current && !busyRef.current) {
+        setBase(idx);
+        baseRef.current = idx;
+      }
+    });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-bg-theme"] });
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const tick = () => {
@@ -448,6 +468,7 @@ export function WaveBackground() {
     };
     const id = setInterval(tick, CYCLE_MS);
     return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

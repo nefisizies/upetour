@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { KeyRound, Mail, Eye, EyeOff, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 
-export function HesapAyarlari({ mevcutEmail }: { mevcutEmail: string }) {
+export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail: string; adminMode?: boolean }) {
   const [acik, setAcik] = useState(false);
   const [form, setForm] = useState({
     mevcutSifre: "",
@@ -176,9 +176,11 @@ export function HesapAyarlari({ mevcutEmail }: { mevcutEmail: string }) {
           <button
             onClick={kaydet}
             disabled={yukleniyor}
-            className="w-full bg-[#0a7ea4] text-white text-sm font-medium py-2.5 rounded-lg hover:bg-[#065f7d] disabled:opacity-60 transition-colors"
+            className={`w-full text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60 transition-colors ${
+              adminMode ? "bg-amber-500 hover:bg-amber-600" : "bg-[#0a7ea4] hover:bg-[#065f7d]"
+            }`}
           >
-            {yukleniyor ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+            {yukleniyor ? "Kaydediliyor..." : adminMode ? "⚡ Admin Kaydet" : "Değişiklikleri Kaydet"}
           </button>
         </div>
       )}
