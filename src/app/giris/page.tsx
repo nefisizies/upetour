@@ -17,8 +17,7 @@ export default function GirisPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      if (session?.user.role === "ADMIN") router.replace("/dashboard/admin");
-      else router.replace("/dashboard");
+      router.replace("/dashboard"); // /dashboard server-side redirect handles role (ADMIN → /dashboard/admin)
     }
   }, [status, router]);
 
@@ -42,15 +41,8 @@ export default function GirisPage() {
 
     if (result?.error) {
       setError("Email veya şifre hatalı.");
-      return;
     }
-
-    // Role-based redirect after login
-    const { getSession } = await import("next-auth/react");
-    const sess = await getSession();
-    if (sess?.user.role === "ADMIN") router.push("/dashboard/admin");
-    else router.push("/dashboard");
-    router.refresh();
+    // Navigation is handled by the useEffect above when status → "authenticated"
   }
 
   return (
