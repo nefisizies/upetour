@@ -96,6 +96,8 @@ jobs:
           TEST_URL: https://turbag-app-production.up.railway.app
           TEST_EMAIL: ci-test@turbag.app
           TEST_PASSWORD: CiTest2026
+          TEST_ADMIN_EMAIL: uras@turbag.app
+          TEST_ADMIN_PASSWORD: uras1903
 
       - name: Test raporunu kaydet (hata varsa)
         if: failure()
