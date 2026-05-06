@@ -27,6 +27,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Acente bulunamadı" }, { status: 404 });
   }
 
+  // Blok kontrolü
+  const blok = await prisma.acenteRehberBlok.findUnique({
+    where: { acenteId_rehberId: { acenteId, rehberId: profile.id } },
+  });
+  if (blok) {
+    if (blok.tur === "KALICI") {
+      return NextResponse.json({ error: "Bu acente başvurunuzu engellemiştir." }, { status: 403 });
+    }
+    if (blok.tur === "GECICI" && blok.banBitis && blok.banBitis > new Date()) {
+      return NextResponse.json({ error: `Bu acenteye ${blok.banBitis.toLocaleDateString("tr-TR")} tarihine kadar başvuru yapamazsınız.`, banBitis: blok.banBitis }, { status: 403 });
+    }
+    // Süresi dolmuş geçici blok — sil
+    await prisma.acenteRehberBlok.delete({ where: { id: blok.id } });
+  }
+
   const mevcut = await prisma.referans.findUnique({
     where: { rehberId_acenteId: { rehberId: profile.id, acenteId } },
   });

@@ -31,7 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const { id } = await params;
-  const { durum } = await req.json();
+  const { durum, blok } = await req.json();
   if (durum !== "ONAYLANDI" && durum !== "REDDEDILDI") {
     return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
   }
@@ -49,6 +49,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     data: { durum },
     include: { rehber: { select: { name: true } } },
   });
+
+  // Blok uygula (sadece red durumunda)
+  if (durum === "REDDEDILDI" && blok && blok !== "YOK") {
+    const banBitis = (() => {
+      const now = new Date();
+      if (blok === "GECICI_1AY") return new Date(now.setMonth(now.getMonth() + 1));
+      if (blok === "GECICI_3AY") return new Date(now.setMonth(now.getMonth() + 3));
+      if (blok === "GECICI_6AY") return new Date(now.setMonth(now.getMonth() + 6));
+      if (blok === "GECICI_1YIL") return new Date(now.setFullYear(now.getFullYear() + 1));
+      return null;
+    })();
+
+    await prisma.acenteRehberBlok.upsert({
+      where: { acenteId_rehberId: { acenteId: acenteProfile.id, rehberId: referans.rehberId } },
+      update: { tur: blok === "KALICI" ? "KALICI" : "GECICI", banBitis },
+      create: { acenteId: acenteProfile.id, rehberId: referans.rehberId, tur: blok === "KALICI" ? "KALICI" : "GECICI", banBitis },
+    });
+  }
 
   return NextResponse.json(updated);
 }

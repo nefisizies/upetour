@@ -33,6 +33,11 @@ enum ReferansDurum {
   REDDEDILDI
 }
 
+enum BlokTur {
+  GECICI
+  KALICI
+}
+
 enum EtkinlikTur {
   MANUEL
   REZERVASYON
@@ -71,6 +76,7 @@ model RehberProfile {
   tours            Tour[]
   licenses         RehberLicense[]
   referanslar      Referans[]
+  bloklar          AcenteRehberBlok[]
   takvimEtkinlikleri TakvimEtkinlik[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -113,6 +119,7 @@ model AcenteProfile {
   website     String?
   ilanlar     Ilan[]
   referanslar Referans[]
+  bloklar     AcenteRehberBlok[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -180,6 +187,20 @@ model Message {
   content    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+model AcenteRehberBlok {
+  id        String   @id @default(cuid())
+  acenteId  String
+  rehberId  String
+  tur       BlokTur
+  banBitis  DateTime?
+  createdAt DateTime @default(now())
+
+  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([acenteId, rehberId])
 }
 
 model Review {

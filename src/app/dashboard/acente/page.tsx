@@ -57,7 +57,7 @@ export default async function AcenteDashboard() {
           { label: "Aktif İlan", value: activeIlanCount, icon: FileText, href: "/dashboard/acente/ilanlar", badge: 0 },
           { label: "Okunmamış Mesaj", value: unreadCount, icon: MessageCircle, href: "/dashboard/acente/mesajlar", badge: 0 },
           { label: "Toplam İlan", value: profile?.ilanlar.length ?? 0, icon: Users, href: "/dashboard/acente/ilanlar", badge: 0 },
-          { label: "Referans İstekleri", value: bekleyenReferansCount, icon: Building2, href: "/dashboard/acente/profil", badge: bekleyenReferansCount },
+          { label: "Referans İstekleri", value: bekleyenReferansCount, icon: Building2, href: "/dashboard/acente/referanslar", badge: bekleyenReferansCount },
         ].map((card) => (
           <Link
             key={card.label}

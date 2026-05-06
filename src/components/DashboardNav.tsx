@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut, CalendarDays } from "lucide-react";
+import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut, CalendarDays, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
@@ -14,6 +14,7 @@ const rehberLinks = [
   { href: "/dashboard/rehber/takvim", label: "Takvim", icon: CalendarDays },
   { href: "/dashboard/rehber/mesajlar", label: "Mesajlar", icon: MessageCircle },
   { href: "/kesfet/ilanlar", label: "İlanlar", icon: Search },
+  { href: "/kesfet/acenteler", label: "Acenteler", icon: Building2 },
 ];
 
 const acenteLinks = [
@@ -22,6 +23,7 @@ const acenteLinks = [
   { href: "/dashboard/acente/ilanlar", label: "İlanlarım", icon: FileText },
   { href: "/dashboard/acente/mesajlar", label: "Mesajlar", icon: MessageCircle },
   { href: "/kesfet/rehberler", label: "Rehber Bul", icon: Search },
+  { href: "/dashboard/acente/referanslar", label: "Referanslar", icon: Building2 },
 ];
 
 export function DashboardNav({ role, email }: { role: string; email: string }) {
