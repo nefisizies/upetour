@@ -127,15 +127,25 @@ export default function GirisPage() {
               <span className="text-xs font-medium text-gray-500 group-hover:text-[#0a7ea4]">Seyahat Acentesi</span>
             </Link>
           </div>
-          {/* Admin hint — subtle, not prominent */}
-          <button
-            type="button"
-            onClick={() => setForm({ email: "uras@turbag.app", password: "" })}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-gray-300 hover:text-gray-500 transition-colors"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Sistem Yöneticisi
-          </button>
+          {/* Admin hints — subtle, not prominent */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setForm({ email: "uras@turbag.app", password: "" })}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-300 hover:text-gray-500 transition-colors"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              uras
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm({ email: "pogo@turbag.app", password: "" })}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs text-gray-300 hover:text-gray-500 transition-colors"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              pogo
+            </button>
+          </div>
         </div>
       </div>
     </div>
