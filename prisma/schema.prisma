@@ -45,6 +45,7 @@ model RehberProfile {
   updatedAt          DateTime         @updatedAt
   operatingCountries String[]         @default([])
   referanslar        Referans[]
+  bloklar            AcenteRehberBlok[]
   languages          RehberDil[]
   licenses           RehberLicense[]
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -91,6 +92,7 @@ model AcenteProfile {
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   ilanlar     Ilan[]
   referanslar Referans[]
+  bloklar     AcenteRehberBlok[]
 }
 
 model Referans {
@@ -184,9 +186,29 @@ enum ReferansDurum {
   BEKLIYOR
   ONAYLANDI
   REDDEDILDI
+  KALDIRILDI
 }
 
 enum EtkinlikTur {
   MANUEL
   REZERVASYON
+}
+
+enum BlokTur {
+  GECICI
+  KALICI
+}
+
+model AcenteRehberBlok {
+  id        String   @id @default(cuid())
+  acenteId  String
+  rehberId  String
+  tur       BlokTur
+  banBitis  DateTime?
+  createdAt DateTime @default(now())
+
+  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([acenteId, rehberId])
 }
