@@ -13,7 +13,8 @@ export function WelcomeBanner({
   completion?: number;
 }) {
   return (
-    <div className="bg-gradient-to-r from-[#0a7ea4] to-[#0891b2] rounded-2xl p-6 mb-6 text-white">
+    <div className="rounded-2xl p-6 mb-6 text-white"
+      style={{ background: "linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 70%, #0891b2))" }}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">

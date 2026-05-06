@@ -26,7 +26,8 @@ export function RehberKarti({
       <Link
         href={profile?.slug ? `/rehber/${profile.slug}` : "#"}
         target="_blank"
-        className="block h-16 bg-gradient-to-r from-[#0a7ea4] to-[#1a9bc4] relative group rounded-t-2xl overflow-hidden"
+        className="block h-16 relative group rounded-t-2xl overflow-hidden"
+        style={{ background: "linear-gradient(to right, var(--primary), color-mix(in srgb, var(--primary) 70%, white))" }}
       >
         <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
           <span className="flex items-center gap-1.5 text-white text-xs font-medium bg-black/30 px-3 py-1.5 rounded-full">
@@ -38,11 +39,11 @@ export function RehberKarti({
       {/* Fotoğraf + temel bilgi */}
       <div className="px-5 pb-5">
         <div className="-mt-10 mb-4 flex items-end justify-between relative z-10">
-          <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md bg-[#0a7ea4]/10 flex items-center justify-center overflow-hidden shrink-0">
+          <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
             {profile?.photoUrl ? (
               <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-3xl font-bold text-[#0a7ea4]">
+              <span className="text-3xl font-bold" style={{ color: "var(--primary)" }}>
                 {profile?.name ? profile.name.charAt(0).toUpperCase() : "?"}
               </span>
             )}
@@ -101,7 +102,7 @@ export function RehberKarti({
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {profile!.specialties.slice(0, 5).map((s) => (
-                  <span key={s} className="text-xs bg-[#0a7ea4]/10 text-[#0a7ea4] border border-[#0a7ea4]/20 px-2 py-0.5 rounded-full">
+                  <span key={s} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)", color: "var(--primary)", border: "1px solid color-mix(in srgb, var(--primary) 20%, transparent)" }}>
                     {s}
                   </span>
                 ))}
@@ -154,12 +155,12 @@ export function RehberKarti({
       {/* Alt çizgi — sadece acentelere görünen istatistik */}
       <div className="border-t border-gray-100 px-5 py-4 bg-gray-50 rounded-b-2xl">
         <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
-          <Zap className="w-3 h-3 text-[#0a7ea4]" />
+          <Zap className="w-3 h-3" style={{ color: "var(--primary)" }} />
           <span className="font-medium text-gray-500">Sadece acentelere görünür</span>
         </p>
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-500">Bu siteden bağlantı</span>
-          <span className="text-xl font-bold text-[#0a7ea4]">{acenteBaglantiSayisi}</span>
+          <span className="text-xl font-bold" style={{ color: "var(--primary)" }}>{acenteBaglantiSayisi}</span>
         </div>
         <p className="text-xs text-gray-400 mt-0.5">farklı acente iletişime geçti</p>
       </div>

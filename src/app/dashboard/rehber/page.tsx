@@ -107,11 +107,11 @@ export default async function RehberDashboard() {
       {/* Profil Özet Kartı */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#0a7ea4]/10 flex items-center justify-center shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-primary-dyn opacity-10 flex items-center justify-center shrink-0">
             {profile?.photoUrl ? (
               <img src={profile.photoUrl} alt="" className="w-16 h-16 rounded-2xl object-cover" />
             ) : (
-              <User className="w-8 h-8 text-[#0a7ea4]" />
+              <User className="w-8 h-8 text-primary-dyn" />
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -153,7 +153,7 @@ export default async function RehberDashboard() {
           </div>
           <Link
             href="/dashboard/rehber/profil"
-            className="shrink-0 text-sm text-[#0a7ea4] hover:underline font-medium hidden sm:block"
+            className="shrink-0 text-sm text-primary-dyn hover:underline font-medium hidden sm:block"
           >
             Düzenle
           </Link>
@@ -180,7 +180,7 @@ export default async function RehberDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Link href="/dashboard/rehber/mesajlar" className="bg-white border border-gray-100 rounded-xl p-5 hover:shadow-sm transition-shadow group">
           <div className="flex items-center justify-between mb-3">
-            <MessageCircle className="w-5 h-5 text-[#0a7ea4]" />
+            <MessageCircle className="w-5 h-5 text-primary-dyn" />
             {unreadCount > 0 && (
               <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
                 {unreadCount}
@@ -222,9 +222,9 @@ export default async function RehberDashboard() {
       <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-[#0a7ea4]" /> Yaklaşan Etkinlikler
+            <CalendarDays className="w-4 h-4 text-primary-dyn" /> Yaklaşan Etkinlikler
           </h2>
-          <Link href="/dashboard/rehber/takvim" className="text-xs text-[#0a7ea4] hover:underline">
+          <Link href="/dashboard/rehber/takvim" className="text-xs text-primary-dyn hover:underline">
             Takvime git
           </Link>
         </div>
@@ -235,7 +235,7 @@ export default async function RehberDashboard() {
               <div className="px-5 py-6 text-center">
                 <CalendarDays className="w-7 h-7 text-gray-200 mx-auto mb-2" />
                 <p className="text-xs text-gray-400">Yaklaşan etkinlik yok</p>
-                <Link href="/dashboard/rehber/takvim" className="text-xs text-[#0a7ea4] hover:underline mt-1 inline-block">
+                <Link href="/dashboard/rehber/takvim" className="text-xs text-primary-dyn hover:underline mt-1 inline-block">
                   Etkinlik ekle
                 </Link>
               </div>
@@ -252,11 +252,11 @@ export default async function RehberDashboard() {
                   return (
                     <Link key={e.id} href="/dashboard/rehber/takvim"
                       className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                      <div className={`w-9 h-9 rounded-lg flex flex-col items-center justify-center shrink-0 ${e.tur === "REZERVASYON" ? "bg-purple-50" : "bg-[#0a7ea4]/10"}`}>
-                        <span className={`text-xs font-bold leading-none ${e.tur === "REZERVASYON" ? "text-purple-600" : "text-[#0a7ea4]"}`}>
+                      <div className={`w-9 h-9 rounded-lg flex flex-col items-center justify-center shrink-0 ${e.tur === "REZERVASYON" ? "bg-purple-50" : "bg-primary-dyn opacity-10"}`}>
+                        <span className={`text-xs font-bold leading-none ${e.tur === "REZERVASYON" ? "text-purple-600" : "text-primary-dyn"}`}>
                           {String(bas.getDate()).padStart(2, "0")}
                         </span>
-                        <span className={`text-[9px] leading-none mt-0.5 ${e.tur === "REZERVASYON" ? "text-purple-400" : "text-[#0a7ea4]/70"}`}>
+                        <span className={`text-[9px] leading-none mt-0.5 ${e.tur === "REZERVASYON" ? "text-purple-400" : "text-primary-dyn/70"}`}>
                           {["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"][bas.getMonth()]}
                         </span>
                       </div>
@@ -297,9 +297,9 @@ export default async function RehberDashboard() {
         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <MessageCircle className="w-4 h-4 text-[#0a7ea4]" /> Mesajlar
+              <MessageCircle className="w-4 h-4 text-primary-dyn" /> Mesajlar
             </h2>
-            <Link href="/dashboard/rehber/mesajlar" className="text-xs text-[#0a7ea4] hover:underline">
+            <Link href="/dashboard/rehber/mesajlar" className="text-xs text-primary-dyn hover:underline">
               Tümünü gör
             </Link>
           </div>
@@ -313,15 +313,15 @@ export default async function RehberDashboard() {
             <div className="divide-y divide-gray-50">
               {sonMesajlar.map((msg) => (
                 <Link key={msg.id} href="/dashboard/rehber/mesajlar" className="flex items-start gap-3 px-6 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-[#0a7ea4]/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <User className="w-4 h-4 text-[#0a7ea4]" />
+                  <div className="w-8 h-8 rounded-full bg-primary-dyn opacity-10 flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="w-4 h-4 text-primary-dyn" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {msg.from.acenteProfile?.companyName ?? msg.from.email}
                       </p>
-                      {!msg.isRead && <span className="w-2 h-2 bg-[#0a7ea4] rounded-full shrink-0" />}
+                      {!msg.isRead && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--primary)" }} />}
                     </div>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{msg.content}</p>
                   </div>
@@ -335,9 +335,9 @@ export default async function RehberDashboard() {
         <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#0a7ea4]" /> Yeni İlanlar
+              <FileText className="w-4 h-4 text-primary-dyn" /> Yeni İlanlar
             </h2>
-            <Link href="/kesfet/ilanlar" className="text-xs text-[#0a7ea4] hover:underline">
+            <Link href="/kesfet/ilanlar" className="text-xs text-primary-dyn hover:underline">
               Tümünü gör
             </Link>
           </div>
@@ -368,7 +368,7 @@ export default async function RehberDashboard() {
                       <p className="text-xs text-green-600 font-medium mt-0.5">{ilan.budget}</p>
                     )}
                   </div>
-                  <Link href="/kesfet/ilanlar" className="shrink-0 text-xs text-[#0a7ea4] hover:underline font-medium">
+                  <Link href="/kesfet/ilanlar" className="shrink-0 text-xs text-primary-dyn hover:underline font-medium">
                     Gör
                   </Link>
                 </div>
@@ -382,7 +382,7 @@ export default async function RehberDashboard() {
       {/* Hızlı Aksiyonlar */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { href: "/dashboard/rehber/profil", icon: User, bg: "bg-[#0a7ea4]/10", iconColor: "text-[#0a7ea4]", title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
+          { href: "/dashboard/rehber/profil", icon: User, bg: "bg-primary-dyn opacity-10", iconColor: "text-primary-dyn", title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
           { href: "/kesfet/ilanlar", icon: FileText, bg: "bg-purple-50", iconColor: "text-purple-500", title: "İlanlara Bak", desc: "Yeni fırsatları keşfet" },
           { href: "/kesfet/rehberler", icon: Globe, bg: "bg-green-50", iconColor: "text-green-500", title: "Rehberleri Gör", desc: "Diğer rehberler" },
         ].map((item) => (
@@ -395,7 +395,7 @@ export default async function RehberDashboard() {
               <p className="font-medium text-gray-900 text-sm">{item.title}</p>
               <p className="text-xs text-gray-500">{item.desc}</p>
             </div>
-            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#0a7ea4] transition-colors shrink-0" />
+            <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-primary-dyn transition-colors shrink-0" />
           </Link>
         ))}
       </div>

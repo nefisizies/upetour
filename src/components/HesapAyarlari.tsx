@@ -176,9 +176,8 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
           <button
             onClick={kaydet}
             disabled={yukleniyor}
-            className={`w-full text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60 transition-colors ${
-              adminMode ? "bg-amber-500 hover:bg-amber-600" : "bg-[#0a7ea4] hover:bg-[#065f7d]"
-            }`}
+            className="w-full text-white text-sm font-medium py-2.5 rounded-lg disabled:opacity-60 transition-all hover:brightness-110"
+            style={{ background: adminMode ? "#f59e0b" : "var(--primary)" }}
           >
             {yukleniyor ? "Kaydediliyor..." : adminMode ? "⚡ Admin Kaydet" : "Değişiklikleri Kaydet"}
           </button>

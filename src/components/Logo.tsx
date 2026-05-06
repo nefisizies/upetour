@@ -30,7 +30,7 @@ export function LogoIcon({ size = 36, className }: { size?: number; className?: 
       className={className}
     >
       {/* Arka plan daire */}
-      <circle cx="20" cy="20" r="20" fill="#0a7ea4" />
+      <circle cx="20" cy="20" r="20" style={{ fill: "var(--primary)" }} />
 
       {/* Sepet gövdesi */}
       <path
@@ -40,10 +40,10 @@ export function LogoIcon({ size = 36, className }: { size?: number; className?: 
       />
 
       {/* Sepet ızgara çizgileri */}
-      <line x1="16" y1="22" x2="15" y2="30" stroke="#0a7ea4" strokeWidth="1.2" />
-      <line x1="20" y1="22" x2="20" y2="30" stroke="#0a7ea4" strokeWidth="1.2" />
-      <line x1="24" y1="22" x2="25" y2="30" stroke="#0a7ea4" strokeWidth="1.2" />
-      <line x1="10" y1="25.5" x2="30" y2="25.5" stroke="#0a7ea4" strokeWidth="1.2" />
+      <line x1="16" y1="22" x2="15" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
+      <line x1="20" y1="22" x2="20" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
+      <line x1="24" y1="22" x2="25" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
+      <line x1="10" y1="25.5" x2="30" y2="25.5" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
 
       {/* Sepet sapı */}
       <path
@@ -56,7 +56,7 @@ export function LogoIcon({ size = 36, className }: { size?: number; className?: 
 
       {/* Pusula iğnesi / konum pin */}
       <circle cx="20" cy="13" r="3.5" fill="#FFD93D" />
-      <circle cx="20" cy="13" r="1.5" fill="#0a7ea4" />
+      <circle cx="20" cy="13" r="1.5" style={{ fill: "var(--primary)" }} />
     </svg>
   );
 }
