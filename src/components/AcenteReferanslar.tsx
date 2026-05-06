@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2, RotateCcw, Minus } from "lucide-react";
 import Link from "next/link";
 import type { Referans, RehberProfile, AcenteRehberBlok } from "@prisma/client";
 
@@ -82,8 +82,33 @@ export function AcenteReferanslar({
     setBloklar((prev) => prev.filter((b) => b.id !== blokId));
   }
 
+  async function kaldir(id: string) {
+    setIslemYapiliyor(id);
+    const res = await fetch(`/api/referans/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ durum: "KALDIRILDI" }),
+    });
+    setIslemYapiliyor(null);
+    if (!res.ok) return;
+    setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "KALDIRILDI" } : r));
+  }
+
+  async function geriAl(id: string) {
+    setIslemYapiliyor(id);
+    const res = await fetch(`/api/referans/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ durum: "ONAYLANDI" }),
+    });
+    setIslemYapiliyor(null);
+    if (!res.ok) return;
+    setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "ONAYLANDI" } : r));
+  }
+
   const bekleyenler = referanslar.filter((r) => r.durum === "BEKLIYOR");
-  const gecmisler = referanslar.filter((r) => r.durum !== "BEKLIYOR");
+  const gecmisler = referanslar.filter((r) => r.durum !== "BEKLIYOR" && r.durum !== "KALDIRILDI");
+  const kaldirilanlar = referanslar.filter((r) => r.durum === "KALDIRILDI");
 
   return (
     <>
@@ -210,9 +235,20 @@ export function AcenteReferanslar({
                           )}
                         </div>
                       </div>
-                      {r.durum === "ONAYLANDI"
-                        ? <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Onaylandı</span>
-                        : <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><XCircle className="w-3 h-3" /> Reddedildi</span>}
+                      {r.durum === "ONAYLANDI" ? (
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Onaylandı</span>
+                          <button
+                            onClick={() => kaldir(r.id)}
+                            disabled={islemYapiliyor === r.id}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
+                          >
+                            <Minus className="w-3 h-3" /> Kaldır
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><XCircle className="w-3 h-3" /> Reddedildi</span>
+                      )}
                     </div>
                   ))}
                 </>
@@ -220,6 +256,48 @@ export function AcenteReferanslar({
             </div>
           )}
         </div>
+
+        {/* Kaldırılanlar */}
+        {kaldirilanlar.length > 0 && (
+          <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <Minus className="w-4 h-4 text-gray-400" />
+              <h2 className="font-semibold text-gray-900">Kaldırılan Referanslar</h2>
+              <span className="text-xs text-gray-400">({kaldirilanlar.length})</span>
+            </div>
+            <div className="space-y-3">
+              {kaldirilanlar.map((r) => (
+                <div key={r.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                      {r.rehber.photoUrl
+                        ? <img src={r.rehber.photoUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+                        : <User className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div>
+                      <Link href={`/rehber/${r.rehber.slug}`} target="_blank"
+                        className="text-sm font-medium text-gray-900 hover:underline">
+                        {r.rehber.name}
+                      </Link>
+                      {r.rehber.city && (
+                        <p className="text-xs text-gray-400 flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" /> {r.rehber.city}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => geriAl(r.id)}
+                    disabled={islemYapiliyor === r.id}
+                    className="flex items-center gap-1 text-xs text-[#0a7ea4] hover:bg-[#0a7ea4]/10 bg-white border border-[#0a7ea4]/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Geri Al
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Engellenenler */}
         {bloklar.length > 0 && (

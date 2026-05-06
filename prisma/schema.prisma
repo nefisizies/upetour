@@ -31,23 +31,24 @@ model User {
 }
 
 model RehberProfile {
-  id                 String           @id @default(cuid())
-  userId             String           @unique
-  slug               String           @unique
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  slug               String             @unique
   name               String
   bio                String?
   city               String?
   photoUrl           String?
   specialties        String[]
-  experienceYears    Int              @default(0)
-  isAvailable        Boolean          @default(true)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  operatingCountries String[]         @default([])
+  experienceYears    Int                @default(0)
+  isAvailable        Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  operatingCountries String[]           @default([])
+  bloklar            AcenteRehberBlok[]
   referanslar        Referans[]
   languages          RehberDil[]
   licenses           RehberLicense[]
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   takvimEtkinlikleri TakvimEtkinlik[]
   tours              Tour[]
 }
@@ -78,19 +79,33 @@ model RehberLicense {
 }
 
 model AcenteProfile {
-  id          String     @id @default(cuid())
-  userId      String     @unique
-  slug        String     @unique
+  id          String             @id @default(cuid())
+  userId      String             @unique
+  slug        String             @unique
   companyName String
   description String?
   city        String?
   logoUrl     String?
   website     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloklar     AcenteRehberBlok[]
   ilanlar     Ilan[]
   referanslar Referans[]
+}
+
+model AcenteRehberBlok {
+  id        String        @id @default(cuid())
+  acenteId  String
+  rehberId  String
+  tur       BlokTur
+  banBitis  DateTime?
+  createdAt DateTime      @default(now())
+  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([acenteId, rehberId])
 }
 
 model Referans {
@@ -184,9 +199,15 @@ enum ReferansDurum {
   BEKLIYOR
   ONAYLANDI
   REDDEDILDI
+  KALDIRILDI
 }
 
 enum EtkinlikTur {
   MANUEL
   REZERVASYON
+}
+
+enum BlokTur {
+  GECICI
+  KALICI
 }
