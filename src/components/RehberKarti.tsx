@@ -20,7 +20,7 @@ export function RehberKarti({
   const verifiedLicenses = profile?.licenses.filter((l) => l.status === "VERIFIED") ?? [];
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
+    <div className="backdrop-blur-sm rounded-2xl" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
 
       {/* Üst bant — profile git linki */}
       <Link
@@ -39,7 +39,7 @@ export function RehberKarti({
       {/* Fotoğraf + temel bilgi */}
       <div className="px-5 pb-5">
         <div className="-mt-10 mb-4 flex items-end justify-between relative z-10">
-          <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)" }}>
+          <div className="w-20 h-20 rounded-2xl border-4 shadow-md flex items-center justify-center overflow-hidden shrink-0" style={{ backgroundColor: "color-mix(in srgb, var(--primary) 10%, transparent)", borderColor: "rgba(255,255,255,0.15)" }}>
             {profile?.photoUrl ? (
               <img src={profile.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -49,28 +49,28 @@ export function RehberKarti({
             )}
           </div>
           {profile?.isAvailable ? (
-            <span className="inline-flex items-center gap-1 text-xs bg-green-50 text-green-700 border border-green-200 px-2 py-1 rounded-full font-medium">
+            <span className="inline-flex items-center gap-1 text-xs bg-green-500/15 text-green-400 border border-green-500/20 px-2 py-1 rounded-full font-medium">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Müsait
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded-full">
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full" /> Müsait Değil
+            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full text-white/40" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.3)" }} /> Müsait Değil
             </span>
           )}
         </div>
 
-        <h3 className="font-bold text-gray-900 text-lg leading-tight">
-          {profile?.name || <span className="text-gray-300">Ad Soyad</span>}
+        <h3 className="font-bold text-white text-lg leading-tight">
+          {profile?.name || <span className="text-white/20">Ad Soyad</span>}
         </h3>
 
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
           {profile?.city && (
-            <span className="text-sm text-gray-500 flex items-center gap-1">
+            <span className="text-sm text-white/60 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 shrink-0" /> {profile.city}
             </span>
           )}
           {(profile?.experienceYears ?? 0) > 0 && (
-            <span className="text-sm text-gray-500 flex items-center gap-1">
+            <span className="text-sm text-white/60 flex items-center gap-1">
               <Briefcase className="w-3.5 h-3.5 shrink-0" /> {profile!.experienceYears} yıl
             </span>
           )}
@@ -81,12 +81,12 @@ export function RehberKarti({
           {/* Diller */}
           {(profile?.languages?.length ?? 0) > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                 <Globe className="w-3 h-3" /> Diller
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {profile!.languages.map((l) => (
-                  <span key={l.id} className="text-xs bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">
+                  <span key={l.id} className="text-xs bg-blue-500/15 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full">
                     {l.dil}{l.seviye ? ` · ${l.seviye}` : ""}
                   </span>
                 ))}
@@ -97,7 +97,7 @@ export function RehberKarti({
           {/* Uzmanlıklar */}
           {(profile?.specialties?.length ?? 0) > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                 <Star className="w-3 h-3" /> Uzmanlıklar
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -107,7 +107,7 @@ export function RehberKarti({
                   </span>
                 ))}
                 {profile!.specialties.length > 5 && (
-                  <span className="text-xs text-gray-400">+{profile!.specialties.length - 5} daha</span>
+                  <span className="text-xs text-white/40">+{profile!.specialties.length - 5} daha</span>
                 )}
               </div>
             </div>
@@ -116,12 +116,12 @@ export function RehberKarti({
           {/* Onaylı Lisanslar */}
           {verifiedLicenses.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" /> Doğrulanmış Lisanslar
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {verifiedLicenses.map((l) => (
-                  <span key={l.id} className="text-xs bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span key={l.id} className="text-xs bg-green-500/15 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <CheckCircle className="w-2.5 h-2.5" /> {l.country}
                   </span>
                 ))}
@@ -132,19 +132,19 @@ export function RehberKarti({
           {/* Referans Acenteler */}
           {onaylananReferanslar.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+              <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                 <Building2 className="w-3 h-3" /> Çalıştığı Acenteler
               </p>
               <div className="space-y-1.5">
                 {onaylananReferanslar.slice(0, 4).map((r) => (
                   <div key={r.id} className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{r.acente.companyName}</span>
-                    {r.acente.city && <span className="text-xs text-gray-400">{r.acente.city}</span>}
+                    <CheckCircle className="w-3 h-3 text-green-400 shrink-0" />
+                    <span className="text-sm text-white/70 font-medium">{r.acente.companyName}</span>
+                    {r.acente.city && <span className="text-xs text-white/40">{r.acente.city}</span>}
                   </div>
                 ))}
                 {onaylananReferanslar.length > 4 && (
-                  <p className="text-xs text-gray-400 pl-5">+{onaylananReferanslar.length - 4} acente daha</p>
+                  <p className="text-xs text-white/40 pl-5">+{onaylananReferanslar.length - 4} acente daha</p>
                 )}
               </div>
             </div>
@@ -153,16 +153,16 @@ export function RehberKarti({
       </div>
 
       {/* Alt çizgi — sadece acentelere görünen istatistik */}
-      <div className="border-t border-gray-100 px-5 py-4 bg-gray-50 rounded-b-2xl">
-        <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+      <div className="border-t px-5 py-4 rounded-b-2xl" style={{ background: "rgba(0,0,0,0.3)", borderColor: "rgba(255,255,255,0.06)" }}>
+        <p className="text-xs text-white/40 mb-2 flex items-center gap-1">
           <Zap className="w-3 h-3" style={{ color: "var(--primary)" }} />
-          <span className="font-medium text-gray-500">Sadece acentelere görünür</span>
+          <span className="font-medium text-white/50">Sadece acentelere görünür</span>
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-500">Bu siteden bağlantı</span>
+          <span className="text-sm text-white/50">Bu siteden bağlantı</span>
           <span className="text-xl font-bold" style={{ color: "var(--primary)" }}>{acenteBaglantiSayisi}</span>
         </div>
-        <p className="text-xs text-gray-400 mt-0.5">farklı acente iletişime geçti</p>
+        <p className="text-xs text-white/40 mt-0.5">farklı acente iletişime geçti</p>
       </div>
     </div>
   );

@@ -53,36 +53,36 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
   }
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
       <button
         onClick={() => setAcik(!acik)}
-        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-            <KeyRound className="w-4 h-4 text-gray-500" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <KeyRound className="w-4 h-4 text-white/50" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-gray-900">Hesap Güvenliği</p>
-            <p className="text-xs text-gray-400">E-posta ve şifre değiştir</p>
+            <p className="text-sm font-semibold text-white">Hesap Güvenliği</p>
+            <p className="text-xs text-white/40">E-posta ve şifre değiştir</p>
           </div>
         </div>
-        {acik ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+        {acik ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
       </button>
 
       {acik && (
-        <div className="px-6 pb-6 border-t border-gray-50 pt-4 space-y-4">
+        <div className="px-6 pb-6 pt-4 space-y-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
 
           {/* Mevcut e-posta göster */}
-          <div className="bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gray-400 shrink-0" />
-            <span className="text-sm text-gray-500">Mevcut e-posta:</span>
-            <span className="text-sm font-medium text-gray-700">{mevcutEmail}</span>
+          <div className="rounded-lg px-4 py-3 flex items-center gap-2" style={{ background: "rgba(255,255,255,0.06)" }}>
+            <Mail className="w-4 h-4 text-white/40 shrink-0" />
+            <span className="text-sm text-white/50">Mevcut e-posta:</span>
+            <span className="text-sm font-medium text-white/70">{mevcutEmail}</span>
           </div>
 
           {/* Mevcut şifre */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">
+            <label className="block text-sm font-medium text-white/60 mb-1.5">
               Mevcut Şifre <span className="text-red-400">*</span>
             </label>
             <div className="relative">
@@ -91,48 +91,51 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
                 value={form.mevcutSifre}
                 onChange={(e) => setForm({ ...form, mevcutSifre: e.target.value })}
                 placeholder="Mevcut şifreni gir"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all pr-10"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
               />
               <button
                 type="button"
                 onClick={() => setGoster({ ...goster, mevcut: !goster.mevcut })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
               >
                 {goster.mevcut ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-4">
-            <p className="text-xs text-gray-400 mb-3">Değiştirmek istediklerini doldur (ikisini de değiştirebilirsin)</p>
+          <div className="pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <p className="text-xs text-white/40 mb-3">Değiştirmek istediklerini doldur (ikisini de değiştirebilirsin)</p>
 
             {/* Yeni e-posta */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Yeni E-posta</label>
+              <label className="block text-sm font-medium text-white/60 mb-1.5">Yeni E-posta</label>
               <input
                 type="email"
                 value={form.yeniEmail}
                 onChange={(e) => setForm({ ...form, yeniEmail: e.target.value })}
                 placeholder={mevcutEmail}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
               />
             </div>
 
             {/* Yeni şifre */}
             <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1.5">Yeni Şifre</label>
+              <label className="block text-sm font-medium text-white/60 mb-1.5">Yeni Şifre</label>
               <div className="relative">
                 <input
                   type={goster.yeni ? "text" : "password"}
                   value={form.yeniSifre}
                   onChange={(e) => setForm({ ...form, yeniSifre: e.target.value })}
                   placeholder="En az 6 karakter"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]"
+                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all pr-10"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                 />
                 <button
                   type="button"
                   onClick={() => setGoster({ ...goster, yeni: !goster.yeni })}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
                 >
                   {goster.yeni ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -142,20 +145,22 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
             {/* Yeni şifre tekrar */}
             {form.yeniSifre && (
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Yeni Şifre Tekrar</label>
+                <label className="block text-sm font-medium text-white/60 mb-1.5">Yeni Şifre Tekrar</label>
                 <input
                   type={goster.yeni ? "text" : "password"}
                   value={form.yeniSifreTekrar}
                   onChange={(e) => setForm({ ...form, yeniSifreTekrar: e.target.value })}
                   placeholder="Şifreyi tekrar gir"
-                  className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4] ${
-                    form.yeniSifreTekrar && form.yeniSifre !== form.yeniSifreTekrar
-                      ? "border-red-300"
-                      : "border-gray-200"
-                  }`}
+                  className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: form.yeniSifreTekrar && form.yeniSifre !== form.yeniSifreTekrar
+                      ? "1px solid rgba(239,68,68,0.5)"
+                      : "1px solid rgba(255,255,255,0.1)",
+                  }}
                 />
                 {form.yeniSifreTekrar && form.yeniSifre !== form.yeniSifreTekrar && (
-                  <p className="text-xs text-red-500 mt-1">Şifreler eşleşmiyor</p>
+                  <p className="text-xs text-red-400 mt-1">Şifreler eşleşmiyor</p>
                 )}
               </div>
             )}
@@ -164,7 +169,9 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
           {/* Sonuç mesajı */}
           {sonuc && (
             <div className={`flex items-start gap-2 rounded-lg px-4 py-3 text-sm ${
-              sonuc.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+              sonuc.ok
+                ? "bg-green-500/15 text-green-400 border border-green-500/25"
+                : "bg-red-500/10 text-red-400 border border-red-500/25"
             }`}>
               {sonuc.ok
                 ? <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />

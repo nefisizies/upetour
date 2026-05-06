@@ -8,8 +8,8 @@ export default async function TemaPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Tema & Görünüm</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-white">Tema & Görünüm</h1>
+        <p className="text-sm text-white/50 mt-1">
           Platform genelinde görünümü özelleştir — değişiklikler anında önizlenir
         </p>
       </div>
