@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import type { Referans, RehberProfile, AcenteRehberBlok } from "@prisma/client";
 
@@ -34,6 +34,7 @@ export function AcenteReferanslar({
   const [referanslar, setReferanslar] = useState(initial);
   const [bloklar, setBloklar] = useState(initialBloklar);
   const [islemYapiliyor, setIslemYapiliyor] = useState<string | null>(null);
+  const [cikarOnay, setCikarOnay] = useState<{ id: string; rehberAdi: string } | null>(null);
 
   // Red modal state
   const [redModal, setRedModal] = useState<{ id: string; rehberAdi: string } | null>(null);
@@ -72,6 +73,27 @@ export function AcenteReferanslar({
     setBlokSecim("YOK");
   }
 
+  async function referansCikar(id: string) {
+    setIslemYapiliyor(id);
+    const res = await fetch(`/api/referans/${id}`, { method: "DELETE" });
+    setIslemYapiliyor(null);
+    setCikarOnay(null);
+    if (!res.ok) return;
+    setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "KALDIRILDI" } : r));
+  }
+
+  async function geriEkle(id: string) {
+    setIslemYapiliyor(id);
+    const res = await fetch(`/api/referans/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ durum: "ONAYLANDI" }),
+    });
+    setIslemYapiliyor(null);
+    if (!res.ok) return;
+    setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "ONAYLANDI" } : r));
+  }
+
   async function blokKaldir(blokId: string) {
     const res = await fetch("/api/referans/blok", {
       method: "DELETE",
@@ -83,10 +105,38 @@ export function AcenteReferanslar({
   }
 
   const bekleyenler = referanslar.filter((r) => r.durum === "BEKLIYOR");
-  const gecmisler = referanslar.filter((r) => r.durum !== "BEKLIYOR");
+  const gecmisler = referanslar.filter((r) => r.durum === "ONAYLANDI" || r.durum === "REDDEDILDI");
+  const kaldirildi = referanslar.filter((r) => r.durum === "KALDIRILDI");
 
   return (
     <>
+      {/* Çıkar Onay Modal */}
+      {cikarOnay && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="font-semibold text-gray-900 mb-2">Onayı geri çek?</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              <span className="font-medium">{cikarOnay.rehberAdi}</span> ile olan onaylı referans silinecek. Rehber tekrar başvurabilir.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCikarOnay(null)}
+                className="flex-1 text-sm border border-gray-200 text-gray-600 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Vazgeç
+              </button>
+              <button
+                onClick={() => referansCikar(cikarOnay.id)}
+                disabled={islemYapiliyor === cikarOnay.id}
+                className="flex-1 text-sm bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-60"
+              >
+                {islemYapiliyor === cikarOnay.id ? "Siliniyor..." : "Evet, Çıkar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Red Modal */}
       {redModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
@@ -210,9 +260,25 @@ export function AcenteReferanslar({
                           )}
                         </div>
                       </div>
-                      {r.durum === "ONAYLANDI"
-                        ? <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Onaylandı</span>
-                        : <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><XCircle className="w-3 h-3" /> Reddedildi</span>}
+                      <div className="flex items-center gap-2">
+                      {r.durum === "ONAYLANDI" ? (
+                        <>
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                            <CheckCircle className="w-3 h-3" /> Onaylandı
+                          </span>
+                          <button
+                            onClick={() => setCikarOnay({ id: r.id, rehberAdi: r.rehber.name })}
+                            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 border border-gray-200 hover:border-red-200 px-2 py-0.5 rounded-full transition-colors"
+                          >
+                            <RotateCcw className="w-3 h-3" /> Çıkar
+                          </button>
+                        </>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                          <XCircle className="w-3 h-3" /> Reddedildi
+                        </span>
+                      )}
+                    </div>
                     </div>
                   ))}
                 </>
@@ -220,6 +286,49 @@ export function AcenteReferanslar({
             </div>
           )}
         </div>
+
+        {/* Kaldırılanlar */}
+        {kaldirildi.length > 0 && (
+          <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-gray-400" />
+              <h2 className="font-semibold text-gray-900">Kaldırılan Onaylar</h2>
+              <span className="text-xs text-gray-400">({kaldirildi.length})</span>
+            </div>
+            <div className="space-y-3">
+              {kaldirildi.map((r) => (
+                <div key={r.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                      {r.rehber.photoUrl
+                        ? <img src={r.rehber.photoUrl} alt="" className="w-9 h-9 rounded-full object-cover" />
+                        : <User className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div>
+                      <Link href={`/rehber/${r.rehber.slug}`} target="_blank"
+                        className="text-sm font-medium text-gray-900 hover:underline">
+                        {r.rehber.name}
+                      </Link>
+                      {r.rehber.city && (
+                        <p className="text-xs text-gray-400 flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" /> {r.rehber.city}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => geriEkle(r.id)}
+                    disabled={islemYapiliyor === r.id}
+                    className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    {islemYapiliyor === r.id ? "Ekleniyor..." : "Geri Ekle"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Engellenenler */}
         {bloklar.length > 0 && (
