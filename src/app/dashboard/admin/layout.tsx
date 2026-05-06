@@ -22,14 +22,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen flex">
       <WaveBackground />
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col bg-white/85 backdrop-blur-md border-r border-white/40 z-20">
-        <div className="p-4 border-b border-gray-100">
-          <Logo size="sm" href="/dashboard/admin" />
+      <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col backdrop-blur-md border-r z-20" style={{ background: "rgba(0,0,0,0.7)", borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="p-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+          <Logo size="sm" href="/dashboard/admin" darkBg />
           <div className="mt-2 flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
               ADMIN
             </span>
-            <span className="text-xs text-gray-400 truncate">{session.user.email}</span>
+            <span className="text-xs text-white/40 truncate">{session.user.email}</span>
           </div>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -37,18 +37,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
             >
               <Icon className="w-4 h-4 shrink-0" />
               {label}
             </Link>
           ))}
         </nav>
-        <div className="p-3 border-t border-gray-100">
+        <div className="p-3 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
           <form action="/api/auth/signout" method="POST">
             <button
               type="submit"
-              className="w-full flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+              className="w-full flex items-center gap-2 text-sm text-white/50 hover:text-red-400 px-3 py-2 rounded-lg hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="w-4 h-4" />
               Çıkış Yap

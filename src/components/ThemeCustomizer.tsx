@@ -28,9 +28,9 @@ const CARD_STYLES = [
 
 function Section({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white/85 backdrop-blur-sm rounded-2xl border border-white/40 shadow-sm p-5 space-y-4">
-      <div className="flex items-center gap-2 text-gray-800 font-semibold">
-        <Icon className="w-4 h-4 text-gray-500" />
+    <div className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 shadow-sm p-5 space-y-4">
+      <div className="flex items-center gap-2 text-white font-semibold">
+        <Icon className="w-4 h-4 text-white/50" />
         {title}
       </div>
       {children}
@@ -83,9 +83,14 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
               onClick={() => set("bg_theme", t.key)}
               className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-sm font-medium ${
                 settings.bg_theme === t.key
-                  ? "border-[#0a7ea4] bg-[#0a7ea4]/5 text-[#0a7ea4]"
-                  : "border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                  ? ""
+                  : "border-white/15 text-white/60 hover:border-white/30 hover:bg-white/5"
               }`}
+              style={settings.bg_theme === t.key ? {
+                borderColor: "var(--primary)",
+                backgroundColor: "color-mix(in srgb, var(--primary) 5%, transparent)",
+                color: "var(--primary)",
+              } : undefined}
             >
               <span className="text-xl">{t.emoji}</span>
               <span className="text-xs">{t.label}</span>
@@ -99,14 +104,14 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
         <div className="space-y-4">
           {/* Primary color */}
           <div>
-            <label className="text-xs font-medium text-gray-600 mb-2 block">Ana Renk</label>
+            <label className="text-xs font-medium text-white/60 mb-2 block">Ana Renk</label>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => { setShowPrimaryPicker(v => !v); setShowSidebarPicker(false); }}
-                className="w-10 h-10 rounded-xl border-2 border-gray-200 shadow-sm"
-                style={{ backgroundColor: settings.primary_color }}
+                className="w-10 h-10 rounded-xl border-2 shadow-sm"
+                style={{ backgroundColor: settings.primary_color, borderColor: "rgba(255,255,255,0.2)" }}
               />
-              <span className="text-sm font-mono text-gray-600">{settings.primary_color.toUpperCase()}</span>
+              <span className="text-sm font-mono text-white/60">{settings.primary_color.toUpperCase()}</span>
             </div>
             {showPrimaryPicker && (
               <div className="mt-3">
@@ -116,14 +121,14 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
           </div>
           {/* Sidebar color */}
           <div>
-            <label className="text-xs font-medium text-gray-600 mb-2 block">Sidebar Arka Planı</label>
+            <label className="text-xs font-medium text-white/60 mb-2 block">Sidebar Arka Planı</label>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => { setShowSidebarPicker(v => !v); setShowPrimaryPicker(false); }}
-                className="w-10 h-10 rounded-xl border-2 border-gray-200 shadow-sm"
-                style={{ backgroundColor: settings.sidebar_color }}
+                className="w-10 h-10 rounded-xl border-2 shadow-sm"
+                style={{ backgroundColor: settings.sidebar_color, borderColor: "rgba(255,255,255,0.2)" }}
               />
-              <span className="text-sm font-mono text-gray-600">{settings.sidebar_color.toUpperCase()}</span>
+              <span className="text-sm font-mono text-white/60">{settings.sidebar_color.toUpperCase()}</span>
             </div>
             {showSidebarPicker && (
               <div className="mt-3">
@@ -142,16 +147,18 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
               key={f.key}
               onClick={() => set("font_family", f.key)}
               className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
-                settings.font_family === f.key
-                  ? "border-[#0a7ea4] bg-[#0a7ea4]/5"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                settings.font_family === f.key ? "" : "border-white/15 hover:border-white/30 hover:bg-white/5"
               }`}
+              style={settings.font_family === f.key ? {
+                borderColor: "var(--primary)",
+                backgroundColor: "color-mix(in srgb, var(--primary) 5%, transparent)",
+              } : undefined}
             >
               <div>
-                <div className="font-medium text-sm text-gray-800">{f.label}</div>
-                <div className="text-xs text-gray-400">{f.sample}</div>
+                <div className="font-medium text-sm text-white">{f.label}</div>
+                <div className="text-xs text-white/40">{f.sample}</div>
               </div>
-              {settings.font_family === f.key && <Check className="w-4 h-4 text-[#0a7ea4]" />}
+              {settings.font_family === f.key && <Check className="w-4 h-4" style={{ color: "var(--primary)" }} />}
             </button>
           ))}
         </div>
@@ -165,16 +172,18 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
               key={s.key}
               onClick={() => set("card_style", s.key)}
               className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
-                settings.card_style === s.key
-                  ? "border-[#0a7ea4] bg-[#0a7ea4]/5"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                settings.card_style === s.key ? "" : "border-white/15 hover:border-white/30 hover:bg-white/5"
               }`}
+              style={settings.card_style === s.key ? {
+                borderColor: "var(--primary)",
+                backgroundColor: "color-mix(in srgb, var(--primary) 5%, transparent)",
+              } : undefined}
             >
               <div>
-                <div className="font-medium text-sm text-gray-800">{s.label}</div>
-                <div className="text-xs text-gray-400">{s.desc}</div>
+                <div className="font-medium text-sm text-white">{s.label}</div>
+                <div className="text-xs text-white/40">{s.desc}</div>
               </div>
-              {settings.card_style === s.key && <Check className="w-4 h-4 text-[#0a7ea4]" />}
+              {settings.card_style === s.key && <Check className="w-4 h-4" style={{ color: "var(--primary)" }} />}
             </button>
           ))}
         </div>
@@ -184,12 +193,13 @@ export function ThemeCustomizer({ initial }: { initial: SiteSettingsMap }) {
       <button
         onClick={save}
         disabled={isPending}
-        className="w-full flex items-center justify-center gap-2 bg-[#0a7ea4] text-white font-semibold py-3 rounded-xl hover:bg-[#065f7d] transition-colors disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 text-white font-semibold py-3 rounded-xl transition-all hover:brightness-110 disabled:opacity-60"
+        style={{ background: "var(--primary)" }}
       >
         {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : null}
         {isPending ? "Kaydediliyor..." : saved ? "Kaydedildi!" : "Değişiklikleri Kaydet"}
       </button>
-      <p className="text-xs text-center text-gray-400">
+      <p className="text-xs text-center text-white/40">
         Değişiklikler anında önizlenir — kaydet butonuyla kalıcı hale gelir
       </p>
     </div>

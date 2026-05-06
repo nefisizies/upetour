@@ -53,7 +53,7 @@ export default async function RehberProfilPage({
 
       {/* Sağ: Kart önizleme */}
       <div className="w-80 shrink-0 sticky top-8 hidden lg:block">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+        <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-3">
           Acentelere böyle görünüyorsunuz
         </p>
         <RehberKarti profile={profile} acenteBaglantiSayisi={acenteBaglantiSayisi} />
