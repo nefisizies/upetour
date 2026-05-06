@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { LayoutDashboard, User, MessageCircle, FileText, Search, LogOut, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 const rehberLinks = [
   { href: "/dashboard/rehber", label: "Genel Bakış", icon: LayoutDashboard },
@@ -51,6 +52,7 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-gray-400 hidden sm:block">{email}</span>
+          <DarkModeToggle />
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 transition-colors"
