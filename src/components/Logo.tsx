@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export function Logo({ className, size = "md", href = "/" }: { className?: string; size?: "sm" | "md" | "lg"; href?: string }) {
+export function Logo({ className, size = "md", href = "/", darkBg = false }: { className?: string; size?: "sm" | "md" | "lg"; href?: string; darkBg?: boolean }) {
   const sizes = {
     sm: { icon: 28, text: "text-lg", gap: "gap-1.5" },
     md: { icon: 36, text: "text-2xl", gap: "gap-2" },
@@ -12,8 +12,8 @@ export function Logo({ className, size = "md", href = "/" }: { className?: strin
   return (
     <Link href={href} className={cn("inline-flex items-center", s.gap, className)}>
       <LogoIcon size={s.icon} />
-      <span className={cn("font-bold tracking-tight text-gray-900", s.text)}>
-        Rehber<span className="text-[#0a7ea4]">Sepeti</span>
+      <span className={cn("font-bold tracking-tight", darkBg ? "text-white" : "text-gray-900", s.text)}>
+        Rehber<span style={{ color: "var(--primary)" }}>Sepeti</span>
       </span>
     </Link>
   );

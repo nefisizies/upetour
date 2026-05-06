@@ -2,14 +2,30 @@
 
 /* ── Design Tokens (overridden by SiteSettings via <html style>) ── */
 :root {
-  --primary: #0a7ea4;
-  --sidebar-bg: #ffffff;
-  --font-family: 'Inter', sans-serif;
-  --card-radius: 1rem;
-  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  --font-inter:   'Inter', sans-serif;
-  --font-nunito:  'Nunito', sans-serif;
-  --font-poppins: 'Poppins', sans-serif;
+  /* Colors */
+  --primary:        #e07b39;
+  --primary-dark:   #c2560d;
+  --primary-light:  color-mix(in srgb, #e07b39 12%, transparent);
+  --hero-from:      #1c0900;
+  --hero-mid:       #7c2d12;
+  --hero-to:        #c2410c;
+  --sidebar-bg:     #ffffff;
+
+  /* Typography */
+  --font-family:   'Inter', sans-serif;
+  --font-inter:    'Inter', sans-serif;
+  --font-nunito:   'Nunito', sans-serif;
+  --font-poppins:  'Poppins', sans-serif;
+  --font-raleway:  'Raleway', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+
+  /* Cards */
+  --card-radius:  1rem;
+  --card-shadow:  0 1px 3px rgba(0,0,0,0.08);
+
+  /* Layout */
+  --nav-height:   64px;
+  --sidebar-width: 220px;
 }
 
 /* Apply dynamic font */
