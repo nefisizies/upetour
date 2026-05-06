@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -14,11 +14,16 @@ const ADMINS = [
 
 export default function AdminGirisPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [selected, setSelected] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") router.replace("/dashboard");
+  }, [status, router]);
 
   const selectedAdmin = ADMINS.find((a) => a.id === selected);
 
