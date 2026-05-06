@@ -16,7 +16,7 @@ export default async function AcentelerPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  let referansMap: Record<string, { id: string; durum: string }> = {};
+  let referansMap: Record<string, { id: string; durum: string; banBitis?: Date | null }> = {};
   if (isRehber) {
     const profile = await prisma.rehberProfile.findUnique({
       where: { userId: session!.user.id },
@@ -33,14 +33,14 @@ export default async function AcentelerPage() {
             rehberId: profile.id,
             OR: [{ tur: "KALICI" }, { banBitis: { gt: new Date() } }],
           },
-          select: { acenteId: true },
+          select: { acenteId: true, banBitis: true, tur: true },
         }),
       ]);
       for (const r of referanslar) {
         referansMap[r.acenteId] = { id: r.id, durum: r.durum };
       }
       for (const b of bloklar) {
-        referansMap[b.acenteId] = { id: "", durum: "BLOKLU" };
+        referansMap[b.acenteId] = { id: "", durum: "BLOKLU", banBitis: b.banBitis };
       }
     }
   }
@@ -113,6 +113,7 @@ export default async function AcentelerPage() {
                         acenteId={a.id}
                         referansId={ref?.id}
                         baslangicDurum={durum}
+                        banBitis={ref?.banBitis ? new Date(ref.banBitis).toLocaleDateString("tr-TR") : undefined}
                       />
                     </div>
                   )}

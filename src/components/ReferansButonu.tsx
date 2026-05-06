@@ -9,9 +9,10 @@ interface Props {
   acenteId: string;
   referansId?: string;
   baslangicDurum: Durum;
+  banBitis?: string;
 }
 
-export function ReferansButonu({ acenteId, referansId, baslangicDurum }: Props) {
+export function ReferansButonu({ acenteId, referansId, baslangicDurum, banBitis }: Props) {
   const [durum, setDurum] = useState<Durum>(baslangicDurum);
   const [mevcutId, setMevcutId] = useState<string | undefined>(referansId);
   const [yukleniyor, setYukleniyor] = useState(false);
@@ -108,8 +109,8 @@ export function ReferansButonu({ acenteId, referansId, baslangicDurum }: Props) 
 
   if (durum === "BLOKLU") {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg font-medium">
-        Başvuru yapılamaz
+      <span className="inline-flex items-center gap-1 text-xs text-red-400 bg-red-50 border border-red-100 px-3 py-1.5 rounded-lg font-medium">
+        {banBitis ? `${banBitis} tarihine kadar başvuru yapılamaz` : "Başvuru yapılamaz"}
       </span>
     );
   }
