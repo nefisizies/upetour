@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { WaveBackground } from "@/components/WaveBackground";
 import { AdminNav } from "@/components/AdminNav";
+import { AdminTopBar } from "@/components/AdminTopBar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
@@ -30,7 +31,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminNav />
       </aside>
       {/* Main content */}
-      <main className="flex-1 min-w-0 p-8">{children}</main>
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+        <AdminTopBar />
+        <main className="flex-1 p-8">{children}</main>
+      </div>
     </div>
   );
 }
