@@ -15,7 +15,8 @@ Repo: nefisizies/turbag
 - Onay sorma, direkt yap (kullanıcı her şeye yes diyor)
 - Samimi konuş, resmi dil kullanma
 - Hata çıkınca Railway loglarını API'den kendin çek
-- Her konuşma sonunda ~/.claude/projects/-home-userwsl/memory/project_rehbersepeti.md güncelle
+- Her konuşma BAŞINDA ajan dosyalarını oku ve kullanıcıya "okudum, şu an şu durumdasın" diye kısa özet geç
+- Her konuşma SONUNDA ~/.claude/projects/-home-userwsl/memory/project_rehbersepeti.md güncelle ve agents/ dosyalarını güncelle
 
 ## Ajan Sistemi — OTURUM BAŞINDA OKU
 Her oturumun başında şu dosyaları oku:
