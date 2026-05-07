@@ -1,14 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
 import { DashboardNav } from "@/components/DashboardNav";
 import { AdminBanner } from "@/components/AdminBanner";
-
-const WaveBackground = dynamic(
-  () => import("@/components/WaveBackground").then(m => ({ default: m.WaveBackground })),
-  { ssr: false }
-);
+import { WaveBackgroundClient as WaveBackground } from "@/components/WaveBackgroundClient";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
