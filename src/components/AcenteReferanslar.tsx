@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2, RotateCcw } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, MapPin, Building2, ShieldBan, ShieldOff, Trash2, RotateCcw, Minus } from "lucide-react";
 import Link from "next/link";
 import type { Referans, RehberProfile, AcenteRehberBlok } from "@prisma/client";
 
@@ -34,7 +34,6 @@ export function AcenteReferanslar({
   const [referanslar, setReferanslar] = useState(initial);
   const [bloklar, setBloklar] = useState(initialBloklar);
   const [islemYapiliyor, setIslemYapiliyor] = useState<string | null>(null);
-  const [cikarOnay, setCikarOnay] = useState<{ id: string; rehberAdi: string } | null>(null);
 
   // Red modal state
   const [redModal, setRedModal] = useState<{ id: string; rehberAdi: string } | null>(null);
@@ -73,16 +72,29 @@ export function AcenteReferanslar({
     setBlokSecim("YOK");
   }
 
-  async function referansCikar(id: string) {
+  async function blokKaldir(blokId: string) {
+    const res = await fetch("/api/referans/blok", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blokId }),
+    });
+    if (!res.ok) return;
+    setBloklar((prev) => prev.filter((b) => b.id !== blokId));
+  }
+
+  async function kaldir(id: string) {
     setIslemYapiliyor(id);
-    const res = await fetch(`/api/referans/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/referans/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ durum: "KALDIRILDI" }),
+    });
     setIslemYapiliyor(null);
-    setCikarOnay(null);
     if (!res.ok) return;
     setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "KALDIRILDI" } : r));
   }
 
-  async function geriEkle(id: string) {
+  async function geriAl(id: string) {
     setIslemYapiliyor(id);
     const res = await fetch(`/api/referans/${id}`, {
       method: "PATCH",
@@ -94,49 +106,12 @@ export function AcenteReferanslar({
     setReferanslar((prev) => prev.map((r) => r.id === id ? { ...r, durum: "ONAYLANDI" } : r));
   }
 
-  async function blokKaldir(blokId: string) {
-    const res = await fetch("/api/referans/blok", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blokId }),
-    });
-    if (!res.ok) return;
-    setBloklar((prev) => prev.filter((b) => b.id !== blokId));
-  }
-
   const bekleyenler = referanslar.filter((r) => r.durum === "BEKLIYOR");
-  const gecmisler = referanslar.filter((r) => r.durum === "ONAYLANDI" || r.durum === "REDDEDILDI");
-  const kaldirildi = referanslar.filter((r) => r.durum === "KALDIRILDI");
+  const gecmisler = referanslar.filter((r) => r.durum !== "BEKLIYOR" && r.durum !== "KALDIRILDI");
+  const kaldirilanlar = referanslar.filter((r) => r.durum === "KALDIRILDI");
 
   return (
     <>
-      {/* Çıkar Onay Modal */}
-      {cikarOnay && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-semibold text-gray-900 mb-2">Onayı geri çek?</h3>
-            <p className="text-sm text-gray-500 mb-5">
-              <span className="font-medium">{cikarOnay.rehberAdi}</span> ile olan onaylı referans silinecek. Rehber tekrar başvurabilir.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setCikarOnay(null)}
-                className="flex-1 text-sm border border-gray-200 text-gray-600 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Vazgeç
-              </button>
-              <button
-                onClick={() => referansCikar(cikarOnay.id)}
-                disabled={islemYapiliyor === cikarOnay.id}
-                className="flex-1 text-sm bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-60"
-              >
-                {islemYapiliyor === cikarOnay.id ? "Siliniyor..." : "Evet, Çıkar"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Red Modal */}
       {redModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
@@ -260,25 +235,20 @@ export function AcenteReferanslar({
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
                       {r.durum === "ONAYLANDI" ? (
-                        <>
-                          <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                            <CheckCircle className="w-3 h-3" /> Onaylandı
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Onaylandı</span>
                           <button
-                            onClick={() => setCikarOnay({ id: r.id, rehberAdi: r.rehber.name })}
-                            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 border border-gray-200 hover:border-red-200 px-2 py-0.5 rounded-full transition-colors"
+                            onClick={() => kaldir(r.id)}
+                            disabled={islemYapiliyor === r.id}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full transition-colors disabled:opacity-50"
                           >
-                            <RotateCcw className="w-3 h-3" /> Çıkar
+                            <Minus className="w-3 h-3" /> Kaldır
                           </button>
-                        </>
+                        </div>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-                          <XCircle className="w-3 h-3" /> Reddedildi
-                        </span>
+                        <span className="inline-flex items-center gap-1 text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><XCircle className="w-3 h-3" /> Reddedildi</span>
                       )}
-                    </div>
                     </div>
                   ))}
                 </>
@@ -288,15 +258,15 @@ export function AcenteReferanslar({
         </div>
 
         {/* Kaldırılanlar */}
-        {kaldirildi.length > 0 && (
+        {kaldirilanlar.length > 0 && (
           <div className="bg-white border border-gray-100 rounded-xl p-6 space-y-4">
             <div className="flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-gray-400" />
-              <h2 className="font-semibold text-gray-900">Kaldırılan Onaylar</h2>
-              <span className="text-xs text-gray-400">({kaldirildi.length})</span>
+              <Minus className="w-4 h-4 text-gray-400" />
+              <h2 className="font-semibold text-gray-900">Kaldırılan Referanslar</h2>
+              <span className="text-xs text-gray-400">({kaldirilanlar.length})</span>
             </div>
             <div className="space-y-3">
-              {kaldirildi.map((r) => (
+              {kaldirilanlar.map((r) => (
                 <div key={r.id} className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
@@ -317,12 +287,11 @@ export function AcenteReferanslar({
                     </div>
                   </div>
                   <button
-                    onClick={() => geriEkle(r.id)}
+                    onClick={() => geriAl(r.id)}
                     disabled={islemYapiliyor === r.id}
-                    className="flex items-center gap-1 text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1 text-xs text-[#0a7ea4] hover:bg-[#0a7ea4]/10 bg-white border border-[#0a7ea4]/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    {islemYapiliyor === r.id ? "Ekleniyor..." : "Geri Ekle"}
+                    <RotateCcw className="w-3.5 h-3.5" /> Geri Al
                   </button>
                 </div>
               ))}

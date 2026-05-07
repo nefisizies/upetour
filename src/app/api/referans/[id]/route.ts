@@ -3,30 +3,20 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-// Rehber: kendi referansını sil — Acente: onayladığı referansı geri çek
+// Rehber referans sil (sadece BEKLIYOR durumundakini)
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  if (!session || session.user.role !== "REHBER") {
+    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  }
 
   const { id } = await params;
-  const referans = await prisma.referans.findUnique({ where: { id } });
-  if (!referans) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+  const profile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
+  if (!profile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
-  if (session.user.role === "REHBER") {
-    const profile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
-    if (!profile || referans.rehberId !== profile.id) {
-      return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
-    }
-  } else if (session.user.role === "ACENTE") {
-    const acenteProfile = await prisma.acenteProfile.findUnique({ where: { userId: session.user.id } });
-    if (!acenteProfile || referans.acenteId !== acenteProfile.id || referans.durum !== "ONAYLANDI") {
-      return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
-    }
-    // Silmek yerine KALDIRILDI yap — acente geri ekleyebilsin
-    const updated = await prisma.referans.update({ where: { id }, data: { durum: "KALDIRILDI" } });
-    return NextResponse.json(updated);
-  } else {
-    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  const referans = await prisma.referans.findUnique({ where: { id } });
+  if (!referans || referans.rehberId !== profile.id) {
+    return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
   }
 
   await prisma.referans.delete({ where: { id } });
@@ -42,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { id } = await params;
   const { durum, blok } = await req.json();
-  if (!["ONAYLANDI", "REDDEDILDI", "KALDIRILDI"].includes(durum)) {
+  if (durum !== "ONAYLANDI" && durum !== "REDDEDILDI" && durum !== "KALDIRILDI") {
     return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
   }
 
