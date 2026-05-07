@@ -48,9 +48,9 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
                   href={href}
                   className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-all"
                   style={isActive ? {
-                    backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)",
-                    color: "var(--primary)",
-                    fontWeight: 500,
+                    backgroundColor: "var(--nav-active-bg)",
+                    color: "var(--nav-active-text)",
+                    fontWeight: 600,
                   } : {
                     color: "var(--nav-text, #4b5563)",
                   }}

@@ -84,11 +84,11 @@ export function MesajlarClient({
   }
 
   return (
-    <div className="flex gap-0 h-[calc(100vh-8rem)] rounded-2xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+    <div className="flex gap-0 h-[calc(100vh-8rem)] rounded-2xl overflow-hidden" style={{ border: "1px solid var(--card-border)" }}>
 
       {/* Sol — Konuşmalar */}
-      <div className="w-72 shrink-0 flex flex-col border-r" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
-        <div className="px-4 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+      <div className="w-72 shrink-0 flex flex-col border-r" style={{ background: "rgba(255,255,255,0.04)", borderColor: "var(--card-inner-border)" }}>
+        <div className="px-4 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
           <p className="text-sm font-semibold text-white">Konuşmalar</p>
           <p className="text-xs text-white/40 mt-0.5">{konusmalar.length} konuşma</p>
         </div>
@@ -134,7 +134,7 @@ export function MesajlarClient({
       </div>
 
       {/* Sağ — Mesaj thread */}
-      <div className="flex-1 flex flex-col" style={{ background: "rgba(0,0,0,0.2)" }}>
+      <div className="flex-1 flex flex-col" style={{ background: "var(--card-inner-bg)" }}>
         {!secili ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3">
             <MessageCircle className="w-12 h-12 text-white/15" />
@@ -143,7 +143,7 @@ export function MesajlarClient({
         ) : (
           <>
             {/* Thread header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden" style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
                 {seciliKisi?.foto
                   ? <img src={seciliKisi.foto} alt="" className="w-full h-full object-cover" />
@@ -179,7 +179,7 @@ export function MesajlarClient({
                         <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
                           style={benden
                             ? { background: "var(--primary)", color: "white" }
-                            : { background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)" }
+                            : { background: "var(--card-bg)", color: "rgba(255,255,255,0.85)" }
                           }>
                           {m.content}
                         </div>
@@ -193,13 +193,13 @@ export function MesajlarClient({
             </div>
 
             {/* Yanıt formu */}
-            <form onSubmit={gonder} className="flex gap-3 px-4 py-4 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+            <form onSubmit={gonder} className="flex gap-3 px-4 py-4 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
               <input
                 value={yeni}
                 onChange={(e) => setYeni(e.target.value)}
                 placeholder="Mesajınızı yazın..."
                 className="flex-1 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
               />
               <button
                 type="submit"

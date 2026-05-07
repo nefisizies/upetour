@@ -10,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session) redirect("/giris");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-layout="dashboard">
       <WaveBackground />
       {/* Admin impersonation banner — client component, renders only when adminId present */}
       <AdminBanner />
