@@ -42,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { id } = await params;
   const { durum, blok } = await req.json();
-  if (!["ONAYLANDI", "REDDEDILDI", "KALDIRILDI"].includes(durum)) {
+  if (durum !== "ONAYLANDI" && durum !== "REDDEDILDI" && durum !== "KALDIRILDI") {
     return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
   }
 

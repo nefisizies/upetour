@@ -22,35 +22,38 @@ model User {
   role             Role
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
   acenteProfile    AcenteProfile?
   sentMessages     Message[]      @relation("SentMessages")
   receivedMessages Message[]      @relation("ReceivedMessages")
   rehberProfile    RehberProfile?
   receivedReviews  Review[]       @relation("ReceivedReviews")
   givenReviews     Review[]       @relation("GivenReviews")
+  bildirimler      Bildirim[]
 }
 
 model RehberProfile {
-  id                 String           @id @default(cuid())
-  userId             String           @unique
-  slug               String           @unique
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  slug               String             @unique
   name               String
   bio                String?
   city               String?
   photoUrl           String?
   specialties        String[]
-  experienceYears    Int              @default(0)
-  isAvailable        Boolean          @default(true)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  operatingCountries String[]         @default([])
-  referanslar        Referans[]
+  experienceYears    Int                @default(0)
+  isAvailable        Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  operatingCountries String[]           @default([])
   bloklar            AcenteRehberBlok[]
+  referanslar        Referans[]
   languages          RehberDil[]
   licenses           RehberLicense[]
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   takvimEtkinlikleri TakvimEtkinlik[]
   tours              Tour[]
+  ilanBasvurular     IlanBasvuru[]
 }
 
 model RehberDil {
@@ -79,20 +82,33 @@ model RehberLicense {
 }
 
 model AcenteProfile {
-  id          String     @id @default(cuid())
-  userId      String     @unique
-  slug        String     @unique
+  id          String             @id @default(cuid())
+  userId      String             @unique
+  slug        String             @unique
   companyName String
   description String?
   city        String?
   logoUrl     String?
   website     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloklar     AcenteRehberBlok[]
   ilanlar     Ilan[]
   referanslar Referans[]
-  bloklar     AcenteRehberBlok[]
+}
+
+model AcenteRehberBlok {
+  id        String        @id @default(cuid())
+  acenteId  String
+  rehberId  String
+  tur       BlokTur
+  banBitis  DateTime?
+  createdAt DateTime      @default(now())
+  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([acenteId, rehberId])
 }
 
 model Referans {
@@ -131,7 +147,35 @@ model Ilan {
   budget      String?
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  basvurular  IlanBasvuru[]
+}
+
+model IlanBasvuru {
+  id        String        @id @default(cuid())
+  ilanId    String
+  rehberId  String
+  mesaj     String?
+  durum     BasvuruDurum  @default(BEKLIYOR)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  ilan      Ilan          @relation(fields: [ilanId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([ilanId, rehberId])
+}
+
+model Bildirim {
+  id        String      @id @default(cuid())
+  userId    String
+  tip       BildirimTip
+  baslik    String
+  metin     String?
+  link      String?
+  okundu    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TakvimEtkinlik {
@@ -199,16 +243,16 @@ enum BlokTur {
   KALICI
 }
 
-model AcenteRehberBlok {
-  id        String   @id @default(cuid())
-  acenteId  String
-  rehberId  String
-  tur       BlokTur
-  banBitis  DateTime?
-  createdAt DateTime @default(now())
+enum BasvuruDurum {
+  BEKLIYOR
+  INCELENDI
+  KABUL
+  RED
+}
 
-  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
-  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
-
-  @@unique([acenteId, rehberId])
+enum BildirimTip {
+  MESAJ
+  BASVURU
+  REFERANS
+  SISTEM
 }
