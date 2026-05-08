@@ -105,7 +105,7 @@ export default async function RehberDashboard() {
     <div className="space-y-6">
 
       {/* Profil Özet Kartı */}
-      <div className="backdrop-blur-sm rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+      <div className="backdrop-blur-sm rounded-2xl p-6" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "color-mix(in srgb, var(--primary) 15%, transparent)" }}>
             {profile?.photoUrl ? (
@@ -125,7 +125,7 @@ export default async function RehberDashboard() {
                   Müsait
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--card-bg)", color: "rgba(255,255,255,0.5)", border: "1px solid var(--card-border)" }}>
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.4)" }} />
                   Müsait Değil
                 </span>
@@ -179,7 +179,7 @@ export default async function RehberDashboard() {
 
       {/* İstatistik Kartları */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link href="/dashboard/rehber/mesajlar" className="backdrop-blur-sm rounded-xl p-5 transition-shadow group" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <Link href="/dashboard/rehber/mesajlar" className="backdrop-blur-sm rounded-xl p-5 transition-shadow group" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="flex items-center justify-between mb-3">
             <MessageCircle className="w-5 h-5" style={{ color: "var(--primary)" }} />
             {unreadCount > 0 && (
@@ -193,14 +193,14 @@ export default async function RehberDashboard() {
           {unreadCount > 0 && <div className="text-xs text-red-400 mt-0.5">{unreadCount} okunmamış</div>}
         </Link>
 
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <Star className="w-5 h-5 text-yellow-400 mb-3" />
           <div className="text-2xl font-bold text-white">{avgRating}</div>
           <div className="text-xs text-white/50 mt-1">Ortalama Puan</div>
           <div className="text-xs text-white/40 mt-0.5">{reviewData._count} değerlendirme</div>
         </div>
 
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <CheckCircle className="w-5 h-5 text-green-500 mb-3" />
           <div className="text-2xl font-bold text-white">{verifiedLicenses}</div>
           <div className="text-xs text-white/50 mt-1">Onaylı Lisans</div>
@@ -211,7 +211,7 @@ export default async function RehberDashboard() {
           )}
         </div>
 
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <TrendingUp className="w-5 h-5 text-purple-400 mb-3" />
           <div className="text-2xl font-bold text-white">{tamamlanma}%</div>
           <div className="text-xs text-white/50 mt-1">Profil Gücü</div>
@@ -220,8 +220,8 @@ export default async function RehberDashboard() {
       </div>
 
       {/* Yaklaşan Etkinlikler + Mini Takvim */}
-      <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+      <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
           <h2 className="font-semibold text-white flex items-center gap-2">
             <CalendarDays className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yaklaşan Etkinlikler
           </h2>
@@ -274,7 +274,7 @@ export default async function RehberDashboard() {
                         ) : null}
                       </div>
                       <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${acil ? "bg-red-500/15 text-red-400" : "text-white/40"}`}
-                        style={!acil ? { background: "rgba(255,255,255,0.08)" } : undefined}>
+                        style={!acil ? { background: "var(--card-bg)" } : undefined}>
                         {etiket}
                       </span>
                     </Link>
@@ -298,8 +298,8 @@ export default async function RehberDashboard() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {/* Son Mesajlar */}
-        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
             <h2 className="font-semibold text-white flex items-center gap-2">
               <MessageCircle className="w-4 h-4" style={{ color: "var(--primary)" }} /> Mesajlar
             </h2>
@@ -336,8 +336,8 @@ export default async function RehberDashboard() {
         </div>
 
         {/* Son İlanlar */}
-        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
             <h2 className="font-semibold text-white flex items-center gap-2">
               <FileText className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yeni İlanlar
             </h2>
@@ -392,7 +392,7 @@ export default async function RehberDashboard() {
         ].map((item) => (
           <Link key={item.href} href={item.href}
             className="backdrop-blur-sm rounded-xl p-5 transition-shadow flex items-center gap-4 group hover:bg-white/5"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
             <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={item.bgStyle}>
               <item.icon className="w-5 h-5" style={item.iconStyle} />
             </div>

@@ -1,59 +1,68 @@
 # UX / Tasarım Ajanı
 
 > Kullanıcı deneyimi, arayüz tutarlılığı, erişilebilirlik ve görsel tasarım.
+> Son güncelleme: 2026-05-06
 
 ## Kimim
-Kullanıcı akışlarını, bileşen tutarlılığını ve görsel hiyerarşiyi optimize ederim. Hem estetik hem kullanılabilirlik açısından değerlendiririm.
+Kullanıcı akışlarını, bileşen tutarlılığını ve görsel hiyerarşiyi optimize ederim.
 
-## Mevcut Tasarım Sistemi
+## ✅ Mevcut Tasarım Sistemi — Dark Premium Theme
 
-### Renk Paleti
-- **Primary**: `#0a7ea4` (mavi-petrol) — linkler, aktif nav, CTA butonlar
-- **Arka plan**: Animasyonlu wave (gün batımı teması) — fixed, -z-10
-- **Kartlar**: `bg-white/80 backdrop-blur-sm` — frosted glass efekt
-- **Nav**: `bg-white/80 backdrop-blur-md border-b border-white/40` — sticky, frosted
+### Temel Kararlar
+- **Tema**: Karanlık premium. Tüm sayfalar `#0c0500 → #1a0900` gradient arka plan.
+- **Renk sistemi**: `var(--primary)` CSS değişkeni, ThemeCustomizer ile değiştirilebilir
+- **Kart**: Dark glass — `rgba(255,255,255,0.06)` bg + `rgba(255,255,255,0.1)` border + `backdrop-blur-sm`
+- **Metin**: `text-white` başlıklar, `text-white/60` ikincil, `text-white/40` muted
 
-### Tipografi
-- Tailwind default (Inter benzeri system font)
-- Heading: `text-xl font-bold` veya `text-2xl font-bold`
-- Body: `text-sm text-gray-600`
+### Kullanıcı Akışları (mevcut)
+```
+Kayıt:   / → /kayit (rol seç → form) → dashboard
+Giriş:   / → /giris → /dashboard/rehber VEYA /dashboard/acente
+Rehber:  dashboard → profil → takvim → mesajlar → /kesfet/ilanlar
+Acente:  dashboard → profil → ilanlarım → mesajlar → /kesfet/rehberler
+Public:  / → /kesfet/rehberler → /rehber/[slug]
+```
+
+### Badge Hiyerarşisi
+- Yeşil (ücret/pozitif): `text-green-400` + `rgba(34,197,94,0.1)` bg
+- Mavi (dil/bilgi): `text-blue-400` + `rgba(96,165,250,0.1)` bg
+- Amber (uyarı/eksik): `text-amber-300` + `bg-amber-500/10 border-amber-500/30`
+- Primary (CTA): `var(--primary)` bg + `text-white`
 
 ### Bileşen Stili
-- Kartlar: `rounded-2xl shadow-sm` + frosted glass
-- Butonlar: `bg-[#0a7ea4] text-white rounded-lg px-4 py-2`
-- Input'lar: `border border-gray-200 rounded-lg px-3 py-2`
-- Badge/chip: `rounded-full text-xs px-2 py-0.5`
+- Butonlar: `var(--primary)` bg, `hover:brightness-110`, `rounded-xl`
+- Input'lar: `rgba(255,255,255,0.06)` bg, `rgba(255,255,255,0.1)` border, `rounded-xl`
+- Nav: `rgba(12,5,0,0.85)` bg + `backdrop-blur-md`, sticky
+- Mesaj balonu (gönderen): `var(--primary)` bg, `rounded-2xl`
+- Mesaj balonu (alınan): `rgba(255,255,255,0.08)` bg, `text-white/85`
+
+## ✅ Tamamlanan UX Çalışmaları
+- Wave background (eski light tema) → dark premium gradient
+- Tüm kartlar frosted glass'tan dark glass'a geçirildi
+- Mesajlaşma arayüzü: konuşma listesi (sol panel) + thread (sağ panel) + form
+- İlanlar sayfası: filtre dropdown'ları + badge grid + CTA butonu
+- Kayıt sayfası: 2-adım rol seçimi + dark glass form
+- Admin sidebar: dark, amber ADMIN badge
+
+## 🔴 Açık UX Görevleri
+1. **Mobile responsive** — nav hamburger, kart tek sütun, takvim görünümü (EN KRİTİK)
+2. **RehberProfilForm.tsx** — 500+ satır form, eski light styling kaldı
+3. **Empty state'ler** — mesaj yok, ilan yok, referans yok için tutarlı ikon+metin
+4. **Loading skeleton** — veri yüklenirken skeleton göster (şu an sadece spinner)
+5. **Toast/snackbar** — başarı/hata bildirimleri için tutarlı sistem
+6. **Onboarding** — yeni rehber profili nasıl tamamlayacağını biliyor mu?
 
 ## Bilinen CSS Tuzakları
-- **overflow-hidden + negatif margin**: Kart container'ına `overflow-hidden` eklenince `-mt-*` ile üst bandı aşan avatar fotoğrafı banner arkasında kalır. Çözüm: overflow-hidden sadece banner'a, avatar container'ına `relative z-10`.
+- `overflow-hidden + negatif margin`: kart container'ına `overflow-hidden` eklenince avatar aşıyor. Çözüm: overflow-hidden sadece banner'a.
+- `onChange` server component'te kullanılamaz — filtre select'leri için `window.location.href` ile navigate et.
+- `color-mix(in srgb, var(--primary) 20%, transparent)` — opak `var(--primary)` varyantı için standart yol.
 
-## Tamamlanan UX Çalışmaları
-- **Wave background**: Gün batımı + deniz dalgaları animasyonu — tatil platformu temasıyla uyumlu
-- **Mini takvim popup**: Günün etkinlikleri + form tek popup'ta
-- **Takvim multi-day event**: Başlangıç/devam/bitiş görsel ayrımı
-
-## Açık UX Görevleri
-1. **Mobile responsive** — en kritik eksik. Nav hamburger, kart tek sütun, takvim görünümü
-2. **Empty state'ler** — Etkinlik yok, rehber yok, mesaj yok gibi boş durumlar için ikon+metin
-3. **Loading skeleton** — Veri yüklenirken içerik skeleton göster (şu an sadece "Yükleniyor...")
-4. **Error state'ler** — API hata mesajları kullanıcı dostu değil
-5. **Onboarding** — Yeni kayıt olan rehber profilini nasıl tamamlayacağını biliyor mu?
-6. **Toast/snackbar** — Başarı/hata bildirimleri için tutarlı sistem
-
-## Kullanıcı Akışları (mevcut)
-```
-Kayıt:      / → /kayit (rol seç) → /kayit/rehber VEYA /kayit/acente → dashboard
-Giriş:      / → /giris → dashboard (role göre /dashboard/rehber veya /dashboard/acente)
-Rehber:     dashboard → profil → takvim → mesajlar → kesfet/ilanlar
-Acente:     dashboard → profil → ilanlarım → mesajlar → kesfet/rehberler
-Public:     / → /kesfet/rehberler → /rehber/[slug]
-```
-
-## UX Kararları
-- Nav sticky top + frosted glass — scroll sırasında içerik görünür
-- Takvim mini/tam ayrımı — dashboard'da mini, detay için tam takvim
-- Popup modal (mini takvim) — sayfa değişimi olmadan hızlı işlem
+## Erişilebilirlik Notları
+- Kontrast: dark glass üstünde `text-white/60` minimum — `text-white/40` sadece dekoratif ikon için
+- Badge metinleri (`text-xs`) için `text-white/50` veya üstü kullan
+- CTA butonları: `var(--primary)` bg üstünde beyaz metin — ThemeCustomizer çok açık renk seçerse kontrast bozulabilir
 
 ## Diğer Ajanlara Notlar
-- **Frontend**: Boş state ve skeleton bileşenleri ekleyelim — şu an veri yokken beyaz boşluk var
-- **Mimar**: Mobile iyileştirme teknik borç listesinde — önceliği ne zaman almalı?
+- **Frontend**: Yeni bileşen eklerken dark glass desene uymayan kısımlar bana sor
+- **QA**: Kontrast oranlarını `axe-core` ile test et — WCAG AA (4.5:1) standart metin
+- **Mimar**: Mobile iyileştirme teknik borç listesinde 1 numara — ne zaman başlayalım?

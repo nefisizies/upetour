@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Compass, Building2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
-export default function GirisPage() {
+function GirisForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { status } = useSession();
@@ -200,5 +200,13 @@ export default function GirisPage() {
       </div>
 
     </div>
+  );
+}
+
+export default function GirisPage() {
+  return (
+    <Suspense>
+      <GirisForm />
+    </Suspense>
   );
 }

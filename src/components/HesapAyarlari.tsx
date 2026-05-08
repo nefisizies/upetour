@@ -53,13 +53,13 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
   }
 
   return (
-    <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+    <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
       <button
         onClick={() => setAcik(!acik)}
         className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--card-bg)" }}>
             <KeyRound className="w-4 h-4 text-white/50" />
           </div>
           <div className="text-left">
@@ -71,10 +71,10 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
       </button>
 
       {acik && (
-        <div className="px-6 pb-6 pt-4 space-y-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+        <div className="px-6 pb-6 pt-4 space-y-4 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
 
           {/* Mevcut e-posta göster */}
-          <div className="rounded-lg px-4 py-3 flex items-center gap-2" style={{ background: "rgba(255,255,255,0.06)" }}>
+          <div className="rounded-lg px-4 py-3 flex items-center gap-2" style={{ background: "var(--card-bg)" }}>
             <Mail className="w-4 h-4 text-white/40 shrink-0" />
             <span className="text-sm text-white/50">Mevcut e-posta:</span>
             <span className="text-sm font-medium text-white/70">{mevcutEmail}</span>
@@ -92,7 +92,7 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
                 onChange={(e) => setForm({ ...form, mevcutSifre: e.target.value })}
                 placeholder="Mevcut şifreni gir"
                 className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all pr-10"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
               />
               <button
                 type="button"
@@ -104,7 +104,7 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
             </div>
           </div>
 
-          <div className="pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+          <div className="pt-4 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
             <p className="text-xs text-white/40 mb-3">Değiştirmek istediklerini doldur (ikisini de değiştirebilirsin)</p>
 
             {/* Yeni e-posta */}
@@ -116,7 +116,7 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
                 onChange={(e) => setForm({ ...form, yeniEmail: e.target.value })}
                 placeholder={mevcutEmail}
                 className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
               />
             </div>
 
@@ -130,7 +130,7 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
                   onChange={(e) => setForm({ ...form, yeniSifre: e.target.value })}
                   placeholder="En az 6 karakter"
                   className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all pr-10"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
                 />
                 <button
                   type="button"
@@ -153,7 +153,7 @@ export function HesapAyarlari({ mevcutEmail, adminMode = false }: { mevcutEmail:
                   placeholder="Şifreyi tekrar gir"
                   className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none transition-all"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
+                    background: "var(--card-bg)",
                     border: form.yeniSifreTekrar && form.yeniSifre !== form.yeniSifreTekrar
                       ? "1px solid rgba(239,68,68,0.5)"
                       : "1px solid rgba(255,255,255,0.1)",
