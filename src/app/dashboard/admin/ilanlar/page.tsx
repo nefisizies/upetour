@@ -23,8 +23,8 @@ export default async function AdminIlanlarPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">İlanlar</h1>
-        <p className="text-sm text-gray-500 mt-1">{aktif} aktif · {ilanlar.length - aktif} pasif</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--card-text, #f1f5f9)" }}>İlanlar</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--card-text-muted, #94a3b8)" }}>{aktif} aktif · {ilanlar.length - aktif} pasif</p>
       </div>
 
       <div className="backdrop-blur-sm rounded-2xl overflow-hidden"

@@ -81,8 +81,8 @@ export default async function IstatistiklerPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">İstatistikler</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform geneli veriler</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--card-text, #f1f5f9)" }}>İstatistikler</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--card-text-muted, #94a3b8)" }}>Platform geneli veriler</p>
       </div>
 
       {/* Özet kartlar */}

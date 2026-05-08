@@ -37,16 +37,16 @@ export default async function AdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Genel Bakış</h1>
-        <p className="text-sm text-gray-500 mt-1">Platform durumu</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--card-text, #f1f5f9)" }}>Genel Bakış</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--card-text-muted, #94a3b8)" }}>Platform durumu</p>
       </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg, href }) => (
           <Link key={label} href={href}
-            className="backdrop-blur-sm rounded-2xl p-5 flex items-center gap-3 hover:scale-[1.02] transition-transform"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+            className="rounded-2xl p-5 flex items-center gap-3 hover:scale-[1.02] transition-transform"
+            style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
             <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
               <Icon className={`w-5 h-5 ${color}`} />
             </div>
