@@ -59,10 +59,6 @@ export async function GET(req: Request) {
       ...(secilenUlkeler.length > 0 ? {
         operatingCountries: { hasSome: secilenUlkeler },
       } : {}),
-      // En az 1 seçilen uzmanlık alanına sahip olmalı (uzmanlık seçildiyse)
-      ...(secilenUzmanliklar.length > 0 ? {
-        specialties: { hasSome: secilenUzmanliklar },
-      } : {}),
     },
     include: {
       languages: true,
