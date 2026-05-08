@@ -1,13 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, ShieldCheck, FileText, Palette, BarChart2 } from "lucide-react";
+import { LayoutDashboard, Users, ShieldCheck, Palette, BarChart2 } from "lucide-react";
 
 const pages = [
   { href: "/dashboard/admin",                label: "Genel Bakış",     icon: LayoutDashboard },
   { href: "/dashboard/admin/kullanicilar",   label: "Kullanıcılar",    icon: Users },
   { href: "/dashboard/admin/lisanslar",      label: "Lisans Onayları", icon: ShieldCheck },
-  { href: "/dashboard/admin/ilanlar",        label: "İlanlar",         icon: FileText },
   { href: "/dashboard/admin/istatistikler",  label: "İstatistikler",   icon: BarChart2 },
   { href: "/dashboard/admin/tema",           label: "Tema & Görünüm",  icon: Palette },
 ];

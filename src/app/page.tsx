@@ -7,10 +7,9 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [rehberCount, acenteCount, ilanCount] = await Promise.all([
+  const [rehberCount, acenteCount] = await Promise.all([
     prisma.rehberProfile.count(),
     prisma.acenteProfile.count(),
-    prisma.ilan.count({ where: { isActive: true } }),
   ]);
 
   return (
@@ -59,7 +58,7 @@ export default async function Home() {
           </h1>
 
           <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Tur rehberlerini keşfet, projeler için ilan ver, doğrudan iletişim kur.
+            Tur rehberlerini keşfet, doğrudan iletişim kur.
             Seyahat sektörünün freelancer platformu.
           </p>
 
@@ -83,11 +82,10 @@ export default async function Home() {
 
       {/* ── Stats ── */}
       <section className="relative z-10 -mt-1" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}>
-        <div className="max-w-4xl mx-auto px-4 py-8 grid grid-cols-3 divide-x divide-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-8 grid grid-cols-2 divide-x divide-white/10">
           {[
             { value: rehberCount > 10 ? `${rehberCount}+` : rehberCount, label: "Kayıtlı Rehber", icon: Compass },
             { value: acenteCount > 10 ? `${acenteCount}+` : acenteCount, label: "Seyahat Acentesi", icon: Building2 },
-            { value: ilanCount > 0 ? `${ilanCount}+` : "Yeni", label: "Aktif İlan", icon: MapPin },
           ].map((s) => (
             <div key={s.label} className="text-center px-4 py-2">
               <s.icon className="w-5 h-5 mx-auto mb-2 opacity-60" style={{ color: "var(--primary)" }} />
@@ -115,7 +113,7 @@ export default async function Home() {
               { icon: MessageCircle, title: "Doğrudan Mesajlaşma", desc: "Aracısız iletişim. Rehberle veya acente ile direkt görüş." },
               { icon: Star, title: "Değerlendirme Sistemi", desc: "Her tur sonrası yorum ve puan. Güven inşa et, referans kazan." },
               { icon: Shield, title: "Doğrulanmış Profiller", desc: "Lisans ve belge doğrulama ile sahte hesapları önle." },
-              { icon: Zap, title: "İlan & Başvuru", desc: "Acenteler ilan açar, rehberler başvurur. Hızlı ve kolay." },
+              { icon: Zap, title: "Doğrudan İletişim", desc: "İlan açmadan direkt rehbere mesaj at. Hızlı ve kolay." },
             ].map((f) => (
               <div key={f.title}
                 className="group p-6 rounded-2xl border border-white/8 hover:border-white/20 transition-all hover:-translate-y-1"

@@ -8,7 +8,7 @@ import Link from "next/link";
 import {
   User, Star, MessageCircle, ArrowRight, AlertCircle,
   MapPin, Globe, Briefcase, CheckCircle, Clock, TrendingUp,
-  FileText, ChevronRight, Sparkles, CalendarDays,
+  ChevronRight, CalendarDays,
 } from "lucide-react";
 import { MiniTakvim } from "@/components/MiniTakvim";
 
@@ -40,7 +40,7 @@ export default async function RehberDashboard() {
   const buAyBaslangic = new Date(simdi.getFullYear(), simdi.getMonth(), 1);
   const buAyBitis = new Date(simdi.getFullYear(), simdi.getMonth() + 1, 1);
 
-  const [unreadCount, totalMessages, reviewData, sonMesajlar, sonIlanlar, yaklasanEtkinlikler, buAyEtkinlikler] = await Promise.all([
+  const [unreadCount, totalMessages, reviewData, sonMesajlar, yaklasanEtkinlikler, buAyEtkinlikler] = await Promise.all([
     prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
     prisma.message.count({ where: { toUserId: session.user.id } }),
     prisma.review.aggregate({
@@ -53,12 +53,6 @@ export default async function RehberDashboard() {
       orderBy: { createdAt: "desc" },
       take: 4,
       include: { from: { include: { acenteProfile: true } } },
-    }),
-    prisma.ilan.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-      include: { acente: true },
     }),
     profile ? prisma.takvimEtkinlik.findMany({
       where: {
@@ -335,59 +329,13 @@ export default async function RehberDashboard() {
           )}
         </div>
 
-        {/* Son İlanlar */}
-        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-            <h2 className="font-semibold text-white flex items-center gap-2">
-              <FileText className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yeni İlanlar
-            </h2>
-            <Link href="/kesfet/ilanlar" className="text-xs hover:underline" style={{ color: "var(--primary)" }}>
-              Tümünü gör
-            </Link>
-          </div>
-          {sonIlanlar.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <Sparkles className="w-8 h-8 text-white/20 mx-auto mb-2" />
-              <p className="text-sm text-white/40">Henüz ilan yok</p>
-              <p className="text-xs text-white/30 mt-1">Acenteler ilan açtığında burada görünür</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-white/8">
-              {sonIlanlar.map((ilan) => (
-                <div key={ilan.id} className="flex items-start gap-3 px-6 py-4 hover:bg-white/5 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/15 flex items-center justify-center shrink-0 mt-0.5">
-                    <Briefcase className="w-4 h-4 text-purple-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{ilan.title}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-xs text-white/50 truncate">{ilan.acente.companyName}</p>
-                      {ilan.location && (
-                        <span className="text-xs text-white/40 flex items-center gap-0.5 shrink-0">
-                          <MapPin className="w-3 h-3" />{ilan.location}
-                        </span>
-                      )}
-                    </div>
-                    {ilan.budget && (
-                      <p className="text-xs text-green-400 font-medium mt-0.5">{ilan.budget}</p>
-                    )}
-                  </div>
-                  <Link href="/kesfet/ilanlar" className="shrink-0 text-xs font-medium hover:underline" style={{ color: "var(--primary)" }}>
-                    Gör
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
       </div>
 
       {/* Hızlı Aksiyonlar */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
           { href: "/dashboard/rehber/profil", icon: User, bgStyle: { background: "color-mix(in srgb, var(--primary) 10%, transparent)" }, iconStyle: { color: "var(--primary)" }, title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
-          { href: "/kesfet/ilanlar", icon: FileText, bgStyle: { background: "rgba(168,85,247,0.15)" }, iconStyle: { color: "rgb(192,132,252)" }, title: "İlanlara Bak", desc: "Yeni fırsatları keşfet" },
+          { href: "/dashboard/rehber/mesajlar", icon: MessageCircle, bgStyle: { background: "rgba(168,85,247,0.15)" }, iconStyle: { color: "rgb(192,132,252)" }, title: "Mesajlar", desc: "Acentelerle iletişim" },
           { href: "/kesfet/rehberler", icon: Globe, bgStyle: { background: "rgba(34,197,94,0.15)" }, iconStyle: { color: "rgb(74,222,128)" }, title: "Rehberleri Gör", desc: "Diğer rehberler" },
         ].map((item) => (
           <Link key={item.href} href={item.href}

@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { FileText, MessageCircle, Users, ArrowRight, AlertCircle, Plus, Building2 } from "lucide-react";
+import { MessageCircle, Users, ArrowRight, AlertCircle, Building2, Search } from "lucide-react";
 
 export default async function AcenteDashboard() {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,6 @@ export default async function AcenteDashboard() {
 
   const profile = await prisma.acenteProfile.findUnique({
     where: { userId: session.user.id },
-    include: { ilanlar: true },
   });
 
   const [unreadCount, bekleyenReferansCount] = await Promise.all([
@@ -21,7 +20,6 @@ export default async function AcenteDashboard() {
     profile ? prisma.referans.count({ where: { acenteId: profile.id, durum: "BEKLIYOR" } }) : Promise.resolve(0),
   ]);
 
-  const activeIlanCount = profile?.ilanlar.filter((i) => i.isActive).length ?? 0;
   const profileComplete = !!(profile?.description && profile?.city);
 
   return (
@@ -46,12 +44,11 @@ export default async function AcenteDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          { label: "Aktif İlan", value: activeIlanCount, icon: FileText, href: "/dashboard/acente/ilanlar", badge: 0 },
           { label: "Okunmamış Mesaj", value: unreadCount, icon: MessageCircle, href: "/dashboard/acente/mesajlar", badge: 0 },
-          { label: "Toplam İlan", value: profile?.ilanlar.length ?? 0, icon: Users, href: "/dashboard/acente/ilanlar", badge: 0 },
           { label: "Referans İstekleri", value: bekleyenReferansCount, icon: Building2, href: "/dashboard/acente/referanslar", badge: bekleyenReferansCount },
+          { label: "Rehber Bul", value: "→", icon: Search, href: "/dashboard/acente/rehber-bul", badge: 0 },
         ].map((card) => (
           <Link key={card.label} href={card.href}
             className="relative rounded-xl p-5 transition-all hover:brightness-110"
@@ -69,15 +66,15 @@ export default async function AcenteDashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <Link href="/dashboard/acente/ilanlar/yeni"
+        <Link href="/dashboard/acente/rehber-bul"
           className="bg-[#0a7ea4] text-white rounded-xl p-6 hover:bg-[#065f7d] transition-colors flex items-center justify-between group">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Plus className="w-5 h-5" />
+              <Search className="w-5 h-5" />
             </div>
             <div>
-              <p className="font-medium">Yeni İlan Oluştur</p>
-              <p className="text-sm text-blue-100">Rehber arayışını paylaş</p>
+              <p className="font-medium">Rehber Ara</p>
+              <p className="text-sm text-blue-100">Tarih, şehir ve uzmanlığa göre filtrele</p>
             </div>
           </div>
           <ArrowRight className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" />

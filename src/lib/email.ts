@@ -48,7 +48,7 @@ export async function sendWelcomeEmail({
             <p style="margin:0 0 20px;color:#6b7280;font-size:15px;line-height:1.6">
               ${isRehber
                 ? "RehberSepeti'ne <strong>Tur Rehberi</strong> olarak katıldın. Profilini tamamla, hizmet verdiğin ülkeleri ve uzmanlık alanlarını ekle — acenteler seni bulsun."
-                : "RehberSepeti'ne <strong>Seyahat Acentesi</strong> olarak katıldın. Profil bilgilerini tamamla ve ilk ilanını yayınla — rehberler tekliflerini göndersin."
+                : "RehberSepeti'ne <strong>Seyahat Acentesi</strong> olarak katıldın. Profil bilgilerini tamamla ve rehber arama aracıyla ihtiyacın olan rehberi bul."
               }
             </p>
 
@@ -70,8 +70,8 @@ export async function sendWelcomeEmail({
                 <p style="margin:0 0 10px;color:#0a7ea4;font-size:14px;font-weight:600">📋 Başlamak için:</p>
                 <ul style="margin:0;padding-left:18px;color:#374151;font-size:14px;line-height:2">
                   <li>Şirket profilini tamamla</li>
-                  <li>İlk ilanını oluştur</li>
-                  <li>Rehberlerden teklif al</li>
+                  <li>Rehber Bul aracıyla rehber ara</li>
+                  <li>Beğendiğin rehberle direkt mesajlaş</li>
                 </ul>
               </td></tr>
             </table>

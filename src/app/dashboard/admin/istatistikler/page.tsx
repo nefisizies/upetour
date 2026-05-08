@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { Users, Building2, ShieldCheck, FileText, MessageCircle, Star, TrendingUp } from "lucide-react";
+import { Users, Building2, ShieldCheck, MessageCircle, Star, TrendingUp } from "lucide-react";
 
 function week(weeksAgo: number) {
   const d = new Date();
@@ -26,7 +26,6 @@ export default async function IstatistiklerPage() {
     rehberW1, acenteW1,
     rehberW4, acenteW4,
     pendingLicenses, verifiedLicenses,
-    activeIlanlar, totalIlanlar,
     totalMessages, messagesW1,
     totalReviews,
     // son 4 hafta breakdown
@@ -43,8 +42,6 @@ export default async function IstatistiklerPage() {
     prisma.user.count({ where: { role: "ACENTE", createdAt: { gte: w4 } } }),
     prisma.rehberLicense.count({ where: { status: "PENDING" } }),
     prisma.rehberLicense.count({ where: { status: "VERIFIED" } }),
-    prisma.ilan.count({ where: { isActive: true } }),
-    prisma.ilan.count(),
     prisma.message.count(),
     prisma.message.count({ where: { createdAt: { gte: w1 } } }),
     prisma.review.count(),
@@ -73,7 +70,6 @@ export default async function IstatistiklerPage() {
     { label: "Toplam Acente",   value: acenteTotal,     sub: `+${acenteW1} bu hafta`,  icon: Building2,      color: "#a855f7", bg: "rgba(168,85,247,0.1)" },
     { label: "Son 4 Hf. Yeni",  value: rehberW4 + acenteW4, sub: `${rehberW4}R + ${acenteW4}A`, icon: TrendingUp, color: "#22c55e", bg: "rgba(34,197,94,0.1)" },
     { label: "Bekleyen Lisans", value: pendingLicenses, sub: `${verifiedLicenses} onaylı`,      icon: ShieldCheck,    color: "#f59e0b", bg: "rgba(245,158,11,0.1)" },
-    { label: "Aktif İlan",      value: activeIlanlar,   sub: `${totalIlanlar} toplam`,           icon: FileText,       color: "#10b981", bg: "rgba(16,185,129,0.1)" },
     { label: "Toplam Mesaj",    value: totalMessages,   sub: `+${messagesW1} bu hafta`,          icon: MessageCircle,  color: "#06b6d4", bg: "rgba(6,182,212,0.1)" },
     { label: "Değerlendirme",   value: totalReviews,    sub: "toplam yorum",                     icon: Star,           color: "#f97316", bg: "rgba(249,115,22,0.1)" },
   ];
@@ -147,54 +143,27 @@ export default async function IstatistiklerPage() {
         </div>
       </div>
 
-      {/* Lisans + İlan özet */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-2xl p-5"
-          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <h2 className="font-semibold text-white mb-4">Lisans Durumu</h2>
-          <div className="space-y-3">
-            {[
-              { label: "Bekleyen",  value: pendingLicenses,  color: "#f59e0b" },
-              { label: "Onaylanan", value: verifiedLicenses, color: "#22c55e" },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                  <span className="text-sm text-white/70">{label}</span>
-                </div>
-                <span className="text-sm font-bold text-white">{value}</span>
+      {/* Lisans özet */}
+      <div className="rounded-2xl p-5"
+        style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <h2 className="font-semibold text-white mb-4">Lisans Durumu</h2>
+        <div className="space-y-3">
+          {[
+            { label: "Bekleyen",  value: pendingLicenses,  color: "#f59e0b" },
+            { label: "Onaylanan", value: verifiedLicenses, color: "#22c55e" },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+                <span className="text-sm text-white/70">{label}</span>
               </div>
-            ))}
-            <div className="pt-2 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/50">Toplam</span>
-                <span className="text-sm font-bold text-white">{pendingLicenses + verifiedLicenses}</span>
-              </div>
+              <span className="text-sm font-bold text-white">{value}</span>
             </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl p-5"
-          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <h2 className="font-semibold text-white mb-4">İlan Durumu</h2>
-          <div className="space-y-3">
-            {[
-              { label: "Aktif",  value: activeIlanlar,              color: "#22c55e" },
-              { label: "Pasif",  value: totalIlanlar - activeIlanlar, color: "#64748b" },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                  <span className="text-sm text-white/70">{label}</span>
-                </div>
-                <span className="text-sm font-bold text-white">{value}</span>
-              </div>
-            ))}
-            <div className="pt-2 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-white/50">Toplam</span>
-                <span className="text-sm font-bold text-white">{totalIlanlar}</span>
-              </div>
+          ))}
+          <div className="pt-2 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white/50">Toplam</span>
+              <span className="text-sm font-bold text-white">{pendingLicenses + verifiedLicenses}</span>
             </div>
           </div>
         </div>

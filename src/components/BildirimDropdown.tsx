@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Bell, MessageCircle, Send, Star, Info, Check } from "lucide-react";
+import { Bell, MessageCircle, Star, Info, Check } from "lucide-react";
 
 type Bildirim = {
   id: string;
@@ -16,7 +16,6 @@ type Bildirim = {
 
 const TIP_ICON: Record<string, React.ReactNode> = {
   MESAJ: <MessageCircle className="w-4 h-4" />,
-  BASVURU: <Send className="w-4 h-4" />,
   REFERANS: <Star className="w-4 h-4" />,
   SISTEM: <Info className="w-4 h-4" />,
 };
