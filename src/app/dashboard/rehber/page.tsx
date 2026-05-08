@@ -11,6 +11,7 @@ import {
   ChevronRight, CalendarDays,
 } from "lucide-react";
 import { MiniTakvim } from "@/components/MiniTakvim";
+import { HizliEtkinlikEkle } from "@/components/HizliEtkinlikEkle";
 
 function TamamlanmaBar({ yuzde }: { yuzde: number }) {
   const renk = yuzde < 40 ? "bg-red-400" : yuzde < 80 ? "bg-yellow-400" : "bg-green-400";
@@ -219,9 +220,12 @@ export default async function RehberDashboard() {
           <h2 className="font-semibold text-white flex items-center gap-2">
             <CalendarDays className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yaklaşan Etkinlikler
           </h2>
-          <Link href="/dashboard/rehber/takvim" className="text-xs hover:underline" style={{ color: "var(--primary)" }}>
-            Takvime git
-          </Link>
+          <div className="flex items-center gap-3">
+            <HizliEtkinlikEkle />
+            <Link href="/dashboard/rehber/takvim" className="text-xs hover:underline" style={{ color: "var(--primary)" }}>
+              Takvime git
+            </Link>
+          </div>
         </div>
         <div className="flex divide-x divide-white/8">
           {/* Sol: Yaklaşan liste */}
@@ -230,9 +234,6 @@ export default async function RehberDashboard() {
               <div className="px-5 py-6 text-center">
                 <CalendarDays className="w-7 h-7 text-white/20 mx-auto mb-2" />
                 <p className="text-xs text-white/40">Yaklaşan etkinlik yok</p>
-                <Link href="/dashboard/rehber/takvim" className="text-xs hover:underline mt-1 inline-block" style={{ color: "var(--primary)" }}>
-                  Etkinlik ekle
-                </Link>
               </div>
             ) : (
               <div className="divide-y divide-white/8">

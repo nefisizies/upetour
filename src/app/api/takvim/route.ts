@@ -12,14 +12,32 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const yil = parseInt(searchParams.get("yil") ?? String(new Date().getFullYear()));
   const ay = parseInt(searchParams.get("ay") ?? String(new Date().getMonth() + 1));
+  const tumYil = searchParams.get("tumYil") === "1";
+
+  const profile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
+  if (!profile) return NextResponse.json(tumYil ? {} : []);
+
+  if (tumYil) {
+    const yilBaslangic = new Date(yil, 0, 1);
+    const yilBitis = new Date(yil + 1, 0, 1);
+    const tumEtkinlikler = await prisma.takvimEtkinlik.findMany({
+      where: { rehberId: profile.id, baslangic: { gte: yilBaslangic, lt: yilBitis } },
+      select: { baslangic: true, tur: true },
+    });
+    const aylar: Record<number, { toplam: number; manuel: number; rezervasyon: number }> = {};
+    for (let i = 1; i <= 12; i++) aylar[i] = { toplam: 0, manuel: 0, rezervasyon: 0 };
+    tumEtkinlikler.forEach((e) => {
+      const m = new Date(e.baslangic).getMonth() + 1;
+      aylar[m].toplam++;
+      if (e.tur === "REZERVASYON") aylar[m].rezervasyon++;
+      else aylar[m].manuel++;
+    });
+    return NextResponse.json(aylar);
+  }
 
   const baslangic = new Date(yil, ay - 1, 1);
   const bitis = new Date(yil, ay, 1);
 
-  const profile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
-  if (!profile) return NextResponse.json([]);
-
-  // Ay içinde başlayan VEYA ay içinde biten (çok günlü) etkinlikler
   const etkinlikler = await prisma.takvimEtkinlik.findMany({
     where: {
       rehberId: profile.id,
