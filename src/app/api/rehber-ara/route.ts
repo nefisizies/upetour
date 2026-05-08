@@ -13,7 +13,8 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const baslangicStr = searchParams.get("baslangic");
   const bitisStr = searchParams.get("bitis");
-  const sehir = searchParams.get("sehir");
+  const sehirlerParam = searchParams.get("sehirler"); // virgülle ayrılmış
+  const uzmanliklarParam = searchParams.get("uzmanliklar"); // virgülle ayrılmış
 
   if (!baslangicStr || !bitisStr) {
     return NextResponse.json({ error: "Tarih aralığı zorunlu" }, { status: 400 });
@@ -27,12 +28,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Geçersiz tarih" }, { status: 400 });
   }
 
-  const ulke = sehir ? sehirdenUlkeBul(sehir) : null;
-  if (sehir && !ulke) {
-    return NextResponse.json({ error: "Şehir bulunamadı" }, { status: 400 });
-  }
+  const secilenSehirler = sehirlerParam ? sehirlerParam.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  const secilenUzmanliklar = uzmanliklarParam ? uzmanliklarParam.split(",").map((s) => s.trim()).filter(Boolean) : [];
 
-  // O tarih aralığında etkinliği olan rehber id'leri
+  // Şehirlerden ülke kodlarını çıkar (tekrarsız)
+  const secilenUlkeler = [...new Set(
+    secilenSehirler.map((s) => sehirdenUlkeBul(s)?.ulkeKod).filter(Boolean) as string[]
+  )];
+
+  // O tarih aralığında meşgul rehberler
   const mesgulRehberler = await prisma.takvimEtkinlik.findMany({
     where: {
       baslangic: { lt: bitis },
@@ -51,22 +55,57 @@ export async function GET(req: Request) {
     where: {
       id: { notIn: mesgulIds },
       isAvailable: true,
-      ...(ulke ? { operatingCountries: { has: ulke } } : {}),
+      // En az 1 seçilen ülkeye hizmet vermeli (şehir seçildiyse)
+      ...(secilenUlkeler.length > 0 ? {
+        operatingCountries: { hasSome: secilenUlkeler },
+      } : {}),
+      // En az 1 seçilen uzmanlık alanına sahip olmalı (uzmanlık seçildiyse)
+      ...(secilenUzmanliklar.length > 0 ? {
+        specialties: { hasSome: secilenUzmanliklar },
+      } : {}),
     },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      city: true,
-      photoUrl: true,
-      bio: true,
-      specialties: true,
-      experienceYears: true,
-      operatingCountries: true,
-      languages: { select: { dil: true, seviye: true } },
+    include: {
+      languages: true,
+      licenses: true,
+      tours: true,
+      referanslar: {
+        where: { durum: "ONAYLANDI" },
+        include: { acente: { select: { companyName: true, city: true } } },
+      },
     },
-    orderBy: { name: "asc" },
   });
 
-  return NextResponse.json(rehberler);
+  const acenteSayilari = await Promise.all(
+    rehberler.map((r) =>
+      prisma.message.groupBy({
+        by: ["fromUserId"],
+        where: { toUserId: r.userId },
+      }).then((rows) => rows.length)
+    )
+  );
+
+  // Puanlama: eşleşen ülke sayısı + eşleşen uzmanlık sayısı
+  const puanli = rehberler.map((r, i) => {
+    const ulkePuani = secilenUlkeler.length > 0
+      ? secilenUlkeler.filter((u) => r.operatingCountries.includes(u)).length
+      : 0;
+    const uzmanlikPuani = secilenUzmanliklar.length > 0
+      ? secilenUzmanliklar.filter((u) => r.specialties.includes(u)).length
+      : 0;
+    return {
+      ...r,
+      acenteBaglantiSayisi: acenteSayilari[i],
+      _puan: ulkePuani + uzmanlikPuani,
+      _ulkeEslesmesi: ulkePuani,
+      _uzmanlikEslesmesi: uzmanlikPuani,
+    };
+  });
+
+  // Yüksek puandan düşüğe sırala, eşit puanda deneyim yılı tiebreak
+  puanli.sort((a, b) => {
+    if (b._puan !== a._puan) return b._puan - a._puan;
+    return b.experienceYears - a.experienceYears;
+  });
+
+  return NextResponse.json(puanli);
 }

@@ -416,9 +416,9 @@ export const SEHIR_LISTESI: SehirBilgi[] = [
   { sehir: "Reykjavik", ulke: "İzlanda", ulkeKod: "IS" },
 ];
 
-export function sehirdenUlkeBul(sehirAdi: string): string | null {
+export function sehirdenUlkeBul(sehirAdi: string): { ulke: string; ulkeKod: string } | null {
   const bulunan = SEHIR_LISTESI.find(
     (s) => s.sehir.toLowerCase() === sehirAdi.toLowerCase()
   );
-  return bulunan?.ulke ?? null;
+  return bulunan ? { ulke: bulunan.ulke, ulkeKod: bulunan.ulkeKod } : null;
 }
