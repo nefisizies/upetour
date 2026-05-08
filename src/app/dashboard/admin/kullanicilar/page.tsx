@@ -40,8 +40,8 @@ export default async function KullanicilarPage({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kullanıcılar</h1>
-        <p className="text-sm text-gray-500 mt-1">{users.length} kullanıcı</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--card-text, #f1f5f9)" }}>Kullanıcılar</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--card-text-muted, #94a3b8)" }}>{users.length} kullanıcı</p>
       </div>
 
       {/* Filtreler */}

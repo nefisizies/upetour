@@ -98,8 +98,7 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
           onClick={() => setMobileOpen(false)}
         >
           <div
-            className="mx-4 mt-2 rounded-2xl shadow-xl p-3 space-y-0.5"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
+            className="dash-card mx-4 mt-2 rounded-2xl shadow-xl p-3 space-y-0.5"
             onClick={e => e.stopPropagation()}
           >
             {links.map(l => (

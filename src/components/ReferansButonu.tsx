@@ -79,16 +79,17 @@ export function ReferansButonu({ acenteId, referansId, baslangicDurum, banBitis 
         </button>
 
         {onayPenceresi && (
-          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-              <h3 className="font-semibold text-gray-900 mb-2">Tekrar başvur?</h3>
-              <p className="text-sm text-gray-500 mb-5">
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="rounded-2xl p-6 max-w-sm w-full shadow-xl" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+              <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary, #f1f5f9)" }}>Tekrar başvur?</h3>
+              <p className="text-sm mb-5" style={{ color: "var(--text-muted, #94a3b8)" }}>
                 Bu acente daha önce başvurunuzu reddetti. Yine de tekrar başvurmak istiyor musunuz?
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setOnayPenceresi(false)}
-                  className="flex-1 text-sm border border-gray-200 text-gray-600 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 text-sm py-2 rounded-lg hover:bg-white/5 transition-colors"
+                  style={{ border: "1px solid var(--card-inner-border, rgba(255,255,255,0.1))", color: "var(--text-muted, #94a3b8)" }}
                 >
                   Vazgeç
                 </button>

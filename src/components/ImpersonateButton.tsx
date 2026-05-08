@@ -25,7 +25,10 @@ export function ImpersonateButton({ userId, targetHref }: { userId: string; targ
     <button
       onClick={impersonate}
       disabled={loading}
-      className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#0a7ea4] border border-gray-200 hover:border-[#0a7ea4] rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50"
+      className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50"
+      style={{ color: "var(--card-text-muted, #94a3b8)", border: "1px solid var(--card-border, rgba(255,255,255,0.1))" }}
+      onMouseEnter={e => { e.currentTarget.style.color = "#0a7ea4"; e.currentTarget.style.borderColor = "#0a7ea4"; }}
+      onMouseLeave={e => { e.currentTarget.style.color = "var(--card-text-muted, #94a3b8)"; e.currentTarget.style.borderColor = "var(--card-border, rgba(255,255,255,0.1))"; }}
     >
       <Eye className="w-3.5 h-3.5" />
       {loading ? "Geçiyor..." : "Görüntüle"}

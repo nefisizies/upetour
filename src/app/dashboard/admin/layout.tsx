@@ -17,8 +17,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen flex" data-layout="dashboard">
       <WaveBackground />
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col backdrop-blur-md border-r z-20"
-        style={{ background: "color-mix(in srgb, var(--sidebar-bg) 95%, transparent)", borderColor: "var(--panel-border)" }}>
+      <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col border-r z-20 bg-white/95"
+        style={{ backdropFilter: "blur(12px)", borderColor: "var(--panel-border, rgba(0,0,0,0.08))" }}>
         <div className="p-4 border-b" style={{ borderColor: "var(--panel-border)" }}>
           <Logo size="sm" href="/dashboard/admin" />
           <div className="mt-2 flex items-center gap-1.5">
