@@ -424,17 +424,22 @@ function ThemeLayer({ theme }: { theme: Theme }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function WaveBackground() {
-  // Read initial bg_theme from <html data-bg-theme> (set server-side from DB)
-  const [base, setBase] = useState(() => {
-    if (typeof document === "undefined") return 0;
-    const stored = document.documentElement.getAttribute("data-bg-theme");
-    const idx = THEMES.indexOf(stored as Theme);
-    return idx >= 0 ? idx : 0;
-  });
+  // Always start at 0 (both server and client agree), then sync after hydration
+  const [base, setBase] = useState(0);
   const [incoming, setIncoming] = useState<number | null>(null);
   const [incomingVisible, setIncomingVisible] = useState(false);
   const baseRef = useRef(base);
   const busyRef = useRef(false);
+
+  // After hydration, read stored theme from HTML attribute
+  useEffect(() => {
+    const stored = document.documentElement.getAttribute("data-bg-theme");
+    const idx = THEMES.indexOf(stored as Theme);
+    if (idx >= 0 && idx !== 0) {
+      setBase(idx);
+      baseRef.current = idx;
+    }
+  }, []);
 
   // Sync when data-bg-theme attribute changes (admin theme customizer)
   useEffect(() => {
