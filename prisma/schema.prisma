@@ -22,12 +22,14 @@ model User {
   role             Role
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
   acenteProfile    AcenteProfile?
   sentMessages     Message[]      @relation("SentMessages")
   receivedMessages Message[]      @relation("ReceivedMessages")
   rehberProfile    RehberProfile?
   receivedReviews  Review[]       @relation("ReceivedReviews")
   givenReviews     Review[]       @relation("GivenReviews")
+  bildirimler      Bildirim[]
 }
 
 model RehberProfile {
@@ -51,6 +53,7 @@ model RehberProfile {
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   takvimEtkinlikleri TakvimEtkinlik[]
   tours              Tour[]
+  ilanBasvurular     IlanBasvuru[]
 }
 
 model RehberDil {
@@ -135,16 +138,44 @@ model Tour {
 }
 
 model Ilan {
-  id          String        @id @default(cuid())
+  id          String         @id @default(cuid())
   acenteId    String
   title       String
   description String?
   location    String?
   languages   String[]
   budget      String?
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  acente      AcenteProfile  @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  basvurular  IlanBasvuru[]
+}
+
+model IlanBasvuru {
+  id        String           @id @default(cuid())
+  ilanId    String
+  rehberId  String
+  mesaj     String?
+  durum     BasvuruDurum     @default(BEKLIYOR)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  ilan      Ilan             @relation(fields: [ilanId], references: [id], onDelete: Cascade)
+  rehber    RehberProfile    @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+
+  @@unique([ilanId, rehberId])
+}
+
+model Bildirim {
+  id        String       @id @default(cuid())
+  userId    String
+  tip       BildirimTip
+  baslik    String
+  metin     String?
+  link      String?
+  okundu    Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TakvimEtkinlik {
@@ -210,4 +241,18 @@ enum EtkinlikTur {
 enum BlokTur {
   GECICI
   KALICI
+}
+
+enum BasvuruDurum {
+  BEKLIYOR
+  INCELENDI
+  KABUL
+  RED
+}
+
+enum BildirimTip {
+  MESAJ
+  BASVURU
+  REFERANS
+  SISTEM
 }

@@ -46,11 +46,25 @@ export function MesajlarClient({
 
   useEffect(() => {
     if (!secili) return;
-    setYukleniyor(true);
-    fetch(`/api/mesaj?ile=${secili}`)
-      .then((r) => r.json())
-      .then((data) => { setMesajlar(data); setYukleniyor(false); })
-      .catch(() => setYukleniyor(false));
+
+    async function yukle() {
+      setYukleniyor(true);
+      try {
+        const data = await fetch(`/api/mesaj?ile=${secili}`).then(r => r.json());
+        setMesajlar(data);
+      } finally {
+        setYukleniyor(false);
+      }
+    }
+
+    async function polling() {
+      try {
+        const data = await fetch(`/api/mesaj?ile=${secili}`).then(r => r.json());
+        setMesajlar(data);
+      } catch {}
+    }
+
+    yukle();
 
     // Okundu işaretle
     fetch("/api/mesaj/oku", {
@@ -58,6 +72,9 @@ export function MesajlarClient({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fromUserId: secili }),
     });
+
+    const interval = setInterval(polling, 5000);
+    return () => clearInterval(interval);
   }, [secili]);
 
   useEffect(() => {
