@@ -163,18 +163,19 @@ model TakvimEtkinlik {
 }
 
 model AcenteTakvimEtkinlik {
-  id        String        @id @default(cuid())
-  acenteId  String
-  baslik    String
-  baslangic DateTime
-  bitis     DateTime?
-  lokasyon  String?
-  rehberId  String?
-  notlar    String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  acente    AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
-  rehber    RehberProfile? @relation(fields: [rehberId], references: [id], onDelete: SetNull)
+  id          String             @id @default(cuid())
+  acenteId    String
+  baslik      String
+  baslangic   DateTime
+  bitis       DateTime?
+  lokasyon    String?
+  rehberId    String?
+  notlar      String?
+  rehberYanit RehberYanitDurum?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  acente      AcenteProfile      @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber      RehberProfile?     @relation(fields: [rehberId], references: [id], onDelete: SetNull)
 }
 
 model Message {
@@ -232,4 +233,11 @@ enum BildirimTip {
   MESAJ
   REFERANS
   SISTEM
+  DAVET
+}
+
+enum RehberYanitDurum {
+  BEKLIYOR
+  KABUL
+  RED
 }

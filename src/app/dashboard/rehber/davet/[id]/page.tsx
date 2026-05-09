@@ -1,0 +1,37 @@
+export const dynamic = "force-dynamic";
+
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { DavetYanit } from "@/components/DavetYanit";
+
+export default async function DavetPage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "REHBER") redirect("/dashboard");
+
+  const rehberProfile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
+  if (!rehberProfile) redirect("/dashboard");
+
+  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
+    where: { id: params.id },
+    include: { acente: { select: { companyName: true, city: true, logoUrl: true } } },
+  });
+
+  if (!etkinlik || etkinlik.rehberId !== rehberProfile.id) redirect("/dashboard/rehber");
+
+  return (
+    <DavetYanit
+      etkinlik={{
+        id: etkinlik.id,
+        baslik: etkinlik.baslik,
+        baslangic: etkinlik.baslangic.toISOString(),
+        bitis: etkinlik.bitis?.toISOString() ?? null,
+        lokasyon: etkinlik.lokasyon,
+        notlar: etkinlik.notlar,
+        rehberYanit: etkinlik.rehberYanit,
+        acente: etkinlik.acente,
+      }}
+    />
+  );
+}

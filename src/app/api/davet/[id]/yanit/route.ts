@@ -1,0 +1,109 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "REHBER") {
+    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  }
+
+  const { yanit } = await req.json();
+  if (yanit !== "KABUL" && yanit !== "RED") {
+    return NextResponse.json({ error: "Geçersiz yanıt" }, { status: 400 });
+  }
+
+  const rehberProfile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
+  if (!rehberProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
+
+  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
+    where: { id: params.id },
+    include: { acente: true },
+  });
+
+  if (!etkinlik || etkinlik.rehberId !== rehberProfile.id) {
+    return NextResponse.json({ error: "Bu davete erişim yetkiniz yok" }, { status: 403 });
+  }
+
+  if (etkinlik.rehberYanit !== "BEKLIYOR") {
+    return NextResponse.json({ error: "Bu davete zaten yanıt verildi" }, { status: 400 });
+  }
+
+  await prisma.acenteTakvimEtkinlik.update({
+    where: { id: params.id },
+    data: { rehberYanit: yanit },
+  });
+
+  if (yanit === "KABUL") {
+    // Rehberin takviminde REZERVASYON olarak etkinlik oluştur
+    const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    await prisma.takvimEtkinlik.create({
+      data: {
+        rehberId: rehberProfile.id,
+        baslik: `${etkinlik.acente.companyName} — ${etkinlik.baslik}`,
+        baslangic: etkinlik.baslangic,
+        bitis: etkinlik.bitis,
+        notlar: [etkinlik.lokasyon, etkinlik.notlar].filter(Boolean).join(" • ") || null,
+        tur: "REZERVASYON",
+      },
+    });
+
+    // Acenteye kabul bildirimi gönder
+    const acenteUser = await prisma.user.findUnique({ where: { id: etkinlik.acente.userId } });
+    if (acenteUser) {
+      await prisma.bildirim.create({
+        data: {
+          userId: acenteUser.id,
+          tip: "DAVET",
+          baslik: `${rehberProfile.name} daveti kabul etti`,
+          metin: `${etkinlik.baslik} — ${tarihStr} turu için ${rehberProfile.name} daveti kabul etti.`,
+          link: `/dashboard/acente/takvim`,
+        },
+      });
+    }
+  } else {
+    // Acenteye ret bildirimi gönder
+    const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    const acenteUser = await prisma.user.findUnique({ where: { id: etkinlik.acente.userId } });
+    if (acenteUser) {
+      await prisma.bildirim.create({
+        data: {
+          userId: acenteUser.id,
+          tip: "DAVET",
+          baslik: `${rehberProfile.name} daveti reddetti`,
+          metin: `${etkinlik.baslik} — ${tarihStr} turu için ${rehberProfile.name} daveti reddetti.`,
+          link: `/dashboard/acente/takvim`,
+        },
+      });
+    }
+  }
+
+  return NextResponse.json({ ok: true, yanit });
+}
+
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const rehberProfile = session.user.role === "REHBER"
+    ? await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } })
+    : null;
+
+  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
+    where: { id: params.id },
+    include: {
+      acente: { select: { companyName: true, city: true, logoUrl: true } },
+      rehber: { select: { id: true, name: true } },
+    },
+  });
+
+  if (!etkinlik) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
+
+  // Sadece davet edilen rehber görebilir
+  if (rehberProfile && etkinlik.rehberId !== rehberProfile.id) {
+    return NextResponse.json({ error: "Erişim yetkiniz yok" }, { status: 403 });
+  }
+
+  return NextResponse.json(etkinlik);
+}

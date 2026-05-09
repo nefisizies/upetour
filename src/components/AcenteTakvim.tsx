@@ -16,6 +16,7 @@ type Etkinlik = {
   lokasyon: string | null;
   notlar: string | null;
   rehberId: string | null;
+  rehberYanit: string | null;
   rehber: Rehber | null;
 };
 
@@ -510,6 +511,21 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil }: {
           {e.rehber && (
             <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
               <User className="w-3 h-3" />{e.rehber.name}
+            </span>
+          )}
+          {e.rehberYanit === "BEKLIYOR" && (
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, orange 15%, transparent)", color: "orange" }}>
+              Yanıt bekleniyor
+            </span>
+          )}
+          {e.rehberYanit === "KABUL" && (
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #22c55e 15%, transparent)", color: "#22c55e" }}>
+              Kabul edildi
+            </span>
+          )}
+          {e.rehberYanit === "RED" && (
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #ef4444 15%, transparent)", color: "#ef4444" }}>
+              Reddedildi
             </span>
           )}
           {bitis && (

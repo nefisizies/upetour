@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Bell, MessageCircle, Star, Info, Check } from "lucide-react";
+import { Bell, MessageCircle, Star, Info, Check, CalendarCheck } from "lucide-react";
 
 type Bildirim = {
   id: string;
@@ -18,6 +18,7 @@ const TIP_ICON: Record<string, React.ReactNode> = {
   MESAJ: <MessageCircle className="w-4 h-4" />,
   REFERANS: <Star className="w-4 h-4" />,
   SISTEM: <Info className="w-4 h-4" />,
+  DAVET: <CalendarCheck className="w-4 h-4" />,
 };
 
 export function BildirimDropdown() {
