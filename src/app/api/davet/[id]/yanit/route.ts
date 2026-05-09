@@ -9,7 +9,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 
-  const { yanit } = await req.json();
+  const { yanit, ozelBaslik, ozelNotlar } = await req.json();
   if (yanit !== "KABUL" && yanit !== "RED") {
     return NextResponse.json({ error: "Geçersiz yanıt" }, { status: 400 });
   }
@@ -38,13 +38,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (yanit === "KABUL") {
     // Rehberin takviminde REZERVASYON olarak etkinlik oluştur
     const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    const etkinlikBaslik = ozelBaslik?.trim()
+      ? ozelBaslik.trim()
+      : `${etkinlik.acente.companyName} — ${etkinlik.baslik}`;
+    const etkinlikNotlar = ozelNotlar?.trim()
+      ? ozelNotlar.trim()
+      : [etkinlik.lokasyon, etkinlik.notlar].filter(Boolean).join(" • ") || null;
+
     await prisma.takvimEtkinlik.create({
       data: {
         rehberId: rehberProfile.id,
-        baslik: `${etkinlik.acente.companyName} — ${etkinlik.baslik}`,
+        baslik: etkinlikBaslik,
         baslangic: etkinlik.baslangic,
         bitis: etkinlik.bitis,
-        notlar: [etkinlik.lokasyon, etkinlik.notlar].filter(Boolean).join(" • ") || null,
+        notlar: etkinlikNotlar,
         tur: "REZERVASYON",
       },
     });
