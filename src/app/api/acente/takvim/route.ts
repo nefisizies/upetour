@@ -11,7 +11,8 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const sekme = searchParams.get("sekme") ?? "gelecek";
-  const sehir = searchParams.get("sehir") ?? "";
+  const lokasyon = searchParams.get("lokasyon") ?? "";
+  const rehberId = searchParams.get("rehberId") ?? "";
   const siralama = searchParams.get("siralama") ?? "tarih_asc";
   const ay = searchParams.get("ay") ? parseInt(searchParams.get("ay")!) : null;
   const yil = searchParams.get("yil") ? parseInt(searchParams.get("yil")!) : new Date().getFullYear();
@@ -19,25 +20,7 @@ export async function GET(req: Request) {
   const acenteProfile = await prisma.acenteProfile.findUnique({
     where: { userId: session.user.id },
   });
-  if (!acenteProfile) return NextResponse.json({ etkinlikler: [], sehirler: [] });
-
-  const referanslar = await prisma.referans.findMany({
-    where: { acenteId: acenteProfile.id, durum: "ONAYLANDI" },
-    select: { rehberId: true },
-  });
-  const rehberIds = referanslar.map((r) => r.rehberId);
-
-  if (rehberIds.length === 0) {
-    return NextResponse.json({ etkinlikler: [], sehirler: [], bosRehber: true });
-  }
-
-  const rehberler = await prisma.rehberProfile.findMany({
-    where: { id: { in: rehberIds }, city: { not: null } },
-    select: { city: true },
-    distinct: ["city"],
-    orderBy: { city: "asc" },
-  });
-  const sehirler = rehberler.map((r) => r.city).filter(Boolean) as string[];
+  if (!acenteProfile) return NextResponse.json({ etkinlikler: [], lokasyonlar: [], rehberler: [] });
 
   const now = new Date();
   let dateWhere: Record<string, unknown> = {};
@@ -63,13 +46,14 @@ export async function GET(req: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let orderBy: any = { baslangic: "asc" };
   if (siralama === "tarih_desc") orderBy = { baslangic: "desc" };
-  if (siralama === "sehir_asc") orderBy = { rehber: { city: "asc" } };
+  if (siralama === "lokasyon_asc") orderBy = { lokasyon: "asc" };
 
-  const etkinlikler = await prisma.takvimEtkinlik.findMany({
+  const etkinlikler = await prisma.acenteTakvimEtkinlik.findMany({
     where: {
-      rehberId: { in: rehberIds },
+      acenteId: acenteProfile.id,
       ...dateWhere,
-      ...(sehir ? { rehber: { city: sehir } } : {}),
+      ...(lokasyon ? { lokasyon } : {}),
+      ...(rehberId ? { rehberId } : {}),
     },
     include: {
       rehber: { select: { id: true, name: true, city: true, photoUrl: true, slug: true } },
@@ -77,5 +61,53 @@ export async function GET(req: Request) {
     orderBy,
   });
 
-  return NextResponse.json({ etkinlikler, sehirler, bosRehber: false });
+  // Filter dropdown options — always from all events (not date-filtered)
+  const tumEtkinlikler = await prisma.acenteTakvimEtkinlik.findMany({
+    where: { acenteId: acenteProfile.id },
+    select: { lokasyon: true, rehberId: true, rehber: { select: { id: true, name: true } } },
+    distinct: ["lokasyon"],
+  });
+  const lokasyonlar = [...new Set(tumEtkinlikler.map((e) => e.lokasyon).filter(Boolean))] as string[];
+
+  const rehberMap = new Map<string, string>();
+  tumEtkinlikler.forEach((e) => {
+    if (e.rehberId && e.rehber) rehberMap.set(e.rehberId, e.rehber.name);
+  });
+  const rehberler = [...rehberMap.entries()].map(([id, name]) => ({ id, name }));
+
+  return NextResponse.json({ etkinlikler, lokasyonlar, rehberler });
+}
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ACENTE") {
+    return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+  }
+
+  const { baslik, baslangic, bitis, lokasyon, rehberId, notlar } = await req.json();
+  if (!baslik?.trim() || !baslangic) {
+    return NextResponse.json({ error: "Başlık ve tarih zorunlu" }, { status: 400 });
+  }
+
+  const acenteProfile = await prisma.acenteProfile.findUnique({
+    where: { userId: session.user.id },
+  });
+  if (!acenteProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
+
+  const etkinlik = await prisma.acenteTakvimEtkinlik.create({
+    data: {
+      acenteId: acenteProfile.id,
+      baslik: baslik.trim(),
+      baslangic: new Date(baslangic),
+      bitis: bitis ? new Date(bitis) : null,
+      lokasyon: lokasyon?.trim() || null,
+      rehberId: rehberId || null,
+      notlar: notlar?.trim() || null,
+    },
+    include: {
+      rehber: { select: { id: true, name: true, city: true, photoUrl: true, slug: true } },
+    },
+  });
+
+  return NextResponse.json(etkinlik, { status: 201 });
 }
