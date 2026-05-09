@@ -16,6 +16,43 @@ const GUNLER = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
 function pad2(n: number) { return String(n).padStart(2, "0"); }
 function toDateStr(d: Date) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 function toInputDatetime(iso: string) { return iso.slice(0, 16); }
+function formatTarihMask(val: string): string {
+  const raw = val.replace(/\D/g, "");
+  if (!raw) return "";
+
+  // Gün: ilk rakam 0-3 olmalı
+  if (parseInt(raw[0]) > 3) return "";
+  if (raw.length === 1) return raw[0];
+
+  const d1 = parseInt(raw[0]), d2 = parseInt(raw[1]);
+  const gun = d1 === 0 && d2 === 0 ? "01" : d1 === 3 && d2 > 1 ? "31" : raw[0] + raw[1];
+  if (raw.length === 2) return gun;
+
+  // Ay: ilk rakam 2-9 ise otomatik "0X" pad, yıla geç
+  const m1 = parseInt(raw[2]);
+  if (m1 >= 2) {
+    const ay = "0" + raw[2];
+    const yRaw = raw.slice(3, 7);
+    const yil = yRaw.length > 0 && yRaw[0] !== "2" ? "2" + yRaw.slice(1) : yRaw;
+    return `${gun}/${ay}/${yil}`;
+  }
+
+  if (raw.length === 3) return `${gun}/${raw[2]}`;
+
+  const m2 = parseInt(raw[3]);
+  const ay = m1 === 0 && m2 === 0 ? "01" : m1 === 1 && m2 > 2 ? "12" : raw[2] + raw[3];
+  if (raw.length === 4) return `${gun}/${ay}`;
+
+  // Yıl: 2 ile başlamalı
+  const yRaw = raw.slice(4, 8);
+  const yil = yRaw[0] !== "2" ? "2" + yRaw.slice(1) : yRaw;
+  return `${gun}/${ay}/${yil}`;
+}
+function tarihToISO(val: string): string {
+  const p = val.split("/");
+  if (p.length !== 3 || p[2].length !== 4) return "";
+  return `${p[2]}-${p[1].padStart(2, "0")}-${p[0].padStart(2, "0")}`;
+}
 
 const cardStyle = { background: "var(--card-bg)", border: "1px solid var(--card-border)" };
 const inputStyle = { background: "var(--card-inner-bg, rgba(255,255,255,0.06))", border: "1px solid var(--card-inner-border, rgba(255,255,255,0.1))", color: "var(--text-primary, #1e293b)" };
@@ -35,7 +72,8 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
   const [kaydediyor, setKaydediyor] = useState(false);
   const [formHata, setFormHata] = useState("");
   const [hizliBaslik, setHizliBaslik] = useState("");
-  const [hizliTarih, setHizliTarih] = useState(() => toDateStr(new Date()));
+  const [hizliBaslangic, setHizliBaslangic] = useState("");
+  const [hizliBitis, setHizliBitis] = useState("");
   const [hizliEkleniyor, setHizliEkleniyor] = useState(false);
 
   function modalAc(tarih: string) {
@@ -95,14 +133,16 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
 
   async function hizliEkle(e: React.FormEvent) {
     e.preventDefault();
-    if (!hizliBaslik.trim()) return;
+    const baslangicISO = tarihToISO(hizliBaslangic);
+    if (!hizliBaslik.trim() || !baslangicISO) return;
+    const bitisISO = tarihToISO(hizliBitis);
     setHizliEkleniyor(true);
     const res = await fetch("/api/takvim", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ baslik: hizliBaslik.trim(), baslangic: `${hizliTarih}T09:00`, bitis: "", notlar: "" }),
+      body: JSON.stringify({ baslik: hizliBaslik.trim(), baslangic: `${baslangicISO}T09:00`, bitis: bitisISO ? `${bitisISO}T09:00` : "", notlar: "" }),
     });
-    if (res.ok) { setHizliBaslik(""); await etkinlikleriYukle(); await yilIstatistikYukle(); }
+    if (res.ok) { setHizliBaslik(""); setHizliBaslangic(""); setHizliBitis(""); await etkinlikleriYukle(); await yilIstatistikYukle(); }
     setHizliEkleniyor(false);
   }
 
@@ -174,24 +214,41 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
         </div>
 
         {/* Hızlı Ekle */}
-        <form onSubmit={hizliEkle} className="rounded-2xl p-3 flex items-center gap-2" style={cardStyle}>
+        <form onSubmit={hizliEkle} className="rounded-2xl p-3 flex flex-wrap items-center gap-2" style={cardStyle}>
           <Plus className="w-4 h-4 shrink-0 ml-1" style={{ color: "var(--text-muted)" }} />
           <input
             type="text"
             value={hizliBaslik}
             onChange={(e) => setHizliBaslik(e.target.value)}
-            placeholder="Etkinlik ekle... (Enter)"
-            className="flex-1 bg-transparent text-sm focus:outline-none"
+            placeholder="Etkinlik ekle..."
+            className="flex-1 min-w-32 bg-transparent text-sm focus:outline-none"
             style={{ color: "var(--text-primary, #1e293b)" }}
           />
-          <input
-            type="date"
-            value={hizliTarih}
-            onChange={(e) => setHizliTarih(e.target.value)}
-            className="text-sm bg-transparent focus:outline-none"
-            style={{ color: "var(--text-muted)" }}
-          />
-          <button type="submit" disabled={hizliEkleniyor || !hizliBaslik.trim()}
+          <div className="flex items-center gap-1">
+            <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>Başlangıç:</span>
+            <input
+              type="text"
+              value={hizliBaslangic}
+              onChange={(e) => setHizliBaslangic(formatTarihMask(e.target.value))}
+              placeholder="gg/aa/yyyy"
+              maxLength={10}
+              className="w-24 text-sm bg-transparent focus:outline-none border-b"
+              style={{ color: "var(--text-primary, #1e293b)", borderColor: "var(--card-inner-border, rgba(0,0,0,0.15))" }}
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>Bitiş:</span>
+            <input
+              type="text"
+              value={hizliBitis}
+              onChange={(e) => setHizliBitis(formatTarihMask(e.target.value))}
+              placeholder="gg/aa/yyyy"
+              maxLength={10}
+              className="w-24 text-sm bg-transparent focus:outline-none border-b"
+              style={{ color: "var(--text-primary, #1e293b)", borderColor: "var(--card-inner-border, rgba(0,0,0,0.15))" }}
+            />
+          </div>
+          <button type="submit" disabled={hizliEkleniyor || !hizliBaslik.trim() || !tarihToISO(hizliBaslangic)}
             className="text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-40 text-white"
             style={{ background: "var(--primary)" }}>
             {hizliEkleniyor ? "..." : "Ekle"}

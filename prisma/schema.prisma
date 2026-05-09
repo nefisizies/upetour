@@ -24,12 +24,12 @@ model User {
   updatedAt        DateTime       @updatedAt
   deletedAt        DateTime?
   acenteProfile    AcenteProfile?
+  bildirimler      Bildirim[]
   sentMessages     Message[]      @relation("SentMessages")
   receivedMessages Message[]      @relation("ReceivedMessages")
   rehberProfile    RehberProfile?
   receivedReviews  Review[]       @relation("ReceivedReviews")
   givenReviews     Review[]       @relation("GivenReviews")
-  bildirimler      Bildirim[]
 }
 
 model RehberProfile {
@@ -134,7 +134,6 @@ model Tour {
   createdAt   DateTime      @default(now())
   rehber      RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
 }
-
 
 model Bildirim {
   id        String      @id @default(cuid())

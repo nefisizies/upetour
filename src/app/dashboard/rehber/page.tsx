@@ -216,13 +216,19 @@ export default async function RehberDashboard() {
 
       {/* Yaklaşan Etkinlikler + Mini Takvim */}
       <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
+        <div className="grid grid-cols-3 items-center px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
           <h2 className="font-semibold text-white flex items-center gap-2">
             <CalendarDays className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yaklaşan Etkinlikler
           </h2>
-          <div className="flex items-center gap-3">
+          <div className="flex justify-center">
             <HizliEtkinlikEkle />
-            <Link href="/dashboard/rehber/takvim" className="text-xs hover:underline" style={{ color: "var(--primary)" }}>
+          </div>
+          <div className="flex justify-end">
+            <Link
+              href="/dashboard/rehber/takvim"
+              className="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:opacity-80"
+              style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
+            >
               Takvime git
             </Link>
           </div>
