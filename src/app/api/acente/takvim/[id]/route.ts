@@ -3,16 +3,17 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ACENTE") {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 
+  const { id } = await params;
   const acenteProfile = await prisma.acenteProfile.findUnique({ where: { userId: session.user.id } });
   if (!acenteProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
-  const mevcut = await prisma.acenteTakvimEtkinlik.findUnique({ where: { id: params.id } });
+  const mevcut = await prisma.acenteTakvimEtkinlik.findUnique({ where: { id } });
   if (!mevcut || mevcut.acenteId !== acenteProfile.id) {
     return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
   }
@@ -28,7 +29,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     : null;
 
   const updated = await prisma.acenteTakvimEtkinlik.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       baslik: baslik.trim(),
       baslangic: new Date(baslangic),
@@ -41,7 +42,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     include: { rehber: { select: { id: true, name: true, city: true, photoUrl: true, slug: true } } },
   });
 
-  // Yeni rehber atandıysa bildirim gönder
   if (rehberId && rehberDegisti) {
     const rehberUser = await prisma.user.findFirst({ where: { rehberProfile: { id: rehberId } } });
     if (rehberUser) {
@@ -52,7 +52,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
           tip: "DAVET",
           baslik: `Tur Daveti: ${baslik.trim()}`,
           metin: `${acenteProfile.companyName} sizi ${tarihStr}${lokasyon ? ` (${lokasyon})` : ""} için tur rehberliğine davet etti.`,
-          link: `/dashboard/rehber/davet/${params.id}`,
+          link: `/dashboard/rehber/davet/${id}`,
         },
       });
     }
@@ -61,20 +61,21 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(updated);
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ACENTE") {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 
+  const { id } = await params;
   const acenteProfile = await prisma.acenteProfile.findUnique({ where: { userId: session.user.id } });
   if (!acenteProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
-  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({ where: { id: params.id } });
+  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({ where: { id } });
   if (!etkinlik || etkinlik.acenteId !== acenteProfile.id) {
     return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
   }
 
-  await prisma.acenteTakvimEtkinlik.delete({ where: { id: params.id } });
+  await prisma.acenteTakvimEtkinlik.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

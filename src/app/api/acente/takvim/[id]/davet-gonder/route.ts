@@ -3,17 +3,18 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ACENTE") {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   }
 
+  const { id } = await params;
   const acenteProfile = await prisma.acenteProfile.findUnique({ where: { userId: session.user.id } });
   if (!acenteProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
   const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { rehber: { select: { id: true, name: true } } },
   });
 
@@ -32,7 +33,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
 
   await prisma.$transaction([
     prisma.acenteTakvimEtkinlik.update({
-      where: { id: params.id },
+      where: { id },
       data: { rehberYanit: "BEKLIYOR" },
     }),
     prisma.bildirim.create({
@@ -41,7 +42,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
         tip: "DAVET",
         baslik: `Tur Daveti: ${etkinlik.baslik}`,
         metin: `${acenteProfile.companyName} sizi ${tarihStr}${etkinlik.lokasyon ? ` (${etkinlik.lokasyon})` : ""} için tur rehberliğine davet etti.`,
-        link: `/dashboard/rehber/davet/${etkinlik.id}`,
+        link: `/dashboard/rehber/davet/${id}`,
       },
     }),
   ]);

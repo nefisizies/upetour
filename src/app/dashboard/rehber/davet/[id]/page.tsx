@@ -6,15 +6,16 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { DavetYanit } from "@/components/DavetYanit";
 
-export default async function DavetPage({ params }: { params: { id: string } }) {
+export default async function DavetPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "REHBER") redirect("/dashboard");
 
+  const { id } = await params;
   const rehberProfile = await prisma.rehberProfile.findUnique({ where: { userId: session.user.id } });
   if (!rehberProfile) redirect("/dashboard");
 
   const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { acente: { select: { companyName: true, city: true, logoUrl: true } } },
   });
 
