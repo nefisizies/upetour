@@ -19,6 +19,7 @@ const rehberLinks = [
 const acenteLinks = [
   { href: "/dashboard/acente", label: "Genel Bakış", icon: LayoutDashboard },
   { href: "/dashboard/acente/profil", label: "Profilim", icon: User },
+  { href: "/dashboard/acente/takvim", label: "Takvim", icon: CalendarDays },
   { href: "/dashboard/acente/mesajlar", label: "Mesajlar", icon: MessageCircle },
   { href: "/dashboard/acente/rehber-bul", label: "Rehber Bul", icon: Search },
 ];
