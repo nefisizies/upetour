@@ -72,10 +72,7 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
   const [kaydediyor, setKaydediyor] = useState(false);
   const [formHata, setFormHata] = useState("");
   const [hizliBaslik, setHizliBaslik] = useState("");
-  const [hizliBaslangic, setHizliBaslangic] = useState(() => {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
-  });
+  const [hizliBaslangic, setHizliBaslangic] = useState("");
   const [hizliBitis, setHizliBitis] = useState("");
   const [hizliEkleniyor, setHizliEkleniyor] = useState(false);
 
@@ -145,7 +142,7 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ baslik: hizliBaslik.trim(), baslangic: `${baslangicISO}T09:00`, bitis: bitisISO ? `${bitisISO}T09:00` : "", notlar: "" }),
     });
-    if (res.ok) { setHizliBaslik(""); setHizliBaslangic((() => { const d = new Date(); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`; })()); setHizliBitis(""); await etkinlikleriYukle(); await yilIstatistikYukle(); }
+    if (res.ok) { setHizliBaslik(""); setHizliBaslangic(""); setHizliBitis(""); await etkinlikleriYukle(); await yilIstatistikYukle(); }
     setHizliEkleniyor(false);
   }
 
@@ -233,7 +230,7 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
               type="text"
               value={hizliBaslangic}
               onChange={(e) => setHizliBaslangic(formatTarihMask(e.target.value))}
-              placeholder="gg/aa/yyyy"
+              placeholder={`gg/aa/${new Date().getFullYear()}`}
               maxLength={10}
               className="w-24 text-sm bg-transparent focus:outline-none border-b"
               style={{ color: "var(--text-primary, #1e293b)", borderColor: "var(--card-inner-border, rgba(0,0,0,0.15))" }}

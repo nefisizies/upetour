@@ -46,11 +46,7 @@ const innerInputStyle = {
 } as React.CSSProperties;
 
 // ─── Form state ───────────────────────────────────────────────────────────────
-function bugunStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-const BOSH_FORM = () => ({ baslik: "", baslangic: bugunStr(), bitis: "", lokasyon: "", rehberId: "", notlar: "" });
+const BOSH_FORM = () => ({ baslik: "", baslangic: "", bitis: "", lokasyon: "", rehberId: "", notlar: "" });
 
 export function AcenteTakvim({ referansRehberler }: { referansRehberler: ReferansRehber[] }) {
   const [sekme, setSekme] = useState<SekmeId>("gelecek");
