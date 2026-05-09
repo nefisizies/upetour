@@ -43,11 +43,18 @@ function tarihToISO(val: string): string {
   return `${p[2]}-${p[1].padStart(2, "0")}-${p[0].padStart(2, "0")}`;
 }
 
+function bugunMask() {
+  const d = new Date();
+  const gun = String(d.getDate()).padStart(2, "0");
+  const ay = String(d.getMonth() + 1).padStart(2, "0");
+  return `${gun}/${ay}/${d.getFullYear()}`;
+}
+
 export function HizliEtkinlikEkle() {
   const router = useRouter();
   const [acik, setAcik] = useState(false);
   const [baslik, setBaslik] = useState("");
-  const [baslangic, setBaslangic] = useState("");
+  const [baslangic, setBaslangic] = useState(bugunMask);
   const [bitis, setBitis] = useState("");
   const [ekleniyor, setEkleniyor] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +64,7 @@ export function HizliEtkinlikEkle() {
     if (acik) setTimeout(() => inputRef.current?.focus(), 50);
   }, [acik]);
 
-  const kapat = useCallback(() => { setAcik(false); setBaslik(""); setBaslangic(""); setBitis(""); }, []);
+  const kapat = useCallback(() => { setAcik(false); setBaslik(""); setBaslangic(bugunMask()); setBitis(""); }, []);
 
   async function ekle(e: React.FormEvent) {
     e.preventDefault();

@@ -46,7 +46,11 @@ const innerInputStyle = {
 } as React.CSSProperties;
 
 // ─── Form state ───────────────────────────────────────────────────────────────
-const BOSH_FORM = { baslik: "", baslangic: "", bitis: "", lokasyon: "", rehberId: "", notlar: "" };
+function bugunStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+const BOSH_FORM = () => ({ baslik: "", baslangic: bugunStr(), bitis: "", lokasyon: "", rehberId: "", notlar: "" });
 
 export function AcenteTakvim({ referansRehberler }: { referansRehberler: ReferansRehber[] }) {
   const [sekme, setSekme] = useState<SekmeId>("gelecek");
@@ -68,7 +72,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   // Form modal
   const [modalAcik, setModalAcik] = useState(false);
   const [duzenleId, setDuzenleId] = useState<string | null>(null);
-  const [form, setForm] = useState({ ...BOSH_FORM });
+  const [form, setForm] = useState(BOSH_FORM);
   const [kaydediyor, setKaydediyor] = useState(false);
   const [formHata, setFormHata] = useState("");
 
@@ -131,7 +135,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
       });
     } else {
       setDuzenleId(null);
-      setForm({ ...BOSH_FORM });
+      setForm(BOSH_FORM());
     }
     setFormHata("");
     setMesgulGunler([]);
@@ -141,7 +145,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   function modalKapat() {
     setModalAcik(false);
     setDuzenleId(null);
-    setForm({ ...BOSH_FORM });
+    setForm(BOSH_FORM());
     setFormHata("");
     setMesgulGunler([]);
   }
