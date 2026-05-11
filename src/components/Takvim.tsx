@@ -466,33 +466,37 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
             </div>
             <div className="px-6 py-4 space-y-4">
               {formHata && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{formHata}</p>}
+              {modal.etkinlik?.tur === "REZERVASYON" && (
+                <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-lg px-3 py-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full" />
+                  <p className="text-xs text-purple-500">Bu etkinlik acente tarafından oluşturuldu, düzenlenemez.</p>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted)" }}>Başlık *</label>
                 <input type="text" value={form.baslik} onChange={(e) => setForm({ ...form, baslik: e.target.value })}
-                  placeholder="Kapadokya Turu, Efes Rezervasyonu..." className={inputCls} style={inputStyle} autoFocus />
+                  placeholder="Kapadokya Turu, Efes Rezervasyonu..." className={inputCls} style={inputStyle} autoFocus
+                  disabled={modal.etkinlik?.tur === "REZERVASYON"} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted)" }}>Başlangıç *</label>
-                  <input type="datetime-local" value={form.baslangic} onChange={(e) => setForm({ ...form, baslangic: e.target.value })} className={inputCls} style={inputStyle} />
+                  <input type="datetime-local" value={form.baslangic} onChange={(e) => setForm({ ...form, baslangic: e.target.value })} className={inputCls} style={inputStyle}
+                    disabled={modal.etkinlik?.tur === "REZERVASYON"} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted)" }}>Bitiş</label>
-                  <input type="datetime-local" value={form.bitis} onChange={(e) => setForm({ ...form, bitis: e.target.value })} className={inputCls} style={inputStyle} />
+                  <input type="datetime-local" value={form.bitis} onChange={(e) => setForm({ ...form, bitis: e.target.value })} className={inputCls} style={inputStyle}
+                    disabled={modal.etkinlik?.tur === "REZERVASYON"} />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted)" }}>Notlar</label>
                 <textarea value={form.notlar} onChange={(e) => setForm({ ...form, notlar: e.target.value })}
                   rows={3} placeholder="Acente adı, lokasyon, grup bilgisi..."
-                  className={`${inputCls} resize-none`} style={inputStyle} />
+                  className={`${inputCls} resize-none`} style={inputStyle}
+                  disabled={modal.etkinlik?.tur === "REZERVASYON"} />
               </div>
-              {modal.etkinlik?.tur === "REZERVASYON" && (
-                <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-lg px-3 py-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full" />
-                  <p className="text-xs text-purple-500">Bu etkinlik acente tarafından oluşturuldu.</p>
-                </div>
-              )}
             </div>
             <div className="flex items-center justify-between px-6 pb-5 pt-2">
               {modal.mod === "duzenle" && modal.etkinlik?.tur !== "REZERVASYON"
@@ -500,11 +504,13 @@ export function Takvim({ initialTarih }: { initialTarih: string | null }) {
                 : <div />}
               <div className="flex items-center gap-3">
                 <button onClick={() => setModal(null)} className="text-sm px-4 py-2 transition-colors" style={{ color: "var(--text-muted)" }}>İptal</button>
-                <button onClick={kaydet} disabled={kaydediyor}
-                  className="text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors disabled:opacity-60"
-                  style={{ background: "var(--primary)" }}>
-                  {kaydediyor ? "Kaydediliyor..." : "Kaydet"}
-                </button>
+                {modal.etkinlik?.tur !== "REZERVASYON" && (
+                  <button onClick={kaydet} disabled={kaydediyor}
+                    className="text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors disabled:opacity-60"
+                    style={{ background: "var(--primary)" }}>
+                    {kaydediyor ? "Kaydediliyor..." : "Kaydet"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

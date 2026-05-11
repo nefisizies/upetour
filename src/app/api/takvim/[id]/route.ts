@@ -21,6 +21,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const etkinlik = await getEtkinlik(id, session.user.id);
   if (!etkinlik) return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
 
+  if (etkinlik.tur === "REZERVASYON") {
+    return NextResponse.json({ error: "Rezervasyonlar düzenlenemez" }, { status: 403 });
+  }
+
   const { baslik, baslangic, bitis, notlar } = await req.json();
 
   const updated = await prisma.takvimEtkinlik.update({
