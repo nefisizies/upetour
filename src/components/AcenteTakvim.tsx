@@ -5,6 +5,7 @@ import {
   CalendarDays, SlidersHorizontal, Plus, X, MapPin, User,
   Clock, Pencil, Trash2, AlertCircle, CheckCircle, Send,
 } from "lucide-react";
+import { SEHIR_LISTESI } from "@/lib/sehirler";
 
 type Rehber = { id: string; name: string; city: string | null; photoUrl: string | null; slug: string };
 
@@ -255,11 +256,12 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Lokasyon</label>
-              <select value={filtreLokasyon} onChange={(e) => setFiltreLokasyon(e.target.value)}
-                className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none" style={innerInputStyle}>
-                <option value="">Tüm lokasyonlar</option>
-                {lokasyonlar.map((l) => <option key={l} value={l}>{l}</option>)}
-              </select>
+              <SehirSecici
+                deger={filtreLokasyon}
+                onChange={setFiltreLokasyon}
+                placeholder="Şehir ara ve filtrele..."
+                inputStyle={innerInputStyle}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -401,9 +403,12 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
               {/* Lokasyon */}
               <div className="space-y-1">
                 <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Lokasyon</label>
-                <input type="text" value={form.lokasyon} onChange={(e) => setForm((f) => ({ ...f, lokasyon: e.target.value }))}
+                <SehirSecici
+                  deger={form.lokasyon}
+                  onChange={(val) => setForm((f) => ({ ...f, lokasyon: val }))}
                   placeholder="İstanbul, Kapadokya..."
-                  className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none" style={innerInputStyle} />
+                  inputStyle={innerInputStyle}
+                />
               </div>
 
               {/* Rehber */}
@@ -485,7 +490,81 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   );
 }
 
-// ─── Etkinlik Kartı ─────────────────────────────────────────────────────────
+// ─── Şehir Seçici ───────────────────────────────────────────────────────────
+function SehirSecici({
+  deger,
+  onChange,
+  placeholder,
+  inputStyle,
+}: {
+  deger: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  inputStyle?: React.CSSProperties;
+}) {
+  const [arama, setArama] = useState("");
+  const [acik, setAcik] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const filtrelenmis = SEHIR_LISTESI.filter(
+    (s) =>
+      s.sehir.toLowerCase().includes(arama.toLowerCase()) ||
+      s.ulke.toLowerCase().includes(arama.toLowerCase())
+  ).slice(0, 8);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setAcik(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      {deger ? (
+        <div
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm cursor-pointer"
+          style={inputStyle}
+          onClick={() => { onChange(""); setArama(""); }}
+        >
+          <span style={{ color: "var(--text-primary)" }}>{deger}</span>
+          <X className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
+        </div>
+      ) : (
+        <input
+          type="text"
+          value={arama}
+          placeholder={placeholder ?? "Şehir ara..."}
+          onChange={(e) => { setArama(e.target.value); setAcik(true); }}
+          onFocus={() => setAcik(true)}
+          className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none"
+          style={inputStyle}
+        />
+      )}
+      {acik && !deger && filtrelenmis.length > 0 && (
+        <div
+          className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-30 overflow-hidden"
+          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
+        >
+          {filtrelenmis.map((s) => (
+            <button
+              key={`${s.ulkeKod}-${s.sehir}`}
+              type="button"
+              onMouseDown={() => { onChange(s.sehir); setArama(""); setAcik(false); }}
+              className="w-full text-left px-4 py-2.5 hover:opacity-75 flex items-center justify-between"
+            >
+              <span className="text-sm" style={{ color: "var(--text-primary)" }}>{s.sehir}</span>
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>{s.ulke}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Etkinlik Kartı ───────────────────────────────────────────────────────────
 function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder }: {
   etkinlik: Etkinlik;
   onDuzenle: () => void;

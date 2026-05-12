@@ -96,6 +96,20 @@ model AcenteProfile {
   bloklar     AcenteRehberBlok[]
   referanslar Referans[]
   etkinlikler AcenteTakvimEtkinlik[]
+  turProgramlari TurProgrami[]
+}
+
+model TurProgrami {
+  id          String        @id @default(cuid())
+  acenteId    String
+  ad          String
+  sure        Int
+  // [{ lokasyon: string, gun: number }]
+  segmentler  Json
+  aktif       Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
 }
 
 model AcenteRehberBlok {
