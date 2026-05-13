@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Plus, X, Pencil, Trash2, MapPin, Clock, Play, ChevronDown, ChevronUp, Check } from "lucide-react";
-import { SEHIR_LISTESI } from "@/lib/sehirler";
+import { sortSehirlerByProximity } from "@/lib/sehirler";
 
-type Segment = { lokasyon: string; gun: number };
+type Segment = { lokasyonlar: string[]; gun: number };
 
 type Program = {
   id: string;
@@ -13,6 +13,11 @@ type Program = {
   segmentler: Segment[];
   createdAt: string;
 };
+
+function normalizeSegment(s: any): Segment {
+  if (Array.isArray(s.lokasyonlar)) return s as Segment;
+  return { lokasyonlar: s.lokasyon ? [s.lokasyon as string] : [""], gun: s.gun ?? 1 };
+}
 
 type Rehber = { id: string; name: string; city: string | null };
 
@@ -23,7 +28,7 @@ const innerInputStyle = {
   color: "var(--text-primary)",
 } as React.CSSProperties;
 
-const BOSH_SEGMENT = (): Segment => ({ lokasyon: "", gun: 1 });
+const BOSH_SEGMENT = (): Segment => ({ lokasyonlar: [""], gun: 1 });
 
 export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Rehber[] }) {
   const [programlar, setProgramlar] = useState<Program[]>([]);
@@ -56,7 +61,10 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
     setYukleniyor(true);
     const res = await fetch("/api/acente/programlar");
     const data = await res.json();
-    setProgramlar(Array.isArray(data) ? data : []);
+    const normalized = Array.isArray(data)
+      ? data.map((p: any) => ({ ...p, segmentler: (p.segmentler as any[]).map(normalizeSegment) }))
+      : [];
+    setProgramlar(normalized);
     setYukleniyor(false);
   }
 
@@ -64,14 +72,17 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
 
   function modalAc(p?: Program) {
     if (p) {
+      // Mevcut programı düzenle — her zaman o programın verisini yükle
       setDuzenleId(p.id);
       setFormAd(p.ad);
-      setFormSegmentler(p.segmentler.length > 0 ? p.segmentler : [BOSH_SEGMENT()]);
-    } else {
+      setFormSegmentler(p.segmentler.length > 0 ? p.segmentler.map(normalizeSegment) : [BOSH_SEGMENT()]);
+    } else if (duzenleId !== null) {
+      // Düzenleme modundayken "Yeni Program"'a basıldı — sıfırla
       setDuzenleId(null);
       setFormAd("");
       setFormSegmentler([BOSH_SEGMENT()]);
     }
+    // else: yeni program draft'ı var, koru
     setFormHata("");
     setModalAcik(true);
   }
@@ -84,8 +95,26 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
     setFormHata("");
   }
 
-  function segmentGuncelle(i: number, alan: keyof Segment, deger: string | number) {
-    setFormSegmentler((prev) => prev.map((s, idx) => idx === i ? { ...s, [alan]: deger } : s));
+  function segmentGunGuncelle(segIdx: number, gun: number) {
+    setFormSegmentler((prev) => prev.map((s, i) => i === segIdx ? { ...s, gun } : s));
+  }
+
+  function lokasyonGuncelle(segIdx: number, lokIdx: number, val: string) {
+    setFormSegmentler((prev) => prev.map((s, i) =>
+      i === segIdx ? { ...s, lokasyonlar: s.lokasyonlar.map((l, j) => j === lokIdx ? val : l) } : s
+    ));
+  }
+
+  function lokasyonEkle(segIdx: number) {
+    setFormSegmentler((prev) => prev.map((s, i) =>
+      i === segIdx ? { ...s, lokasyonlar: [...s.lokasyonlar, ""] } : s
+    ));
+  }
+
+  function lokasyonCikar(segIdx: number, lokIdx: number) {
+    setFormSegmentler((prev) => prev.map((s, i) =>
+      i === segIdx ? { ...s, lokasyonlar: s.lokasyonlar.filter((_, j) => j !== lokIdx) } : s
+    ));
   }
 
   function segmentEkle() {
@@ -99,7 +128,9 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
   async function kaydet(e: React.FormEvent) {
     e.preventDefault();
     if (!formAd.trim()) { setFormHata("Program adı zorunlu."); return; }
-    const gecerliSegmentler = formSegmentler.filter((s) => s.lokasyon && s.gun > 0);
+    const gecerliSegmentler = formSegmentler
+      .filter((s) => s.lokasyonlar.some((l) => l.trim()) && s.gun > 0)
+      .map((s) => ({ ...s, lokasyonlar: s.lokasyonlar.filter((l) => l.trim()) }));
     if (gecerliSegmentler.length === 0) { setFormHata("En az bir lokasyon ekleyin."); return; }
 
     setKaydediyor(true);
@@ -267,9 +298,9 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                             >
                               {oncekiGunler + 1}. gün{seg.gun > 1 ? ` – ${oncekiGunler + seg.gun}. gün` : ""}
                             </span>
-                            <span className="flex items-center gap-1" style={{ color: "var(--text-primary)" }}>
+                            <span className="flex items-center gap-1 flex-wrap" style={{ color: "var(--text-primary)" }}>
                               <MapPin className="w-3 h-3 shrink-0" style={{ color: "var(--primary)" }} />
-                              {seg.lokasyon}
+                              {seg.lokasyonlar.join(" · ")}
                             </span>
                             <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
                               {seg.gun} gün
@@ -291,7 +322,7 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) modalKapat(); }}
+          onClick={(e) => { if (e.target === e.currentTarget) setModalAcik(false); }}
         >
           <div className="w-full max-w-lg rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto" style={cardStyle}>
             <div className="flex items-center justify-between">
@@ -336,8 +367,10 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                       key={i}
                       segment={seg}
                       index={i}
-                      onLokasyon={(v) => segmentGuncelle(i, "lokasyon", v)}
-                      onGun={(v) => segmentGuncelle(i, "gun", v)}
+                      onLokasyonGuncelle={(lokIdx, v) => lokasyonGuncelle(i, lokIdx, v)}
+                      onLokasyonEkle={() => lokasyonEkle(i)}
+                      onLokasyonCikar={(lokIdx) => lokasyonCikar(i, lokIdx)}
+                      onGun={(v) => segmentGunGuncelle(i, v)}
                       onCikar={formSegmentler.length > 1 ? () => segmentCikar(i) : undefined}
                       inputStyle={innerInputStyle}
                     />
@@ -445,7 +478,9 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                     return (
                       <div key={i} className="flex items-center gap-2 text-xs">
                         <MapPin className="w-3 h-3 shrink-0" style={{ color: "var(--primary)" }} />
-                        <span className="flex-1 font-medium" style={{ color: "var(--text-primary)" }}>{seg.lokasyon}</span>
+                        <span className="flex-1 font-medium" style={{ color: "var(--text-primary)" }}>
+                          {seg.lokasyonlar.join(", ")}
+                        </span>
                         <span style={{ color: "var(--text-muted)" }}>{segBaslangic} – {segBitis}</span>
                       </div>
                     );
@@ -544,31 +579,24 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
   );
 }
 
-// ─── Segment Satırı ─────────────────────────────────────────────────────────
-function SegmentSatir({
-  segment,
-  index,
-  onLokasyon,
-  onGun,
-  onCikar,
+// ─── Lokasyon Picker ────────────────────────────────────────────────────────
+function LokasyonPicker({
+  value,
+  onChange,
   inputStyle,
+  segmentLokasyonlar = [],
 }: {
-  segment: Segment;
-  index: number;
-  onLokasyon: (v: string) => void;
-  onGun: (v: number) => void;
-  onCikar?: () => void;
+  value: string;
+  onChange: (v: string) => void;
   inputStyle: React.CSSProperties;
+  segmentLokasyonlar?: string[];
 }) {
   const [arama, setArama] = useState("");
   const [acik, setAcik] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const filtrelenmis = SEHIR_LISTESI.filter(
-    (s) =>
-      s.sehir.toLowerCase().includes(arama.toLowerCase()) ||
-      s.ulke.toLowerCase().includes(arama.toLowerCase())
-  ).slice(0, 8);
+  const diger = segmentLokasyonlar.filter((l) => l && l !== value);
+  const filtrelenmis = sortSehirlerByProximity(arama, diger, diger);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -579,58 +607,111 @@ function SegmentSatir({
   }, []);
 
   return (
+    <div ref={ref} className="flex-1 relative">
+      {value ? (
+        <div
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm cursor-pointer"
+          style={inputStyle}
+          onClick={() => { onChange(""); setArama(""); }}
+        >
+          <span style={{ color: "var(--text-primary)" }}>{value}</span>
+          <X className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
+        </div>
+      ) : (
+        <input
+          type="text"
+          value={arama}
+          placeholder="Şehir ara..."
+          onChange={(e) => { setArama(e.target.value); setAcik(true); }}
+          onFocus={() => setAcik(true)}
+          className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none"
+          style={inputStyle}
+        />
+      )}
+      {acik && !value && filtrelenmis.length > 0 && (
+        <div
+          className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-30 overflow-hidden"
+          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
+        >
+          {filtrelenmis.map((s) => (
+            <button
+              key={`${s.ulkeKod}-${s.sehir}`}
+              type="button"
+              onMouseDown={() => { onChange(s.sehir); setArama(""); setAcik(false); }}
+              className="w-full text-left px-4 py-2.5 hover:opacity-75 flex items-center justify-between"
+            >
+              <span className="text-sm" style={{ color: "var(--text-primary)" }}>{s.sehir}</span>
+              <span className="text-xs" style={{ color: "var(--text-muted)" }}>{s.ulke}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Segment Satırı ─────────────────────────────────────────────────────────
+function SegmentSatir({
+  segment,
+  index,
+  onLokasyonGuncelle,
+  onLokasyonEkle,
+  onLokasyonCikar,
+  onGun,
+  onCikar,
+  inputStyle,
+}: {
+  segment: Segment;
+  index: number;
+  onLokasyonGuncelle: (lokIdx: number, v: string) => void;
+  onLokasyonEkle: () => void;
+  onLokasyonCikar: (lokIdx: number) => void;
+  onGun: (v: number) => void;
+  onCikar?: () => void;
+  inputStyle: React.CSSProperties;
+}) {
+  return (
     <div className="flex gap-2 items-start">
       <span
-        className="text-xs font-bold w-5 h-8 flex items-center justify-center rounded shrink-0 mt-0.5"
+        className="text-xs font-bold w-5 flex items-center justify-center shrink-0 pt-2.5"
         style={{ color: "var(--text-muted)" }}
       >
         {index + 1}
       </span>
 
-      {/* Lokasyon picker */}
-      <div ref={ref} className="flex-1 relative">
-        {segment.lokasyon ? (
-          <div
-            className="flex items-center justify-between px-3 py-2 rounded-lg text-sm cursor-pointer"
-            style={inputStyle}
-            onClick={() => { onLokasyon(""); setArama(""); }}
-          >
-            <span style={{ color: "var(--text-primary)" }}>{segment.lokasyon}</span>
-            <X className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-muted)" }} />
-          </div>
-        ) : (
-          <input
-            type="text"
-            value={arama}
-            placeholder="Şehir ara..."
-            onChange={(e) => { setArama(e.target.value); setAcik(true); }}
-            onFocus={() => setAcik(true)}
-            className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none"
-            style={inputStyle}
-          />
-        )}
-        {acik && !segment.lokasyon && filtrelenmis.length > 0 && (
-          <div
-            className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-30 overflow-hidden"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
-          >
-            {filtrelenmis.map((s) => (
+      {/* Lokasyonlar kolonu */}
+      <div className="flex-1 space-y-1.5">
+        {segment.lokasyonlar.map((lok, lokIdx) => (
+          <div key={lokIdx} className="flex gap-1.5 items-center">
+            <LokasyonPicker
+              value={lok}
+              onChange={(v) => onLokasyonGuncelle(lokIdx, v)}
+              inputStyle={inputStyle}
+              segmentLokasyonlar={segment.lokasyonlar}
+            />
+            {segment.lokasyonlar.length > 1 && (
               <button
-                key={`${s.ulkeKod}-${s.sehir}`}
                 type="button"
-                onMouseDown={() => { onLokasyon(s.sehir); setArama(""); setAcik(false); }}
-                className="w-full text-left px-4 py-2.5 hover:opacity-75 flex items-center justify-between"
+                onClick={() => onLokasyonCikar(lokIdx)}
+                className="p-1 rounded hover:opacity-70 text-red-400 shrink-0"
               >
-                <span className="text-sm" style={{ color: "var(--text-primary)" }}>{s.sehir}</span>
-                <span className="text-xs" style={{ color: "var(--text-muted)" }}>{s.ulke}</span>
+                <X className="w-3.5 h-3.5" />
               </button>
-            ))}
+            )}
           </div>
-        )}
+        ))}
+        <button
+          type="button"
+          onClick={onLokasyonEkle}
+          className="flex items-center gap-1 text-xs hover:opacity-70 transition-opacity"
+          style={{ color: "var(--primary)" }}
+        >
+          <Plus className="w-3 h-3" /> Aynı güne şehir ekle
+        </button>
       </div>
 
       {/* Gün sayısı */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1 shrink-0 pt-1">
         <input
           type="number"
           min={1}
@@ -647,7 +728,7 @@ function SegmentSatir({
         <button
           type="button"
           onClick={onCikar}
-          className="p-1.5 rounded-lg hover:opacity-70 text-red-400 shrink-0 mt-0.5"
+          className="p-1.5 rounded-lg hover:opacity-70 text-red-400 shrink-0 mt-1"
         >
           <X className="w-3.5 h-3.5" />
         </button>

@@ -17,7 +17,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const { baslangic, rehberId } = await req.json();
   if (!baslangic) return NextResponse.json({ error: "Başlangıç tarihi zorunlu." }, { status: 400 });
 
-  const segmentler = program.segmentler as { lokasyon: string; gun: number }[];
+  const rawSegmentler = program.segmentler as any[];
+  const segmentler = rawSegmentler.map((s) => ({
+    lokasyonlar: Array.isArray(s.lokasyonlar) ? (s.lokasyonlar as string[]) : [s.lokasyon as string],
+    gun: s.gun as number,
+  }));
+
   const baslangicDate = new Date(`${baslangic}T09:00`);
 
   let gunOffset = 0;
@@ -31,13 +36,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
       gunOffset += seg.gun;
 
+      const lokasyonText = seg.lokasyonlar.join(", ");
+
       return prisma.acenteTakvimEtkinlik.create({
         data: {
           acenteId: acente.id,
-          baslik: `${program.ad} — ${seg.lokasyon}`,
+          baslik: `${program.ad} — ${lokasyonText}`,
           baslangic: segBaslangic,
           bitis: segBitis,
-          lokasyon: seg.lokasyon,
+          lokasyon: seg.lokasyonlar[0],
           rehberId: rehberId || null,
           notlar: `${program.ad} programından otomatik oluşturuldu.`,
         },

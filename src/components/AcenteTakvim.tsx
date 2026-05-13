@@ -131,10 +131,11 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
         rehberId: etkinlik.rehberId ?? "",
         notlar: etkinlik.notlar ?? "",
       });
-    } else {
+    } else if (duzenleId !== null) {
       setDuzenleId(null);
       setForm(BOSH_FORM());
     }
+    // else: yeni etkinlik draft'ı var, koru
     setFormHata("");
     setMesgulGunler([]);
     setModalAcik(true);
@@ -366,7 +367,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
       {modalAcik && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) modalKapat(); }}>
+          onClick={(e) => { if (e.target === e.currentTarget) setModalAcik(false); }}>
           <div className="w-full max-w-lg rounded-2xl p-6 space-y-4" style={cardStyle}>
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-base" style={{ color: "var(--text-primary)" }}>

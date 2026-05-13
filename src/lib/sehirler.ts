@@ -94,6 +94,14 @@ export const SEHIR_LISTESI: SehirBilgi[] = [
   { sehir: "Trento", ulke: "İtalya", ulkeKod: "IT" },
   { sehir: "Bolzano", ulke: "İtalya", ulkeKod: "IT" },
   { sehir: "Agrigento", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Siracusa", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Savoca", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Etna", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Ragusa", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Noto", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Cefalù", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Trapani", ulke: "İtalya", ulkeKod: "IT" },
+  { sehir: "Marsala", ulke: "İtalya", ulkeKod: "IT" },
   { sehir: "Vatikan", ulke: "Vatikan", ulkeKod: "VA" },
 
   // Fransa
@@ -945,4 +953,172 @@ export function sehirdenUlkeBul(sehirAdi: string): { ulke: string; ulkeKod: stri
     (s) => s.sehir.toLowerCase() === sehirAdi.toLowerCase()
   );
   return bulunan ? { ulke: bulunan.ulke, ulkeKod: bulunan.ulkeKod } : null;
+}
+
+// Şehirlerin ait olduğu coğrafi bölgeler — aynı günde eklenen şehirler için yakın öneri
+export const SEHIR_BOLGESI: Record<string, string> = {
+  // İtalya
+  "Catania": "sicilya", "Palermo": "sicilya", "Taormina": "sicilya", "Agrigento": "sicilya",
+  "Siracusa": "sicilya", "Savoca": "sicilya", "Etna": "sicilya", "Ragusa": "sicilya", "Noto": "sicilya", "Cefalù": "sicilya", "Trapani": "sicilya", "Marsala": "sicilya",
+  "Napoli": "kampanya", "Amalfi": "kampanya", "Sorrento": "kampanya", "Capri": "kampanya", "Positano": "kampanya",
+  "Floransa": "toskana", "Siena": "toskana", "Pisa": "toskana", "Lucca": "toskana",
+  "San Gimignano": "toskana", "Orvieto": "toskana", "Assisi": "toskana", "Perugia": "toskana",
+  "Venedik": "veneto", "Verona": "veneto", "Padova": "veneto", "Trieste": "veneto", "Ravenna": "veneto",
+  "Roma": "roma-it", "Vatikan": "roma-it",
+  "Milano": "kuzey-it", "Turin": "kuzey-it", "Cenova": "kuzey-it", "Cinque Terre": "kuzey-it", "Trento": "kuzey-it", "Bolzano": "kuzey-it",
+  "Bari": "puglia", "Lecce": "puglia", "Matera": "puglia",
+  "Bologna": "emilya",
+  // Türkiye
+  "İzmir": "ege-tr", "Efes": "ege-tr", "Bergama": "ege-tr", "Didim": "ege-tr", "Aydın": "ege-tr", "Şirince": "ege-tr",
+  "Antalya": "akdeniz-tr", "Alanya": "akdeniz-tr", "Fethiye": "akdeniz-tr", "Kaş": "akdeniz-tr",
+  "Kalkan": "akdeniz-tr", "Olimpos": "akdeniz-tr", "Dalyan": "akdeniz-tr", "Marmaris": "akdeniz-tr", "Muğla": "akdeniz-tr", "Bodrum": "akdeniz-tr",
+  "Trabzon": "karadeniz-tr", "Rize": "karadeniz-tr", "Artvin": "karadeniz-tr", "Uzungöl": "karadeniz-tr",
+  "Ayder": "karadeniz-tr", "Sümela": "karadeniz-tr", "Sinop": "karadeniz-tr", "Samsun": "karadeniz-tr",
+  "Kastamonu": "karadeniz-tr", "Safranbolu": "karadeniz-tr",
+  "Kapadokya": "kapadokya-tr", "Kayseri": "kapadokya-tr",
+  "Mardin": "guneydogu-tr", "Gaziantep": "guneydogu-tr", "Şanlıurfa": "guneydogu-tr",
+  "Göbeklitepe": "guneydogu-tr", "Harran": "guneydogu-tr", "Diyarbakır": "guneydogu-tr",
+  "Hatay": "guneydogu-tr", "Nemrut Dağı": "guneydogu-tr", "Adana": "guneydogu-tr", "Mersin": "guneydogu-tr",
+  "İstanbul": "istanbul-tr", "Bursa": "istanbul-tr", "Çanakkale": "istanbul-tr", "Troya": "istanbul-tr",
+  "Sapanca": "istanbul-tr", "Abant": "istanbul-tr",
+  "Van": "dogu-tr", "Erzurum": "dogu-tr", "Kars": "dogu-tr", "Ani": "dogu-tr", "Doğubayazıt": "dogu-tr",
+  "Ankara": "ic-anadolu-tr", "Konya": "ic-anadolu-tr", "Afyonkarahisar": "ic-anadolu-tr",
+  "Isparta": "ic-anadolu-tr", "Hattuşa": "ic-anadolu-tr", "Amasya": "ic-anadolu-tr",
+  // Yunanistan
+  "Atina": "atina-gr", "Delphi": "atina-gr", "Meteora": "atina-gr", "Olympia": "atina-gr", "Nafplio": "atina-gr",
+  "Santorini": "kikladlar", "Mykonos": "kikladlar", "Paros": "kikladlar", "Milos": "kikladlar", "Naxos": "kikladlar",
+  "Korfu": "iyon-gr", "Zakynthos": "iyon-gr", "Lefkada": "iyon-gr",
+  "Girit": "girit", "Chania": "girit", "Heraklion": "girit", "Iraklio": "girit",
+  "Selanik": "kuzey-gr", "Rodos": "kuzey-gr",
+  // İspanya
+  "Sevilla": "endulus", "Granada": "endulus", "Cordoba": "endulus", "Malaga": "endulus",
+  "Ronda": "endulus", "Cadiz": "endulus", "Marbella": "endulus",
+  "Barselona": "katalonya", "Girona": "katalonya", "Tarragona": "katalonya",
+  "Palma": "balear", "İbiza": "balear", "Menorca": "balear",
+  "Bilbao": "kuzey-es", "San Sebastian": "kuzey-es", "Pamplona": "kuzey-es", "Zaragoza": "kuzey-es", "Santiago de Compostela": "kuzey-es",
+  "Madrid": "kastilya", "Toledo": "kastilya", "Segovia": "kastilya", "Salamanca": "kastilya",
+  "Valencia": "valencia-es", "Alicante": "valencia-es",
+  // Fransa
+  "Nice": "riviera-fr", "Cannes": "riviera-fr", "Monaco": "riviera-fr", "Marsilya": "riviera-fr", "Aix-en-Provence": "riviera-fr",
+  "Avignon": "provence-fr", "Carcassonne": "provence-fr", "Montpellier": "provence-fr",
+  "Strasbourg": "alsace", "Colmar": "alsace",
+  "Annecy": "alpler-fr", "Chamonix": "alpler-fr", "Lyon": "alpler-fr",
+  "Paris": "paris-fr", "Versailles": "paris-fr", "Reims": "paris-fr",
+  "Bordeaux": "atl-fr", "Biarritz": "atl-fr", "Bayeux": "atl-fr", "Mont-Saint-Michel": "atl-fr", "Nantes": "atl-fr",
+  // Almanya
+  "Münih": "bavyera", "Rothenburg": "bavyera", "Nürnberg": "bavyera", "Regensburg": "bavyera",
+  "Bamberg": "bavyera", "Füssen": "bavyera",
+  "Köln": "ren-de", "Düsseldorf": "ren-de", "Frankfurt": "ren-de", "Heidelberg": "ren-de", "Trier": "ren-de",
+  "Hamburg": "kuzey-de", "Bremen": "kuzey-de", "Lübeck": "kuzey-de",
+  "Berlin": "dogu-de", "Dresden": "dogu-de", "Leipzig": "dogu-de",
+  // Hırvatistan / Balkanlar
+  "Dubrovnik": "dalmasya", "Split": "dalmasya", "Zadar": "dalmasya", "Pula": "dalmasya",
+  "Rovinj": "dalmasya", "Mostar": "dalmasya", "Kotor": "dalmasya", "Budva": "dalmasya",
+  "Ljubljana": "bati-balkan", "Bled": "bati-balkan", "Zagreb": "bati-balkan",
+  "Saraybosna": "bati-balkan", "Belgrad": "bati-balkan", "Novi Sad": "bati-balkan",
+  "Viyana": "viyana-bolge", "Bratislava": "viyana-bolge", "Budapeşte": "viyana-bolge",
+  "Salzburg": "salzburg-bolge", "İnnsbruck": "salzburg-bolge", "Hallstatt": "salzburg-bolge",
+  "Prag": "cek-bolge", "Brno": "cek-bolge", "Cesky Krumlov": "cek-bolge", "Karlovy Vary": "cek-bolge",
+  "Krakow": "polonya-guney", "Wroclaw": "polonya-guney",
+  "Varşova": "polonya-kuzey", "Gdansk": "polonya-kuzey",
+  // Portekiz
+  "Lizbon": "lizbon-pt", "Sintra": "lizbon-pt",
+  "Porto": "porto-pt", "Coimbra": "porto-pt", "Óbidos": "porto-pt",
+  "Algarve": "algarve-pt", "Lagos": "algarve-pt",
+  // İngiltere
+  "Londra": "londra-uk", "Windsor": "londra-uk", "Canterbury": "londra-uk", "Brighton": "londra-uk",
+  "Stonehenge": "londra-uk", "Bath": "londra-uk", "Oxford": "londra-uk", "Cambridge": "londra-uk",
+  "Edinburgh": "iskocya", "Glasgow": "iskocya", "Inverness": "iskocya", "Loch Ness": "iskocya",
+  "Manchester": "kuzey-ing", "Liverpool": "kuzey-ing", "York": "kuzey-ing", "Lake District": "kuzey-ing",
+  "Stratford-upon-Avon": "midlands-uk", "Birmingham": "midlands-uk", "Cotswolds": "midlands-uk",
+  // Japonya
+  "Tokyo": "kanto-jp", "Kamakura": "kanto-jp", "Nikko": "kanto-jp", "Hakone": "kanto-jp",
+  "Matsumoto": "kanto-jp", "Nagano": "kanto-jp",
+  "Kyoto": "kansai-jp", "Osaka": "kansai-jp", "Nara": "kansai-jp", "Kobe": "kansai-jp",
+  "Hiroshima": "kansai-jp", "Miyajima": "kansai-jp",
+  "Nagoya": "nagoya-jp", "Kanazawa": "nagoya-jp", "Takayama": "nagoya-jp",
+  "Fukuoka": "kyushu-jp", "Nagasaki": "kyushu-jp", "Beppu": "kyushu-jp",
+  // Tayland
+  "Bangkok": "bangkok-th", "Ayutthaya": "bangkok-th", "Pattaya": "bangkok-th", "Hua Hin": "bangkok-th",
+  "Chiang Mai": "kuzey-th", "Pai": "kuzey-th",
+  "Phuket": "phuket-th", "Krabi": "phuket-th", "Koh Phi Phi": "phuket-th", "Koh Lanta": "phuket-th",
+  // Vietnam
+  "Hanoi": "kuzey-vn", "Ha Long Körfezi": "kuzey-vn",
+  "Hoi An": "orta-vn", "Da Nang": "orta-vn", "Hue": "orta-vn",
+  "Ho Chi Minh": "guney-vn", "Nha Trang": "guney-vn", "Phu Quoc": "guney-vn", "Da Lat": "guney-vn", "Mui Ne": "guney-vn",
+  // Mısır
+  "Kahire": "kuzey-eg", "İskenderiye": "kuzey-eg",
+  "Luxor": "yukari-misir", "Aswan": "yukari-misir", "Abu Simbel": "yukari-misir",
+  "Hurghada": "kizideniz-eg", "Şarm el-Şeyh": "kizideniz-eg",
+  // Fas
+  "Marakeş": "marakes-ma", "Essaouira": "marakes-ma", "Ait-Ben-Haddou": "marakes-ma",
+  "Fez": "fez-ma", "Rabat": "fez-ma", "Şefşaven": "fez-ma",
+  "Kazablanka": "kazablanka-ma", "Agadir": "kazablanka-ma",
+  // Ürdün
+  "Amman": "amman-jo", "Jerash": "amman-jo",
+  "Petra": "petra-jo", "Wadi Rum": "petra-jo", "Aqaba": "petra-jo",
+  // Hindistan
+  "Delhi": "kuzey-in", "Agra": "kuzey-in", "Jaipur": "kuzey-in", "Pushkar": "kuzey-in", "Amritsar": "kuzey-in", "Rishikesh": "kuzey-in",
+  "Udaipur": "rajasthan-in", "Jodhpur": "rajasthan-in",
+  "Mumbai": "mumbai-in", "Goa": "mumbai-in",
+  "Kerala": "guney-in", "Munnar": "guney-in", "Hampi": "guney-in", "Bangalore": "guney-in", "Chennai": "guney-in",
+  "Varanasi": "dogu-in", "Kolkata": "dogu-in", "Darjeeling": "dogu-in",
+  // Peru
+  "Cusco": "cusco-pe", "Machu Picchu": "cusco-pe", "Titicaca Gölü": "cusco-pe",
+  "Lima": "lima-pe", "Nazca": "lima-pe",
+  "Arequipa": "arequipa-pe", "Colca Kanyonu": "arequipa-pe",
+  // Güney Afrika / Doğu Afrika
+  "Cape Town": "cape-za", "Garden Route": "cape-za",
+  "Johannesburg": "joburg-za", "Kruger": "joburg-za",
+  "Nairobi": "kenya", "Masai Mara": "kenya", "Amboseli": "kenya",
+  "Zanzibar": "tanzanya", "Dar es Salaam": "tanzanya", "Serengeti": "tanzanya", "Kilimanjaro": "tanzanya", "Ngorongoro": "tanzanya",
+  // Romanya
+  "Bükreş": "romanya", "Brasov": "romanya", "Sibiu": "romanya", "Sinaia": "romanya", "Cluj": "romanya",
+  // Güney Kore
+  "Seul": "seul-kr", "Busan": "busan-kr", "Gyeongju": "busan-kr",
+  // Avustralya
+  "Sydney": "sydney-au", "Blue Mountains": "sydney-au",
+  "Melbourne": "melbourne-au",
+  "Cairns": "cairns-au", "Great Barrier Reef": "cairns-au",
+  // Kosta Rika
+  "San José": "kosta-rika", "Manuel Antonio": "kosta-rika", "Arenal": "kosta-rika", "Monteverde": "kosta-rika",
+};
+
+export function sortSehirlerByProximity(
+  arama: string,
+  referansLokasyonlar: string[],
+  zatenSecili: string[],
+): SehirBilgi[] {
+  const zatenSeciliSet = new Set(zatenSecili.filter(Boolean));
+  const referansBolgeler = new Set(
+    referansLokasyonlar.map((l) => SEHIR_BOLGESI[l]).filter(Boolean)
+  );
+  const referansUlkeler = new Set(
+    referansLokasyonlar
+      .map((l) => SEHIR_LISTESI.find((s) => s.sehir === l)?.ulkeKod)
+      .filter(Boolean)
+  );
+
+  const aramaLower = arama.toLowerCase();
+  const filtered = SEHIR_LISTESI.filter((s) => {
+    if (zatenSeciliSet.has(s.sehir)) return false;
+    if (!aramaLower) return true;
+    return s.sehir.toLowerCase().includes(aramaLower) || s.ulke.toLowerCase().includes(aramaLower);
+  });
+
+  if (referansBolgeler.size === 0 && referansUlkeler.size === 0) {
+    return filtered.slice(0, 8);
+  }
+
+  return filtered
+    .sort((a, b) => {
+      const scoreA =
+        (SEHIR_BOLGESI[a.sehir] && referansBolgeler.has(SEHIR_BOLGESI[a.sehir]) ? 2 : 0) +
+        (referansUlkeler.has(a.ulkeKod) ? 1 : 0);
+      const scoreB =
+        (SEHIR_BOLGESI[b.sehir] && referansBolgeler.has(SEHIR_BOLGESI[b.sehir]) ? 2 : 0) +
+        (referansUlkeler.has(b.ulkeKod) ? 1 : 0);
+      return scoreB - scoreA;
+    })
+    .slice(0, 8);
 }
