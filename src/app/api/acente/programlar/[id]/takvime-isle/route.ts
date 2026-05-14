@@ -61,21 +61,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     )
   );
 
-  // Rehbere davet bildirimi gönder
+  // Her segment için rehbere ayrı davet bildirimi gönder
   if (rehberId && etkinlikler.length > 0) {
     const rehberUser = await prisma.user.findFirst({ where: { rehberProfile: { id: rehberId } } });
     if (rehberUser) {
-      const ilkTarih = etkinlikData[0].segBaslangic.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
-      const sonTarih = etkinlikData[etkinlikData.length - 1].segBitis.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
-      await prisma.bildirim.create({
-        data: {
-          userId: rehberUser.id,
-          tip: "DAVET",
-          baslik: `Tur Daveti: ${program.ad}`,
-          metin: `${acente.companyName} sizi ${ilkTarih} – ${sonTarih} tarihleri için "${program.ad}" programına davet etti. (${etkinlikler.length} etkinlik)`,
-          link: `/dashboard/rehber/takvim`,
-        },
-      });
+      await prisma.$transaction(
+        etkinlikler.map((etkinlik, i) => {
+          const { segBaslangic, segBitis, lokasyonText } = etkinlikData[i];
+          const tarihStr = segBaslangic.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+          const bitisStr = segBitis.toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+          return prisma.bildirim.create({
+            data: {
+              userId: rehberUser.id,
+              tip: "DAVET",
+              baslik: `Tur Daveti: ${program.ad}`,
+              metin: `${acente.companyName} sizi ${tarihStr}${tarihStr !== bitisStr ? ` – ${bitisStr}` : ""} (${lokasyonText}) için tur rehberliğine davet etti.`,
+              link: `/dashboard/rehber/davet/${etkinlik.id}`,
+            },
+          });
+        })
+      );
     }
   }
 
