@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Compass, Building2, Eye, EyeOff, ArrowLeft, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/Logo";
+
+// localStorage key'i rol bazlı — her rol bağımsız
+function rolKey(rol: string | null) {
+  return `remember_email_${rol ?? "genel"}`;
+}
 
 function GirisForm() {
   const router = useRouter();
@@ -18,6 +23,15 @@ function GirisForm() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Sayfa yüklenince bu rol için kaydedilmiş email'i yükle
+  useEffect(() => {
+    const savedEmail = localStorage.getItem(rolKey(rol));
+    if (savedEmail) {
+      setForm((f) => ({ ...f, email: savedEmail }));
+      setRememberMe(true);
+    }
+  }, [rol]);
 
   if (status === "loading") {
     return (
@@ -74,7 +88,16 @@ function GirisForm() {
       redirect: false,
     });
     setLoading(false);
-    if (result?.error) setError("Email veya şifre hatalı.");
+    if (result?.error) {
+      setError("Email veya şifre hatalı.");
+      return;
+    }
+    // Başarılı giriş — bu rol için email'i kaydet veya temizle (diğer roller etkilenmez)
+    if (rememberMe) {
+      localStorage.setItem(rolKey(rol), form.email);
+    } else {
+      localStorage.removeItem(rolKey(rol));
+    }
   }
 
   const isRehber = rol === "rehber";
