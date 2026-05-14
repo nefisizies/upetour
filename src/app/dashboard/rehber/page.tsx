@@ -8,7 +8,7 @@ import Link from "next/link";
 import {
   User, Star, MessageCircle, ArrowRight, AlertCircle,
   MapPin, Globe, Briefcase, CheckCircle, Clock, TrendingUp,
-  ChevronRight, CalendarDays,
+  ChevronRight, CalendarDays, Trophy,
 } from "lucide-react";
 import { MiniTakvim } from "@/components/MiniTakvim";
 import { HizliEtkinlikEkle } from "@/components/HizliEtkinlikEkle";
@@ -173,7 +173,7 @@ export default async function RehberDashboard() {
       )}
 
       {/* İstatistik Kartları */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Link href="/dashboard/rehber/mesajlar" className="backdrop-blur-sm rounded-xl p-5 transition-shadow group" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
           <div className="flex items-center justify-between mb-3">
             <MessageCircle className="w-5 h-5" style={{ color: "var(--primary)" }} />
@@ -212,6 +212,20 @@ export default async function RehberDashboard() {
           <div className="text-xs text-white/50 mt-1">Profil Gücü</div>
           <div className="text-xs text-white/40 mt-0.5">{profilTam ? "Tamamlandı" : "Geliştir"}</div>
         </div>
+
+        <Link href="/dashboard/rehber/checkin" className="backdrop-blur-sm rounded-xl p-5 transition-colors hover:bg-white/5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <MapPin className="w-5 h-5 mb-3" style={{ color: "var(--primary)" }} />
+          <div className="text-2xl font-bold text-white">{profile?.checkInSayisi ?? 0}</div>
+          <div className="text-xs text-white/50 mt-1">Check-in</div>
+          <div className="text-xs text-white/40 mt-0.5 flex items-center gap-1">
+            <Trophy className="w-3 h-3 text-yellow-400" />
+            {profile?.unvan === "YENI_REHBER" ? "Yeni Rehber" :
+             profile?.unvan === "AKTIF_REHBER" ? "Aktif Rehber" :
+             profile?.unvan === "DENEYIMLI_REHBER" ? "Deneyimli Rehber" :
+             profile?.unvan === "UZMAN_REHBER" ? "Uzman Rehber" :
+             profile?.unvan === "SUPER_REHBER" ? "Süper Rehber" : "Elit Rehber"}
+          </div>
+        </Link>
       </div>
 
       {/* Yaklaşan Etkinlikler + Mini Takvim */}

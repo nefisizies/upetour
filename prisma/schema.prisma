@@ -46,6 +46,9 @@ model RehberProfile {
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
   operatingCountries String[]                @default([])
+  unvan              UnvanTip                @default(YENI_REHBER)
+  checkInSayisi      Int                     @default(0)
+  benzersizSehir     Int                     @default(0)
   bloklar            AcenteRehberBlok[]
   referanslar        Referans[]
   languages          RehberDil[]
@@ -54,6 +57,8 @@ model RehberProfile {
   takvimEtkinlikleri TakvimEtkinlik[]
   tours              Tour[]
   acenteEtkinlikleri AcenteTakvimEtkinlik[]
+  checkInler         CheckIn[]
+  rozetler           RehberRozet[]
 }
 
 model RehberDil {
@@ -214,6 +219,43 @@ model Review {
   reviewer   User     @relation("GivenReviews", fields: [reviewerId], references: [id])
 }
 
+model CheckIn {
+  id          String        @id @default(cuid())
+  rehberId    String
+  baslik      String
+  aciklama    String?
+  fotografUrl String?
+  sehir       String?
+  ulke        String?
+  lat         Float?
+  lng         Float?
+  dogrulandi  Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  rehber      RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+}
+
+model Rozet {
+  id         String        @id @default(cuid())
+  kod        String        @unique
+  baslik     String
+  aciklama   String?
+  ikon       String
+  kategori   String
+  kazananlar RehberRozet[]
+}
+
+model RehberRozet {
+  id          String        @id @default(cuid())
+  rehberId    String
+  rozetId     String
+  kazanildiAt DateTime      @default(now())
+  onaylandi   Boolean       @default(false)
+  rehber      RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  rozet       Rozet         @relation(fields: [rozetId], references: [id], onDelete: Cascade)
+
+  @@unique([rehberId, rozetId])
+}
+
 enum Role {
   REHBER
   ACENTE
@@ -254,4 +296,13 @@ enum RehberYanitDurum {
   BEKLIYOR
   KABUL
   RED
+}
+
+enum UnvanTip {
+  YENI_REHBER
+  AKTIF_REHBER
+  DENEYIMLI_REHBER
+  UZMAN_REHBER
+  SUPER_REHBER
+  ELIT_REHBER
 }

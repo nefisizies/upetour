@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, User, MessageCircle, Search, LogOut, CalendarDays, BookOpen, Menu, X } from "lucide-react";
+import { LayoutDashboard, User, MessageCircle, Search, LogOut, CalendarDays, BookOpen, Menu, X, MapPin } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { BildirimDropdown } from "@/components/BildirimDropdown";
@@ -14,6 +14,7 @@ const rehberLinks = [
   { href: "/dashboard/rehber/profil", label: "Profilim", icon: User },
   { href: "/dashboard/rehber/takvim", label: "Takvim", icon: CalendarDays },
   { href: "/dashboard/rehber/mesajlar", label: "Mesajlar", icon: MessageCircle },
+  { href: "/dashboard/rehber/checkin", label: "Check-in", icon: MapPin },
 ];
 
 const acenteLinks = [
