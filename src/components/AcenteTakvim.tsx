@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   CalendarDays, SlidersHorizontal, Plus, X, MapPin, User,
-  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Send, Search,
+  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Search,
 } from "lucide-react";
 import { SEHIR_LISTESI } from "@/lib/sehirler";
 import { RehberKarti } from "@/components/RehberKarti";
@@ -405,11 +405,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                     <EtkinlikKart key={e.id} etkinlik={e}
                       onDuzenle={() => modalAc(e)}
                       onSil={() => setSilmeId(e.id)}
-                      onRehberKartAc={rehberKartAc}
-                      onDavetGonder={async () => {
-                        await fetch(`/api/acente/takvim/${e.id}/davet-gonder`, { method: "POST" });
-                        await yukle();
-                      }} />
+                      onRehberKartAc={rehberKartAc} />
                   ))}
                 </div>
               </div>
@@ -651,14 +647,12 @@ function SehirSecici({
 }
 
 // ─── Etkinlik Kartı ───────────────────────────────────────────────────────────
-function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder, onRehberKartAc }: {
+function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onRehberKartAc }: {
   etkinlik: Etkinlik;
   onDuzenle: () => void;
   onSil: () => void;
-  onDavetGonder: () => Promise<void>;
   onRehberKartAc?: (id: string) => void;
 }) {
-  const [davetGonderiyor, setDavetGonderiyor] = useState(false);
   const baslangic = new Date(e.baslangic);
   const bitis = e.bitis ? new Date(e.bitis) : null;
 
@@ -737,17 +731,6 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder, onRehberKa
 
       {/* Aksiyon butonları */}
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        {e.rehberId && !e.rehberYanit && (
-          <button
-            onClick={async () => { setDavetGonderiyor(true); await onDavetGonder(); setDavetGonderiyor(false); }}
-            disabled={davetGonderiyor}
-            title="Davet gönder"
-            className="p-1.5 rounded-lg transition-colors hover:opacity-70 disabled:opacity-40"
-            style={{ color: "var(--primary)" }}
-          >
-            <Send className="w-3.5 h-3.5" />
-          </button>
-        )}
         <button onClick={onDuzenle} className="p-1.5 rounded-lg transition-colors hover:opacity-70" style={{ color: "var(--text-muted)" }}>
           <Pencil className="w-3.5 h-3.5" />
         </button>
