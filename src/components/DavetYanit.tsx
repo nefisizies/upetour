@@ -133,33 +133,33 @@ export function DavetYanit({ etkinlik: e }: Props) {
             <Clock className="w-4 h-4" /> Bu davete henüz yanıt vermediniz.
           </div>
 
-          <div className="grid grid-cols-1 gap-2">
-            {/* 1. Seçenek: Kabul Et */}
-            <button
-              onClick={() => yanitle("KABUL")}
-              disabled={!!yukleniyor}
-              className="w-full py-2.5 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-50"
-              style={{ background: "#22c55e" }}
-            >
-              {yukleniyor === "KABUL" ? "..." : "✓  Kabul Et"}
-            </button>
+          <div className="space-y-2">
+            {/* Kabul Et + Not ikonu — split buton */}
+            <div className="flex rounded-xl overflow-hidden" style={{ border: "1px solid #22c55e" }}>
+              <button
+                onClick={() => yanitle("KABUL")}
+                disabled={!!yukleniyor}
+                className="flex-1 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50"
+                style={{ background: "#22c55e" }}
+              >
+                {yukleniyor === "KABUL" ? "..." : "✓  Kabul Et"}
+              </button>
+              <button
+                onClick={() => setOzelAcik((o) => !o)}
+                disabled={!!yukleniyor}
+                title="Not ekleyerek kabul et"
+                className="px-3 flex items-center justify-center transition-colors disabled:opacity-50"
+                style={{
+                  background: ozelAcik ? "#16a34a" : "#16a34a99",
+                  borderLeft: "1px solid rgba(255,255,255,0.3)",
+                  color: "white",
+                }}
+              >
+                <PenLine className="w-4 h-4" />
+              </button>
+            </div>
 
-            {/* 3. Seçenek: Özel not ile kabul */}
-            <button
-              onClick={() => setOzelAcik((o) => !o)}
-              disabled={!!yukleniyor}
-              className="w-full py-2.5 rounded-xl text-sm font-medium border transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{
-                borderColor: "var(--primary)",
-                color: "var(--primary)",
-                background: ozelAcik ? "color-mix(in srgb, var(--primary) 8%, transparent)" : "transparent",
-              }}
-            >
-              <PenLine className="w-3.5 h-3.5" />
-              Kendi notumla kabul et
-            </button>
-
-            {/* 2. Seçenek: Reddet */}
+            {/* Reddet */}
             <button
               onClick={() => yanitle("RED")}
               disabled={!!yukleniyor}
