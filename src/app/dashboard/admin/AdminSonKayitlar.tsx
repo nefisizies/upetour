@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, X, Copy, Check } from "lucide-react";
+import { Eye, X, Copy, Check, KeyRound, Loader2 } from "lucide-react";
 
 type User = {
   id: string;
@@ -39,6 +39,8 @@ function KopyaButonu({ metin }: { metin: string }) {
 export function AdminSonKayitlar({ users }: { users: User[] }) {
   const [detay, setDetay] = useState<Detay | null>(null);
   const [yukleniyor, setYukleniyor] = useState<string | null>(null);
+  const [sifirlaYukleniyor, setSifirlaYukleniyor] = useState(false);
+  const [yeniSifre, setYeniSifre] = useState<string | null>(null);
 
   async function detayGor(userId: string) {
     setYukleniyor(userId);
@@ -46,9 +48,31 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
       const res = await fetch(`/api/admin/kullanici-detay?id=${userId}`);
       const data = await res.json();
       setDetay({ ...data, createdAt: new Date(data.createdAt).toISOString() });
+      setYeniSifre(null);
     } finally {
       setYukleniyor(null);
     }
+  }
+
+  async function sifreSifirla() {
+    if (!detay) return;
+    setSifirlaYukleniyor(true);
+    try {
+      const res = await fetch("/api/admin/sifre-sifirla", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: detay.id }),
+      });
+      const data = await res.json();
+      if (data.ok) setYeniSifre(data.newPassword);
+    } finally {
+      setSifirlaYukleniyor(false);
+    }
+  }
+
+  function modalKapat() {
+    setDetay(null);
+    setYeniSifre(null);
   }
 
   return (
@@ -91,7 +115,7 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
-          onClick={() => setDetay(null)}
+          onClick={modalKapat}
         >
           <div
             className="w-full max-w-md rounded-2xl p-6 space-y-4"
@@ -100,7 +124,7 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
           >
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">Hesap Detayları</h3>
-              <button onClick={() => setDetay(null)} className="text-white/40 hover:text-white/70 transition-colors">
+              <button onClick={modalKapat} className="text-white/40 hover:text-white/70 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -123,13 +147,23 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
                 </div>
               </div>
 
-              {/* Şifre hash */}
+              {/* Şifre / Yeni şifre */}
               <div>
                 <p className="text-xs text-white/40 mb-1">Şifre</p>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <p className="text-xs text-white/70 flex-1 font-mono break-all select-all">{detay.password}</p>
-                  <KopyaButonu metin={detay.password} />
-                </div>
+                {yeniSifre ? (
+                  <div className="rounded-xl p-3 space-y-2" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)" }}>
+                    <p className="text-xs text-green-400">Şifre sıfırlandı — kullanıcıya mail gönderildi</p>
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <p className="text-sm text-white font-mono font-semibold flex-1 select-all tracking-wider">{yeniSifre}</p>
+                      <KopyaButonu metin={yeniSifre} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <p className="text-xs text-white/70 flex-1 font-mono break-all select-all">{detay.password}</p>
+                    <KopyaButonu metin={detay.password} />
+                  </div>
+                )}
               </div>
 
               {/* Meta */}
@@ -147,6 +181,20 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
                   </p>
                 </div>
               </div>
+
+              {/* Şifre sıfırla butonu */}
+              {!yeniSifre && (
+                <button
+                  onClick={sifreSifirla}
+                  disabled={sifirlaYukleniyor}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all hover:brightness-110 disabled:opacity-50 mt-1"
+                  style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}
+                >
+                  {sifirlaYukleniyor
+                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Sıfırlanıyor...</>
+                    : <><KeyRound className="w-4 h-4" /> Şifreyi Sıfırla & Mail Gönder</>}
+                </button>
+              )}
             </div>
           </div>
         </div>
