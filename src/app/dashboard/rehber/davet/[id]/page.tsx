@@ -21,15 +21,6 @@ export default async function DavetPage({ params }: { params: Promise<{ id: stri
 
   if (!etkinlik || etkinlik.rehberId !== rehberProfile.id) redirect("/dashboard/rehber");
 
-  // Aynı programa ait diğer segmentler
-  const programSegmentler = etkinlik.programId
-    ? await prisma.acenteTakvimEtkinlik.findMany({
-        where: { programId: etkinlik.programId, rehberId: rehberProfile.id },
-        orderBy: { baslangic: "asc" },
-        select: { id: true, baslik: true, baslangic: true, bitis: true, lokasyon: true },
-      })
-    : [];
-
   return (
     <DavetYanit
       etkinlik={{
@@ -42,13 +33,6 @@ export default async function DavetPage({ params }: { params: Promise<{ id: stri
         rehberYanit: etkinlik.rehberYanit,
         acente: etkinlik.acente,
       }}
-      programSegmentler={programSegmentler.map((s) => ({
-        id: s.id,
-        baslik: s.baslik,
-        baslangic: s.baslangic.toISOString(),
-        bitis: s.bitis?.toISOString() ?? null,
-        lokasyon: s.lokasyon,
-      }))}
     />
   );
 }

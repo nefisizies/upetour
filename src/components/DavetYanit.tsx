@@ -6,8 +6,6 @@ import { CalendarDays, MapPin, FileText, Building2, CheckCircle, XCircle, Clock,
 
 type Acente = { companyName: string; city: string | null; logoUrl: string | null };
 
-type Segment = { id: string; baslik: string; baslangic: string; bitis: string | null; lokasyon: string | null };
-
 type Props = {
   etkinlik: {
     id: string;
@@ -19,7 +17,6 @@ type Props = {
     rehberYanit: string | null;
     acente: Acente;
   };
-  programSegmentler?: Segment[];
 };
 
 const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -35,7 +32,7 @@ const innerInputStyle = {
   color: "var(--text-primary)",
 } as React.CSSProperties;
 
-export function DavetYanit({ etkinlik: e, programSegmentler }: Props) {
+export function DavetYanit({ etkinlik: e }: Props) {
   const router = useRouter();
   const [yukleniyor, setYukleniyor] = useState<"KABUL" | "RED" | "OZEL" | null>(null);
   const [sonuc, setSonuc] = useState<"KABUL" | "RED" | null>(
@@ -91,56 +88,22 @@ export function DavetYanit({ etkinlik: e, programSegmentler }: Props) {
         style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <p className="font-semibold text-base" style={{ color: "var(--text-primary)" }}>{e.baslik}</p>
 
-        {/* Birden fazla segment varsa güzergah tablosu göster */}
-        {programSegmentler && programSegmentler.length > 1 ? (
-          <div className="space-y-2">
-            {/* Toplam tarih aralığı */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+            <CalendarDays className="w-4 h-4 shrink-0" />
+            <span>{formatTarih(e.baslangic)}{e.bitis && ` → ${formatTarih(e.bitis)}`}</span>
+          </div>
+          {e.lokasyon && (
             <div className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              <CalendarDays className="w-4 h-4 shrink-0" />
-              <span>
-                {formatTarih(programSegmentler[0].baslangic)}
-                {" → "}
-                {formatTarih(programSegmentler[programSegmentler.length - 1].bitis ?? programSegmentler[programSegmentler.length - 1].baslangic)}
-              </span>
+              <MapPin className="w-4 h-4 shrink-0" /><span>{e.lokasyon}</span>
             </div>
-            {/* Segment listesi */}
-            <div className="rounded-xl overflow-hidden mt-1" style={{ border: "1px solid var(--card-border)" }}>
-              {programSegmentler.map((seg, i) => (
-                <div key={seg.id} className="flex items-center gap-3 px-3 py-2.5 text-sm"
-                  style={{ borderTop: i > 0 ? "1px solid var(--card-border)" : "none" }}>
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{ background: "var(--primary)", color: "white" }}>{i + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    {seg.lokasyon && (
-                      <span className="font-medium" style={{ color: "var(--text-primary)" }}>{seg.lokasyon}</span>
-                    )}
-                  </div>
-                  <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>
-                    {formatTarih(seg.baslangic)}{seg.bitis && seg.bitis !== seg.baslangic ? ` – ${formatTarih(seg.bitis)}` : ""}
-                  </span>
-                </div>
-              ))}
+          )}
+          {e.notlar && (
+            <div className="flex items-start gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+              <FileText className="w-4 h-4 shrink-0 mt-0.5" /><span>{e.notlar}</span>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              <CalendarDays className="w-4 h-4 shrink-0" />
-              <span>{formatTarih(e.baslangic)}{e.bitis && ` → ${formatTarih(e.bitis)}`}</span>
-            </div>
-            {e.lokasyon && (
-              <div className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
-                <MapPin className="w-4 h-4 shrink-0" /><span>{e.lokasyon}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {e.notlar && (
-          <div className="flex items-start gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
-            <FileText className="w-4 h-4 shrink-0 mt-0.5" /><span>{e.notlar}</span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Sonuç durumları */}

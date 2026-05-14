@@ -31,44 +31,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: "Bu davete zaten yanıt verildi" }, { status: 400 });
   }
 
-  // Aynı programa ait tüm segmentler (programId varsa), yoksa sadece bu etkinlik
-  const tumSegmentler = etkinlik.programId
-    ? await prisma.acenteTakvimEtkinlik.findMany({
-        where: { programId: etkinlik.programId, rehberId: rehberProfile.id },
-        orderBy: { baslangic: "asc" },
-      })
-    : [etkinlik];
-
-  // Tüm segmentlerin rehberYanit'ini güncelle
-  await prisma.acenteTakvimEtkinlik.updateMany({
-    where: { id: { in: tumSegmentler.map((s) => s.id) } },
+  await prisma.acenteTakvimEtkinlik.update({
+    where: { id },
     data: { rehberYanit: yanit },
   });
 
   const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
   if (yanit === "KABUL") {
-    // Her segment için rehberin takvimine REZERVASYON ekle
-    await prisma.$transaction(
-      tumSegmentler.map((seg, i) => {
-        const baslik = i === 0 && ozelBaslik?.trim()
-          ? ozelBaslik.trim()
-          : `${etkinlik.acente.companyName} — ${seg.baslik}`;
-        const notlar = i === 0 && ozelNotlar?.trim()
-          ? ozelNotlar.trim()
-          : [seg.lokasyon, seg.notlar].filter(Boolean).join(" • ") || null;
-        return prisma.takvimEtkinlik.create({
-          data: {
-            rehberId: rehberProfile.id,
-            baslik,
-            baslangic: seg.baslangic,
-            bitis: seg.bitis,
-            notlar,
-            tur: "REZERVASYON",
-          },
-        });
-      })
-    );
+    const etkinlikBaslik = ozelBaslik?.trim()
+      ? ozelBaslik.trim()
+      : `${etkinlik.acente.companyName} — ${etkinlik.baslik}`;
+    const etkinlikNotlar = ozelNotlar?.trim()
+      ? ozelNotlar.trim()
+      : [etkinlik.notlar].filter(Boolean).join(" • ") || null;
+
+    await prisma.takvimEtkinlik.create({
+      data: {
+        rehberId: rehberProfile.id,
+        baslik: etkinlikBaslik,
+        baslangic: etkinlik.baslangic,
+        bitis: etkinlik.bitis,
+        notlar: etkinlikNotlar,
+        tur: "REZERVASYON",
+      },
+    });
 
     const acenteUser = await prisma.user.findUnique({ where: { id: etkinlik.acente.userId } });
     if (acenteUser) {
