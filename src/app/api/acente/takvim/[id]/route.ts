@@ -71,11 +71,40 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const acenteProfile = await prisma.acenteProfile.findUnique({ where: { userId: session.user.id } });
   if (!acenteProfile) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
-  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({ where: { id } });
+  const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
+    where: { id },
+    include: { rehber: { select: { id: true, name: true, userId: true } } },
+  });
   if (!etkinlik || etkinlik.acenteId !== acenteProfile.id) {
     return NextResponse.json({ error: "Bulunamadı" }, { status: 404 });
   }
 
   await prisma.acenteTakvimEtkinlik.delete({ where: { id } });
+
+  if (etkinlik.rehberId && etkinlik.rehber) {
+    // Rehber kabul ettiyse takviminden REZERVASYON etkinliğini sil
+    if (etkinlik.rehberYanit === "KABUL") {
+      await prisma.takvimEtkinlik.deleteMany({
+        where: {
+          rehberId: etkinlik.rehberId,
+          tur: "REZERVASYON",
+          baslangic: etkinlik.baslangic,
+        },
+      });
+    }
+
+    // Rehbere bildirim gönder
+    const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+    await prisma.bildirim.create({
+      data: {
+        userId: etkinlik.rehber.userId,
+        tip: "SISTEM",
+        baslik: "Tur İptal Edildi",
+        metin: `${acenteProfile.companyName} tarafından "${etkinlik.baslik}" (${tarihStr}) turu iptal edildi.`,
+        link: `/dashboard/rehber/takvim`,
+      },
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }
