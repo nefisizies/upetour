@@ -1,5 +1,5 @@
 import type { RehberProfile, RehberDil, RehberLicense, Tour, Referans, AcenteProfile } from "@prisma/client";
-import { MapPin, Globe, Briefcase, CheckCircle, Star, Building2, Zap, ExternalLink } from "lucide-react";
+import { MapPin, Globe, Briefcase, CheckCircle, Star, Building2, Zap, ExternalLink, Phone } from "lucide-react";
 import Link from "next/link";
 
 type Profile = (RehberProfile & {
@@ -176,6 +176,17 @@ export function RehberKarti({
           <Zap className="w-3 h-3" style={{ color: "var(--primary)" }} />
           <span className="font-medium" style={{ color: C.muted }}>Sadece acentelere görünür</span>
         </p>
+        {profile?.telefon && (
+          <a
+            href={`tel:${profile.telefon}`}
+            className="flex items-center gap-2 mb-3 group"
+          >
+            <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+            <span className="text-sm font-medium group-hover:underline" style={{ color: "var(--primary)" }}>
+              {profile.telefon}
+            </span>
+          </a>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-sm" style={{ color: C.muted }}>Bu siteden bağlantı</span>
           <span className="text-xl font-bold" style={{ color: "var(--primary)" }}>{acenteBaglantiSayisi}</span>
