@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Palette, LayoutDashboard, LogOut, Users, ShieldCheck, BarChart2 } from "lucide-react";
+import { Palette, LayoutDashboard, LogOut, Users, ShieldCheck, BarChart2, Award } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const adminLinks = [
   { href: "/dashboard/admin",                label: "Genel Bakış",     icon: LayoutDashboard, exact: true },
   { href: "/dashboard/admin/kullanicilar",   label: "Kullanıcılar",    icon: Users,           exact: false },
   { href: "/dashboard/admin/lisanslar",      label: "Lisans Onayları", icon: ShieldCheck,     exact: false },
+  { href: "/dashboard/admin/rozetler",       label: "Rozetler",        icon: Award,           exact: false },
   { href: "/dashboard/admin/istatistikler",  label: "İstatistikler",   icon: BarChart2,       exact: false },
   { href: "/dashboard/admin/tema",           label: "Tema & Görünüm",  icon: Palette,         exact: false },
 ];

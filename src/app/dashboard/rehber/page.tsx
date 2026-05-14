@@ -309,6 +309,44 @@ export default async function RehberDashboard() {
         </div>
       </div>
 
+      {/* Check-in Bölümü */}
+      <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
+          <div>
+            <h2 className="font-semibold text-white flex items-center gap-2">
+              <MapPin className="w-4 h-4" style={{ color: "var(--primary)" }} /> Check-in
+            </h2>
+            <p className="text-xs text-white/35 mt-0.5">Tur anlarını paylaş, profilini güçlendir</p>
+          </div>
+          <Link
+            href="/dashboard/rehber/checkin"
+            className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:opacity-80"
+            style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
+          >
+            Tümünü gör
+          </Link>
+        </div>
+        <div className="p-5 flex items-center gap-6">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">{profile?.checkInSayisi ?? 0}</div>
+            <div className="text-xs text-white/40 mt-0.5">Check-in</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">{profile?.benzersizSehir ?? 0}</div>
+            <div className="text-xs text-white/40 mt-0.5">Şehir</div>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <Link
+              href="/dashboard/rehber/checkin"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
+              style={{ background: "var(--primary)", color: "white" }}
+            >
+              <MapPin className="w-4 h-4" /> Check-in Yap
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Alt İki Kolon */}
       <div className="grid md:grid-cols-2 gap-6">
 
@@ -357,7 +395,7 @@ export default async function RehberDashboard() {
         {[
           { href: "/dashboard/rehber/profil", icon: User, bgStyle: { background: "color-mix(in srgb, var(--primary) 10%, transparent)" }, iconStyle: { color: "var(--primary)" }, title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
           { href: "/dashboard/rehber/mesajlar", icon: MessageCircle, bgStyle: { background: "rgba(168,85,247,0.15)" }, iconStyle: { color: "rgb(192,132,252)" }, title: "Mesajlar", desc: "Acentelerle iletişim" },
-          { href: "/kesfet/rehberler", icon: Globe, bgStyle: { background: "rgba(34,197,94,0.15)" }, iconStyle: { color: "rgb(74,222,128)" }, title: "Rehberleri Gör", desc: "Diğer rehberler" },
+          { href: "/kesfet/feed", icon: Globe, bgStyle: { background: "rgba(34,197,94,0.15)" }, iconStyle: { color: "rgb(74,222,128)" }, title: "Rehber Feed", desc: "Canlı paylaşımlar" },
         ].map((item) => (
           <Link key={item.href} href={item.href}
             className="backdrop-blur-sm rounded-xl p-5 transition-shadow flex items-center gap-4 group hover:bg-white/5"
