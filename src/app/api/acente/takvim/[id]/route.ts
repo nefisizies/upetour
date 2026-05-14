@@ -81,19 +81,17 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
 
   await prisma.acenteTakvimEtkinlik.delete({ where: { id } });
 
-  if (etkinlik.rehberId && etkinlik.rehber) {
-    // Rehber kabul ettiyse takviminden REZERVASYON etkinliğini sil
-    if (etkinlik.rehberYanit === "KABUL") {
-      await prisma.takvimEtkinlik.deleteMany({
-        where: {
-          rehberId: etkinlik.rehberId,
-          tur: "REZERVASYON",
-          baslangic: etkinlik.baslangic,
-        },
-      });
-    }
+  if (etkinlik.rehberId && etkinlik.rehber && etkinlik.rehberYanit === "KABUL") {
+    // Rehber takviminden REZERVASYON etkinliğini sil
+    await prisma.takvimEtkinlik.deleteMany({
+      where: {
+        rehberId: etkinlik.rehberId,
+        tur: "REZERVASYON",
+        baslangic: etkinlik.baslangic,
+      },
+    });
 
-    // Rehbere bildirim gönder
+    // Sadece kabul etmişse bildirim gönder
     const tarihStr = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
     await prisma.bildirim.create({
       data: {
