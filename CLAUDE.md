@@ -18,6 +18,19 @@ Repo: nefisizies/turbag
 - Her konuşma BAŞINDA ajan dosyalarını oku ve kullanıcıya "okudum, şu an şu durumdasın" diye kısa özet geç
 - Her konuşma SONUNDA ~/.claude/projects/-home-userwsl/memory/project_rehbersepeti.md güncelle ve agents/ dosyalarını güncelle
 
+## Branch Workflow — ZORUNLU
+- Her zaman `feature/uras` branch'inde çalış. Main'e direkt commit/push yapma.
+- Oturum başında `git branch` ile kontrol et, değilse `git checkout feature/uras`
+- Merge zamanı gelince:
+  1. `git checkout main`
+  2. `git pull origin main --no-rebase --no-edit`
+  3. `git merge feature/uras --no-edit`
+  4. `git push origin main`
+  5. Deploy izle
+  6. `git checkout feature/uras && git merge origin/main --no-edit` ← branch'i main ile güncelle, sonra çalışmaya devam et
+- Branch kalıcıdır, merge sonrası silinmez — her merge sonrası main'le sync'lenir ve üstünden devam edilir
+- Poyraz kendi branch'inde çalışır; onun değişikliklerini almak için adım 6 yeterli
+
 ## Ajan Sistemi — OTURUM BAŞINDA OKU
 Her oturumun başında şu dosyaları oku:
 - agents/ortak-bilgi.md  — Tüm ajanların ortak bilgisi (ZORUNLU)
