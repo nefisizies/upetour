@@ -1,4 +1,4 @@
-import type { RehberProfile, RehberDil, RehberLicense, Tour, Referans, AcenteProfile } from "@prisma/client";
+import type { RehberProfile, RehberDil, RehberLicense, Tour, Referans, AcenteProfile, UnvanTip } from "@prisma/client";
 import { MapPin, Globe, Briefcase, CheckCircle, Star, Building2, Zap, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
@@ -13,6 +13,14 @@ type Profile = (RehberProfile & {
 // All text colors are hardcoded to ensure readability on white — do NOT use
 // Tailwind text-gray-* classes here because globals.css dark mode overrides
 // lighten them, making them invisible on white.
+const UNVAN_LABEL: Partial<Record<UnvanTip, string>> = {
+  AKTIF_REHBER:      "Aktif Rehber",
+  DENEYIMLI_REHBER:  "Deneyimli Rehber",
+  UZMAN_REHBER:      "Uzman Rehber",
+  SUPER_REHBER:      "Süper Rehber",
+  ELIT_REHBER:       "Elit Rehber",
+};
+
 const C = {
   text:       "#111827",
   secondary:  "#374151",
@@ -74,9 +82,17 @@ export function RehberKarti({
           )}
         </div>
 
-        <h3 className="font-bold text-lg leading-tight" style={{ color: C.text }}>
-          {profile?.name || <span style={{ color: C.lighter }}>Ad Soyad</span>}
-        </h3>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="font-bold text-lg leading-tight" style={{ color: C.text }}>
+            {profile?.name || <span style={{ color: C.lighter }}>Ad Soyad</span>}
+          </h3>
+          {profile?.unvan && UNVAN_LABEL[profile.unvan] && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+              style={{ background: "color-mix(in srgb, var(--primary) 12%, white)", color: "var(--primary)", border: "1px solid color-mix(in srgb, var(--primary) 25%, transparent)" }}>
+              {UNVAN_LABEL[profile.unvan]}
+            </span>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
           {profile?.city && (
@@ -151,7 +167,7 @@ export function RehberKarti({
           {onaylananReferanslar.length > 0 && (
             <div>
               <p className="text-xs font-medium uppercase tracking-wide mb-1.5 flex items-center gap-1" style={{ color: C.faint }}>
-                <Building2 className="w-3 h-3" /> Çalıştığı Acenteler
+                <Building2 className="w-3 h-3" /> Referanslar
               </p>
               <div className="space-y-1.5">
                 {onaylananReferanslar.slice(0, 4).map((r) => (
