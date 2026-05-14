@@ -46,6 +46,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           bitis: segBitis,
           lokasyon: seg.lokasyonlar[0],
           rehberId: rehberId || null,
+          programId: program.id,
           notlar: `${program.ad} programından otomatik oluşturuldu.`,
         },
       });

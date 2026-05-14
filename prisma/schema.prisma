@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -109,7 +110,25 @@ model TurProgrami {
   aktif       Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  acente      AcenteProfile        @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  etkinlikler AcenteTakvimEtkinlik[]
+  turistler   TuristKayit[]
+}
+
+model TuristKayit {
+  id          String      @id @default(cuid())
+  programId   String
+  ad          String
+  soyad       String
+  pasaportNo  String?
+  uyruk       String?
+  dogumTarihi String?
+  telefon     String?
+  eposta      String?
+  notlar      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  program     TurProgrami @relation(fields: [programId], references: [id], onDelete: Cascade)
 }
 
 model AcenteRehberBlok {
@@ -184,12 +203,14 @@ model AcenteTakvimEtkinlik {
   bitis       DateTime?
   lokasyon    String?
   rehberId    String?
+  programId   String?
   notlar      String?
   rehberYanit RehberYanitDurum?
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   acente      AcenteProfile      @relation(fields: [acenteId], references: [id], onDelete: Cascade)
   rehber      RehberProfile?     @relation(fields: [rehberId], references: [id], onDelete: SetNull)
+  program     TurProgrami?       @relation(fields: [programId], references: [id], onDelete: SetNull)
 }
 
 model Message {
