@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Users, Building2, ShieldCheck, ArrowRight } from "lucide-react";
+import { AdminSonKayitlar } from "./AdminSonKayitlar";
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
@@ -18,10 +19,14 @@ export default async function AdminPage() {
     prisma.user.findMany({
       where: { role: { not: "ADMIN" } },
       orderBy: { createdAt: "desc" },
-      take: 5,
-      include: {
+      take: 10,
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        createdAt: true,
         rehberProfile: { select: { name: true, photoUrl: true } },
-        acenteProfile:  { select: { companyName: true, logoUrl: true } },
+        acenteProfile: { select: { companyName: true, logoUrl: true } },
       },
     }),
   ]);
@@ -39,7 +44,6 @@ export default async function AdminPage() {
         <p className="text-sm mt-1" style={{ color: "var(--card-text-muted, #94a3b8)" }}>Platform durumu</p>
       </div>
 
-      {/* Stats grid */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg, href }) => (
           <Link key={label} href={href}
@@ -56,7 +60,6 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      {/* Son kayıtlar */}
       <div className="backdrop-blur-sm rounded-2xl overflow-hidden"
         style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
@@ -65,29 +68,9 @@ export default async function AdminPage() {
             Tümünü gör <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
-        <div className="divide-y divide-white/5">
-          {recentUsers.map(user => {
-            const name = user.rehberProfile?.name ?? user.acenteProfile?.companyName ?? user.email;
-            const photo = user.rehberProfile?.photoUrl ?? user.acenteProfile?.logoUrl;
-            return (
-              <div key={user.id} className="flex items-center gap-3 px-5 py-3">
-                <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-semibold text-white/50"
-                  style={{ background: "var(--card-bg)" }}>
-                  {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : name[0]?.toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{name}</p>
-                  <p className="text-xs text-white/40 truncate">{user.email}</p>
-                </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  user.role === "REHBER"
-                    ? "bg-blue-500/15 text-blue-400 border border-blue-500/25"
-                    : "bg-purple-500/15 text-purple-400 border border-purple-500/25"
-                }`}>{user.role}</span>
-              </div>
-            );
-          })}
-        </div>
+        <AdminSonKayitlar
+          users={recentUsers.map((u) => ({ ...u, createdAt: u.createdAt.toISOString() }))}
+        />
       </div>
     </div>
   );

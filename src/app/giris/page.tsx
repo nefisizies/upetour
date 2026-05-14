@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { useState, Suspense } from "react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Compass, Building2, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Compass, Building2, Eye, EyeOff, ArrowLeft, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 function GirisForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const rol = searchParams.get("rol"); // "rehber" | "acente" | null
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -19,14 +19,46 @@ function GirisForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (status === "authenticated") router.replace("/dashboard");
-  }, [status, router]);
-
-  if (status === "loading" || status === "authenticated") {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0c0500" }}>
         <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }} />
+      </div>
+    );
+  }
+
+  // Zaten giriş yapılmışsa → geç veya çıkış yap ekranı
+  if (status === "authenticated" && session) {
+    const roleLabel = session.user.role === "REHBER" ? "Rehber" : session.user.role === "ACENTE" ? "Acente" : "Admin";
+    const dashHref = session.user.role === "REHBER" ? "/dashboard/rehber" : session.user.role === "ACENTE" ? "/dashboard/acente" : "/dashboard/admin";
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
+        <div className="w-full max-w-sm text-center space-y-6">
+          <Logo size="md" darkBg href="/" className="justify-center" />
+          <div className="rounded-2xl p-6 space-y-4" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-lg font-bold"
+              style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
+              {session.user.email?.[0]?.toUpperCase()}
+            </div>
+            <div>
+              <p className="text-xs text-white/40 mb-1">{roleLabel} olarak giriş yapılmış</p>
+              <p className="font-semibold text-white">{session.user.email}</p>
+            </div>
+            <div className="flex flex-col gap-2 pt-2">
+              <Link href={dashHref}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
+                style={{ background: "var(--primary)", color: "white" }}>
+                <LayoutDashboard className="w-4 h-4" /> Panele Devam Et
+              </Link>
+              <button
+                onClick={() => signOut({ redirect: false }).then(() => router.refresh())}
+                className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-white/10"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)" }}>
+                <LogOut className="w-4 h-4" /> Farklı Hesapla Giriş Yap
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
