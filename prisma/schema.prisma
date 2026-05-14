@@ -47,6 +47,7 @@ model RehberProfile {
   createdAt          DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
   operatingCountries String[]                @default([])
+  telefon            String?
   unvan              UnvanTip                @default(YENI_REHBER)
   checkInSayisi      Int                     @default(0)
   benzersizSehir     Int                     @default(0)

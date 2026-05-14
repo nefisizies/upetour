@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/userwsl/turplatform && ERRORS=$(npx tsc --noEmit 2>&1 | grep 'error TS' | head -5); if [ -n \"$ERRORS\" ]; then echo \"⚠️  TypeScript hataları:\n$ERRORS\"; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/userwsl/turplatform && ERRORS=$(npx tsc --noEmit 2>&1 | grep 'error TS' | head -5); if [ -n \"$ERRORS\" ]; then echo \"⚠️  TypeScript hataları:\n$ERRORS\"; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

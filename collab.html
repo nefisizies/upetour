@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🎲 Ortak Masa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:#0d0a05;font-family:'Inter',sans-serif;}
+body{display:flex;}
+
+#scene-wrap{flex:1;position:relative;overflow:hidden;min-width:0;}
+#canvas{display:block;width:100%;height:100%;image-rendering:auto;}
+
+#bubbles-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+.speech-bubble{
+  position:absolute;
+  background:#fff;
+  border-radius:16px;
+  padding:9px 14px;
+  font-size:12.5px;
+  line-height:1.55;
+  color:#1a1208;
+  max-width:190px;
+  word-wrap:break-word;
+  box-shadow:0 6px 24px rgba(0,0,0,0.35),0 2px 8px rgba(0,0,0,0.2);
+  transform:translate(-50%,-100%);
+  margin-top:-18px;
+  opacity:0;
+  transition:opacity 0.22s ease;
+  pointer-events:none;
+  font-family:'Inter',sans-serif;
+  font-weight:500;
+  z-index:10;
+}
+.speech-bubble.visible{opacity:1;}
+.speech-bubble::after{
+  content:'';position:absolute;bottom:-9px;left:50%;
+  transform:translateX(-50%);
+  border:7px solid transparent;border-top-color:#fff;
+}
+.speech-bubble.ai{background:#e8f4ff;border:1px solid rgba(0,180,255,0.2);}
+.speech-bubble.ai::after{border-top-color:#e8f4ff;}
+
+#sync-badge{
+  position:absolute;bottom:14px;left:14px;z-index:10;
+  background:rgba(0,0,0,0.7);border-radius:8px;
+  padding:5px 10px;font-size:10px;color:rgba(255,255,255,0.35);
+  font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;
+  backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.06);
+}
+#sync-badge .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);}
+#sync-badge.syncing .dot{background:#60a5fa;animation:pulse 1s infinite;}
+#sync-badge.ok .dot{background:#4ade80;}
+#sync-badge.error .dot{background:#f87171;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:340px;min-width:280px;
+  background:#0f1117;
+  border-left:1px solid rgba(255,255,255,0.07);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+#sb-header{
+  padding:14px 16px;
+  background:#0a0d13;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.sb-icon{font-size:22px;line-height:1;}
+.sb-title{flex:1;font-size:14px;font-weight:700;color:#f1f5f9;}
+.sb-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px;}
+#sb-settings-btn{
+  background:none;border:1px solid rgba(255,255,255,0.12);
+  border-radius:7px;padding:5px 8px;color:rgba(255,255,255,0.4);
+  font-size:13px;cursor:pointer;transition:all 0.15s;
+}
+#sb-settings-btn:hover{color:#fff;border-color:rgba(255,255,255,0.4);}
+
+/* Participants strip */
+#participants-bar{
+  padding:8px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;background:#0a0d13;
+}
+.part-chip{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.04);border-radius:20px;
+  padding:4px 10px 4px 6px;
+  border:1px solid rgba(255,255,255,0.07);
+}
+.part-avatar{
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.part-name{font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);}
+.part-chip.empty{opacity:0.35;}
+.part-chip.empty .part-name{font-style:italic;}
+
+#messages-list{
+  flex:1;overflow-y:auto;
+  padding:12px 12px 8px;
+  display:flex;flex-direction:column;gap:2px;
+}
+#messages-list::-webkit-scrollbar{width:3px;}
+#messages-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+
+.msg-row{display:flex;align-items:flex-end;gap:8px;margin:2px 0;}
+.msg-row.self{flex-direction:row-reverse;}
+.msg-row.system-row{justify-content:center;}
+
+.msg-avatar-sm{
+  width:26px;height:26px;border-radius:50%;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;margin-bottom:2px;
+}
+.msg-content{display:flex;flex-direction:column;max-width:78%;}
+.msg-row.self .msg-content{align-items:flex-end;}
+.msg-sender-name{font-size:10px;font-weight:600;margin-bottom:3px;margin-left:2px;opacity:0.7;}
+.msg-row.self .msg-sender-name{display:none;}
+.msg-bubble{
+  padding:8px 12px;border-radius:16px;
+  font-size:12.5px;line-height:1.55;color:#e8edf4;
+  word-break:break-word;white-space:pre-wrap;
+}
+.msg-row:not(.self) .msg-bubble{
+  background:#1a2030;border:1px solid rgba(255,255,255,0.07);
+  border-bottom-left-radius:5px;
+}
+.msg-row.self .msg-bubble{
+  background:#0a6e94;
+  border-bottom-right-radius:5px;
+}
+.msg-bubble.ai-bubble{
+  background:#0d1e2e;border:1px solid rgba(0,180,255,0.15);
+  border-bottom-left-radius:5px;
+}
+.msg-time{font-size:9px;color:rgba(255,255,255,0.22);margin-top:3px;margin-left:2px;}
+.msg-row.self .msg-time{margin-right:2px;}
+
+/* Deploy card */
+.deploy-card{
+  margin:6px 0;
+  background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(16,185,129,0.06));
+  border:1px solid rgba(34,197,94,0.25);
+  border-radius:14px;padding:12px 14px;width:100%;
+}
+.deploy-head{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:700;color:#4ade80;margin-bottom:8px;
+}
+.deploy-branch{
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:#94a3b8;margin-bottom:6px;
+  background:rgba(0,0,0,0.3);border-radius:4px;padding:3px 7px;display:inline-block;
+}
+.deploy-features{font-size:11.5px;color:#cbd5e1;line-height:1.7;}
+.deploy-features li{list-style:none;padding-left:14px;position:relative;}
+.deploy-features li::before{content:'→';position:absolute;left:0;color:#4ade80;font-size:10px;}
+.deploy-cta{
+  margin-top:10px;padding:6px 12px;
+  background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.35);
+  border-radius:8px;font-size:11px;font-weight:600;color:#4ade80;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+  transition:background 0.15s;
+}
+.deploy-cta:hover{background:rgba(34,197,94,0.25);}
+
+.msg-system{
+  text-align:center;font-size:10px;color:rgba(255,255,255,0.25);
+  padding:4px 12px;margin:4px 0;
+}
+
+/* Input */
+#input-area{
+  padding:12px;border-top:1px solid rgba(255,255,255,0.07);
+  background:#0a0d13;display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+}
+#chat-input{
+  background:#1a2030;border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:10px 14px;
+  color:#e8edf4;font-size:13px;font-family:'Inter',sans-serif;
+  resize:none;height:52px;width:100%;line-height:1.5;
+  transition:border-color 0.2s;
+}
+#chat-input:focus{outline:none;border-color:rgba(10,126,164,0.5);}
+#chat-input::placeholder{color:rgba(255,255,255,0.18);}
+.input-row{display:flex;justify-content:space-between;align-items:center;}
+.input-hint{font-size:10px;color:rgba(255,255,255,0.18);}
+#send-btn{
+  background:#0a7ea4;border:none;border-radius:9px;
+  padding:7px 16px;color:#fff;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;
+}
+#send-btn:hover{background:#0891b2;}
+#send-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* Settings modal */
+#settings-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.88);
+  z-index:300;display:none;align-items:center;justify-content:center;
+}
+#settings-modal.open{display:flex;}
+#settings-box{
+  background:#141c2a;border:1px solid rgba(255,255,255,0.1);
+  border-radius:18px;padding:28px;width:440px;max-height:85vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,0.6);
+}
+#settings-box::-webkit-scrollbar{width:3px;}
+#settings-box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+.set-title{font-size:17px;font-weight:700;color:#f1f5f9;margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.set-field{margin-bottom:16px;}
+.set-label{font-size:11px;font-weight:600;color:#94a3b8;display:block;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.04em;}
+.set-input,.set-select{
+  width:100%;background:#0f172a;border:1px solid rgba(255,255,255,0.1);
+  border-radius:9px;padding:10px 13px;color:#e8edf4;font-size:13px;
+  font-family:'Inter',sans-serif;transition:border-color 0.2s;
+}
+.set-select option{background:#0f172a;}
+.set-input:focus,.set-select:focus{outline:none;border-color:#0a7ea4;}
+.set-hint{font-size:10.5px;color:rgba(255,255,255,0.25);margin-top:5px;line-height:1.6;}
+.set-actions{display:flex;gap:8px;margin-top:20px;}
+.set-btn-p{
+  background:#0a7ea4;border:none;border-radius:9px;padding:10px 20px;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+}
+.set-btn-s{
+  background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:9px;
+  padding:10px 20px;color:#94a3b8;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;
+}
+.set-btn-danger{
+  background:transparent;border:1px solid rgba(239,68,68,0.4);border-radius:9px;
+  padding:10px 20px;color:#f87171;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;
+  margin-left:auto;
+}
+</style>
+</head>
+<body>
+
+<div id="scene-wrap">
+  <canvas id="canvas"></canvas>
+  <div id="bubbles-layer"></div>
+  <div id="sync-badge"><div class="dot"></div><span id="sync-text">bağlı değil</span></div>
+</div>
+
+<div id="sidebar">
+  <div id="sb-header">
+    <div class="sb-icon">🎲</div>
+    <div>
+      <div class="sb-title">Ortak Masa</div>
+      <div class="sb-sub">RehberSepeti koordinasyon kanalı</div>
+    </div>
+    <button id="sb-settings-btn">⚙</button>
+  </div>
+  <div id="participants-bar"></div>
+  <div id="messages-list"></div>
+  <div id="input-area">
+    <textarea id="chat-input" placeholder="Mesaj yaz... (Enter = gönder, Shift+Enter = satır)"></textarea>
+    <div class="input-row">
+      <span class="input-hint">Shift+Enter → yeni satır</span>
+      <button id="send-btn">Gönder ▶</button>
+    </div>
+  </div>
+</div>
+
+<div id="settings-modal">
+  <div id="settings-box">
+    <div class="set-title">⚙ Ortak Masa Ayarları</div>
+    <div class="set-field">
+      <label class="set-label">GitHub Token (repo scope)</label>
+      <input type="password" class="set-input" id="gh-token-input" placeholder="ghp_...">
+      <div class="set-hint">Mesaj senkronizasyonu için kullanılır. Yerel saklanır.</div>
+    </div>
+    <div class="set-field">
+      <label class="set-label">Anthropic API Key (Ömer için)</label>
+      <input type="password" class="set-input" id="api-key-input" placeholder="sk-ant-...">
+      <div class="set-hint">Ömer'in @ömer çağrılarına yanıt verebilmesi için gerekli.</div>
+    </div>
+    <div class="set-field">
+      <label class="set-label">Model</label>
+      <select class="set-select" id="model-select">
+        <option value="claude-haiku-4-5-20251001">Haiku 4.5 — Hızlı &amp; Ucuz</option>
+        <option value="claude-sonnet-4-6">Sonnet 4.6 — Dengeli</option>
+        <option value="claude-opus-4-7">Opus 4.7 — En Güçlü</option>
+      </select>
+    </div>
+    <div class="set-field">
+      <label class="set-label">Ben kimim?</label>
+      <select class="set-select" id="identity-select">
+        <option value="uras">Uras</option>
+        <option value="poyraz">Poyraz</option>
+      </select>
+    </div>
+    <div class="set-actions">
+      <button class="set-btn-p" id="save-settings-btn">Kaydet</button>
+      <button class="set-btn-s" id="close-settings-btn">Kapat</button>
+      <button class="set-btn-danger" id="clear-msgs-btn">Mesajları sil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════
+const GITHUB_REPO = 'nefisizies/turbag';
+const COLLAB_FILE = 'collab-data.json';
+const POLL_INTERVAL = 7000;
+
+const PERSONS = {
+  uras:   { label:'Uras',   initials:'U', color:'#e8834a', isHuman:true,  isAI:false },
+  sinan:  { label:'Ömer',  initials:'S', color:'#2ab4f5', isHuman:false, isAI:true  },
+  poyraz: { label:'Poyraz', initials:'P', color:'#6de895', isHuman:true,  isAI:false },
+  alfred: { label:'Alfred', initials:'A', color:'#f5d76e', isHuman:false, isAI:true  },
+};
+
+const CHAR_VISUALS = {
+  uras: {
+    id:'uras',
+    skinColor:'#c07848',
+    skinShadow:'#a05e30',
+    hairColor:'#150e08',
+    eyeColor:'#5c3820',
+    shirtColor:'#2d4d7c',
+    shirtDark:'#1e3558',
+    glowColor:null,
+    isAI:false,
+  },
+  sinan: {
+    id:'sinan',
+    skinColor:'#c8dce8',
+    skinShadow:'#9ab8cc',
+    hairColor:'#0c1e30',
+    eyeColor:'#00ccff',
+    shirtColor:'#0d4a6b',
+    shirtDark:'#083550',
+    glowColor:'#00ccff',
+    isAI:true,
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let messages = [];
+let currentSha = null;
+let myIdentity = localStorage.getItem('collab_identity') || 'uras';
+let pollTimer = null;
+let charStates = { uras:'idle', sinan:'idle' };
+let talkTimers = { uras:0, sinan:0 };
+let blinkTimers = {
+  uras: { next: 3000 + Math.random()*3000, phase:0 },
+  sinan:{ next: 2500 + Math.random()*3000, phase:0 },
+};
+let lastMsgCount = 0;
+let sinanChatHistory = [];
+let isSinanTyping = false;
+
+// ═══════════════════════════════════════════════════════
+// COLOR UTILS
+// ═══════════════════════════════════════════════════════
+function hexRgb(h){
+  if(!h||h[0]!=='#')return[128,128,128];
+  return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+}
+function darken(h,amt){
+  const[r,g,b]=hexRgb(h);
+  return`rgb(${Math.max(0,(r-amt*255)|0)},${Math.max(0,(g-amt*255)|0)},${Math.max(0,(b-amt*255)|0)})`;
+}
+function lighten(h,amt){
+  const[r,g,b]=hexRgb(h);
+  return`rgb(${Math.min(255,(r+amt*255)|0)},${Math.min(255,(g+amt*255)|0)},${Math.min(255,(b+amt*255)|0)})`;
+}
+function alpha(h,a){const[r,g,b]=hexRgb(h);return`rgba(${r},${g},${b},${a})`;}
+
+// ═══════════════════════════════════════════════════════
+// GITHUB STORAGE
+// ═══════════════════════════════════════════════════════
+function ghToken(){ return localStorage.getItem('collab_gh_token') || ''; }
+
+async function ghRead(){
+  const tok = ghToken(); if(!tok) return null;
+  try{
+    const r = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${COLLAB_FILE}`,{
+      headers:{'Authorization':`token ${tok}`,'Accept':'application/vnd.github.v3+json'},
+      cache:'no-store',
+    });
+    if(r.status === 404) return { messages:[], sha:null };
+    if(!r.ok) return null;
+    const d = await r.json();
+    const content = JSON.parse(atob(d.content.replace(/\n/g,'')));
+    currentSha = d.sha;
+    return content;
+  }catch(e){ return null; }
+}
+
+async function ghWrite(data, retries=3){
+  const tok = ghToken(); if(!tok) return false;
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data,null,2))));
+  const lastMsg = data.messages[data.messages.length-1];
+  const commitMsg = lastMsg?.type === 'deploy'
+    ? `collab: deploy — ${lastMsg.branch}`
+    : `collab: ${lastMsg?.sender||'update'} — mesaj`;
+  try{
+    const body = {message:commitMsg, content, ...(currentSha?{sha:currentSha}:{})};
+    const r = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${COLLAB_FILE}`,{
+      method:'PUT',
+      headers:{'Authorization':`token ${tok}`,'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+    });
+    if(r.status === 409 && retries > 0){
+      // SHA conflict — re-read and merge
+      const fresh = await ghRead();
+      if(!fresh) return false;
+      const freshIds = new Set(fresh.messages.map(m=>m.id));
+      const newMsgs = data.messages.filter(m=>!freshIds.has(m.id));
+      fresh.messages.push(...newMsgs);
+      fresh.messages.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+      return ghWrite(fresh, retries-1);
+    }
+    if(!r.ok) return false;
+    const resp = await r.json();
+    currentSha = resp.content?.sha || currentSha;
+    return true;
+  }catch(e){ return false; }
+}
+
+async function syncMessages(){
+  setSyncStatus('syncing');
+  const data = await ghRead();
+  if(!data){ setSyncStatus('error'); return; }
+  setSyncStatus('ok');
+  const incoming = data.messages || [];
+  const knownIds = new Set(messages.map(m=>m.id));
+  let added = false;
+  for(const m of incoming){
+    if(!knownIds.has(m.id)){ messages.push(m); added=true; }
+  }
+  if(added){
+    messages.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+    renderMessages();
+    scrollBottom();
+    // Show bubble for last incoming message not from self
+    const last = messages[messages.length-1];
+    if(last && last.sender !== myIdentity && last.type === 'chat'){
+      showBubble(last.sender, last.text.slice(0,70));
+    }
+  }
+}
+
+function setSyncStatus(s){
+  const badge = document.getElementById('sync-badge');
+  const txt   = document.getElementById('sync-text');
+  const dot   = badge.querySelector('.dot');
+  if(s==='syncing'){dot.style.background='#60a5fa'; txt.textContent='senkronize ediliyor...';}
+  else if(s==='ok'){dot.style.background='#4ade80'; txt.textContent='senkron';}
+  else if(s==='error'){dot.style.background='#f87171'; txt.textContent='bağlantı hatası';}
+  else{dot.style.background='rgba(255,255,255,0.2)'; txt.textContent='bağlı değil';}
+}
+
+function startPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  syncMessages();
+  pollTimer = setInterval(syncMessages, POLL_INTERVAL);
+}
+
+// ═══════════════════════════════════════════════════════
+// CANVAS SETUP
+// ═══════════════════════════════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W, H, CX, CY;
+let staticBg = null;
+
+function resize(){
+  const wrap = document.getElementById('scene-wrap');
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  CX = W/2;
+  CY = H * 0.52;
+  buildStaticBg();
+}
+window.addEventListener('resize', resize);
+
+// ═══════════════════════════════════════════════════════
+// STATIC BACKGROUND (pre-rendered)
+// ═══════════════════════════════════════════════════════
+function buildStaticBg(){
+  const oc = document.createElement('canvas');
+  oc.width = W; oc.height = H;
+  const c = oc.getContext('2d');
+  drawRoom(c, W, H);
+  drawTableSurface(c, CX, CY);
+  drawOkeyTiles(c, CX, CY);
+  staticBg = oc;
+}
+
+function drawRoom(c, w, h){
+  // Wall
+  const wallGrad = c.createLinearGradient(0,0,0,h*0.5);
+  wallGrad.addColorStop(0,'#1a1508');
+  wallGrad.addColorStop(1,'#221a0c');
+  c.fillStyle = wallGrad;
+  c.fillRect(0,0,w,h);
+
+  // Floor
+  const floorGrad = c.createLinearGradient(0,h*0.46,0,h);
+  floorGrad.addColorStop(0,'#16110a');
+  floorGrad.addColorStop(1,'#0d0a05');
+  c.fillStyle = floorGrad;
+  c.fillRect(0,h*0.46,w,h*0.54);
+
+  // Floor planks
+  c.strokeStyle = 'rgba(255,200,100,0.035)';
+  c.lineWidth = 1;
+  for(let y = h*0.48; y < h; y += 24){
+    c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke();
+  }
+  // Plank vertical breaks (subtle)
+  c.strokeStyle = 'rgba(0,0,0,0.15)';
+  for(let x = 60; x < w; x += 120){
+    c.beginPath(); c.moveTo(x,h*0.48); c.lineTo(x+20,h); c.stroke();
+  }
+
+  // Wainscot
+  c.fillStyle = '#2a1e10';
+  c.fillRect(0,h*0.46,w,10);
+  c.fillStyle = '#1a1208';
+  c.fillRect(0,h*0.455,w,3);
+
+  // Ambient lamp glow (warm)
+  const lampGrad = c.createRadialGradient(w/2, 0, 0, w/2, 0, h*0.88);
+  lampGrad.addColorStop(0,'rgba(255,185,60,0.20)');
+  lampGrad.addColorStop(0.35,'rgba(255,150,40,0.09)');
+  lampGrad.addColorStop(0.7,'rgba(255,120,20,0.03)');
+  lampGrad.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle = lampGrad;
+  c.fillRect(0,0,w,h);
+
+  // Overhead lamp fixture
+  const lx = w/2, ly = 18;
+  // Cord
+  c.strokeStyle = '#3a2a18';
+  c.lineWidth = 2;
+  c.beginPath(); c.moveTo(lx,0); c.lineTo(lx,ly); c.stroke();
+  // Shade
+  c.fillStyle = '#4a3520';
+  c.beginPath();
+  c.moveTo(lx-32, ly+8);
+  c.lineTo(lx+32, ly+8);
+  c.lineTo(lx+22, ly+34);
+  c.lineTo(lx-22, ly+34);
+  c.closePath();
+  c.fill();
+  c.strokeStyle = '#6a5030';
+  c.lineWidth = 1;
+  c.stroke();
+  // Lamp bulb glow
+  c.fillStyle = 'rgba(255,240,140,0.95)';
+  c.beginPath();
+  c.ellipse(lx, ly+34, 18, 5, 0, 0, Math.PI*2);
+  c.fill();
+  // Light cone (subtle)
+  const coneGrad = c.createLinearGradient(0, ly+34, 0, h);
+  coneGrad.addColorStop(0,'rgba(255,200,60,0.08)');
+  coneGrad.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle = coneGrad;
+  c.beginPath();
+  c.moveTo(lx-22, ly+34);
+  c.lineTo(lx-w*0.45, h);
+  c.lineTo(lx+w*0.45, h);
+  c.lineTo(lx+22, ly+34);
+  c.closePath();
+  c.fill();
+
+  // Left wall window
+  const wx = 80, wy = 60, ww = 110, wh = 140;
+  c.fillStyle = '#0a0f1a';
+  c.beginPath(); c.roundRect(wx, wy, ww, wh, 4); c.fill();
+  // Moon glow outside
+  const moonGrad = c.createRadialGradient(wx+ww/2, wy+wh/2, 0, wx+ww/2, wy+wh/2, 60);
+  moonGrad.addColorStop(0,'rgba(160,180,220,0.15)');
+  moonGrad.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle = moonGrad;
+  c.beginPath(); c.roundRect(wx, wy, ww, wh, 4); c.fill();
+  // Moon
+  c.fillStyle = 'rgba(230,230,210,0.8)';
+  c.beginPath(); c.arc(wx+ww*0.6, wy+wh*0.3, 14, 0, Math.PI*2); c.fill();
+  c.fillStyle = 'rgba(10,15,26,0.6)';
+  c.beginPath(); c.arc(wx+ww*0.67, wy+wh*0.26, 12, 0, Math.PI*2); c.fill();
+  // Window frame
+  c.strokeStyle = '#4a3820';
+  c.lineWidth = 6;
+  c.beginPath(); c.roundRect(wx, wy, ww, wh, 4); c.stroke();
+  c.lineWidth = 2;
+  c.beginPath(); c.moveTo(wx+ww/2, wy); c.lineTo(wx+ww/2, wy+wh); c.stroke();
+  c.beginPath(); c.moveTo(wx, wy+wh/2); c.lineTo(wx+ww, wy+wh/2); c.stroke();
+  // Window sill
+  c.fillStyle = '#5a3820';
+  c.beginPath(); c.roundRect(wx-6, wy+wh, ww+12, 10, [0,0,3,3]); c.fill();
+
+  // Right side bookshelf
+  const bx = w - 110, by = 40, bw = 95, bh = 200;
+  c.fillStyle = '#2a1c10';
+  c.beginPath(); c.roundRect(bx, by, bw, bh, 4); c.fill();
+  c.strokeStyle = '#3a2a18';
+  c.lineWidth = 1;
+  c.stroke();
+  // Shelves
+  for(let s=0; s<4; s++){
+    c.fillStyle = '#3a2818';
+    c.fillRect(bx+4, by+16+s*46, bw-8, 5);
+    // Books
+    const bookColors = ['#8b2020','#1a5030','#4a3580','#8b6010','#2a4a8b','#7a1a40'];
+    let bkx = bx+6;
+    for(let b=0; b<5+Math.floor(Math.random()*3); b++){
+      const bkw = 8+Math.floor(s+b)%5*3;
+      const bkh = 28+((s+b)%3)*6;
+      c.fillStyle = bookColors[(s*3+b)%bookColors.length];
+      c.beginPath(); c.roundRect(bkx, by+21+s*46-bkh, bkw, bkh, 1); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.05)';
+      c.beginPath(); c.roundRect(bkx+1, by+21+s*46-bkh, 2, bkh, 1); c.fill();
+      bkx += bkw + 2;
+      if(bkx > bx+bw-14) break;
+    }
+  }
+  // Shelf trinket (small plant on top)
+  c.fillStyle = '#2a4a18';
+  c.beginPath(); c.arc(bx+bw/2, by-8, 10, 0, Math.PI*2); c.fill();
+  c.fillStyle = '#1e3a12';
+  c.beginPath(); c.arc(bx+bw/2+8, by-14, 7, 0, Math.PI*2); c.fill();
+  c.fillStyle = '#3a2818';
+  c.beginPath(); c.roundRect(bx+bw/2-5, by-2, 10, 10, [0,0,3,3]); c.fill();
+}
+
+function drawTableSurface(c, cx, cy){
+  const tw = 370, th = 138;
+
+  // Drop shadow
+  c.save();
+  c.shadowColor = 'rgba(0,0,0,0.6)';
+  c.shadowBlur = 40;
+  c.shadowOffsetY = 18;
+  c.fillStyle = '#3a2010';
+  c.beginPath(); c.roundRect(cx-tw/2-2, cy-th/2-2, tw+4, th+4+30, [10,10,8,8]); c.fill();
+  c.restore();
+
+  // Table 3D front edge
+  c.fillStyle = '#4a2a10';
+  c.beginPath(); c.roundRect(cx-tw/2-2, cy+th/2, tw+4, 28, [0,0,8,8]); c.fill();
+  c.fillStyle = '#5a3818';
+  c.beginPath(); c.roundRect(cx-tw/2, cy+th/2, tw, 6, 2); c.fill();
+
+  // Table legs (visible below front edge)
+  const legPositions = [-tw/2+20, -tw/2+80, tw/2-80, tw/2-20];
+  legPositions.forEach(lx=>{
+    c.fillStyle = '#3a2010';
+    c.beginPath(); c.roundRect(cx+lx-5, cy+th/2+20, 10, 14, [0,0,3,3]); c.fill();
+  });
+
+  // Table top wood border
+  c.fillStyle = '#7a4a22';
+  c.beginPath(); c.roundRect(cx-tw/2, cy-th/2, tw, th, [10,10,0,0]); c.fill();
+
+  // Wood grain lines on border
+  c.strokeStyle = 'rgba(0,0,0,0.12)';
+  c.lineWidth = 1;
+  for(let i=0; i<8; i++){
+    const gx = cx - tw/2 + 10 + i*(tw/8);
+    c.beginPath(); c.moveTo(gx, cy-th/2+3); c.lineTo(gx-4, cy+th/2-3); c.stroke();
+  }
+
+  // Green felt inset
+  c.fillStyle = '#1a4228';
+  c.beginPath(); c.roundRect(cx-tw/2+12, cy-th/2+12, tw-24, th-24, 6); c.fill();
+  // Felt texture
+  c.fillStyle = 'rgba(255,255,255,0.012)';
+  for(let i=0; i<(tw-24); i+=10){
+    c.fillRect(cx-tw/2+12+i, cy-th/2+12, 1, th-24);
+  }
+  for(let i=0; i<(th-24); i+=10){
+    c.fillRect(cx-tw/2+12, cy-th/2+12+i, tw-24, 1);
+  }
+  // Felt border shadow
+  c.strokeStyle = 'rgba(0,0,0,0.25)';
+  c.lineWidth = 2;
+  c.beginPath(); c.roundRect(cx-tw/2+12, cy-th/2+12, tw-24, th-24, 6); c.stroke();
+}
+
+function drawOkeyTiles(c, cx, cy){
+  const tiles = [
+    {dx:-90,dy:-22,num:'7',col:'#e84040',rot:-0.12},
+    {dx:-62,dy:8,  num:'12',col:'#2c3e50',rot:0.06},
+    {dx:-28,dy:-18,num:'3',col:'#e8940a',rot:-0.09},
+    {dx:10, dy:14, num:'9',col:'#e84040',rot:0.14},
+    {dx:45, dy:-10,num:'1',col:'#2c3e50',rot:-0.05},
+    {dx:75, dy:16, num:'6',col:'#e8940a',rot:0.1},
+    {dx:110,dy:-8, num:'11',col:'#2c3e50',rot:-0.07},
+    // Face down tiles
+    {dx:-110,dy:10,face:false,rot:0.08},
+    {dx:-42, dy:28,face:false,rot:-0.11},
+    {dx:92,  dy:24,face:false,rot:0.06},
+    {dx:130, dy:14,face:false,rot:-0.04},
+  ];
+  tiles.forEach(tile=>{
+    c.save();
+    c.translate(cx+tile.dx, cy+tile.dy);
+    c.rotate(tile.rot||0);
+    if(tile.face === false){
+      // Face down
+      c.shadowColor='rgba(0,0,0,0.3)';c.shadowBlur=4;c.shadowOffsetY=2;
+      c.fillStyle = '#8b6914';
+      c.beginPath(); c.roundRect(-7,-10,14,20,2); c.fill();
+      c.strokeStyle='rgba(180,130,30,0.6)';c.lineWidth=0.5;c.stroke();
+      // Pattern on back
+      c.strokeStyle='rgba(200,150,40,0.3)';c.lineWidth=0.5;
+      c.beginPath(); c.roundRect(-5,-8,10,16,1); c.stroke();
+    } else {
+      c.shadowColor='rgba(0,0,0,0.25)';c.shadowBlur=4;c.shadowOffsetY=2;
+      c.fillStyle = '#f5f0e5';
+      c.beginPath(); c.roundRect(-7,-10,14,20,2); c.fill();
+      c.strokeStyle='rgba(0,0,0,0.1)';c.lineWidth=0.5;c.stroke();
+      c.fillStyle = tile.col||'#333';
+      c.font = `bold ${tile.num&&tile.num.length>1?'7':'9'}px Inter`;
+      c.textAlign='center';c.textBaseline='middle';
+      c.shadowBlur=0;
+      c.fillText(tile.num, 0, 1);
+    }
+    c.restore();
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// CHARACTER DRAWING
+// ═══════════════════════════════════════════════════════
+function getBlinkState(id, t){
+  const b = blinkTimers[id]; if(!b) return 0;
+  if(t > b.next){ b.phase = t; b.next = t + 2500 + Math.random()*3500; }
+  const elapsed = t - b.phase;
+  if(elapsed < 0) return 0;
+  if(elapsed < 80) return elapsed/80;
+  if(elapsed < 150) return 1;
+  if(elapsed < 230) return 1-(elapsed-150)/80;
+  return 0;
+}
+
+function drawHair(c, color, hx, hy, type='normal'){
+  c.fillStyle = color;
+  if(type==='normal'){
+    // Top of head
+    c.beginPath();
+    c.ellipse(hx, hy-18, 17, 10, 0, Math.PI, 0);
+    c.fill();
+    // Sides
+    c.beginPath();
+    c.ellipse(hx-14, hy-12, 5, 12, -0.3, 0, Math.PI*2);
+    c.fill();
+    c.beginPath();
+    c.ellipse(hx+14, hy-12, 5, 12, 0.3, 0, Math.PI*2);
+    c.fill();
+    // Forehead hair
+    c.beginPath();
+    c.ellipse(hx, hy-20, 14, 7, 0, 0, Math.PI*2);
+    c.fill();
+    // slight side part
+    c.fillStyle = darken(color, 0.12);
+    c.beginPath();
+    c.ellipse(hx+4, hy-22, 6, 4, -0.3, 0, Math.PI*2);
+    c.fill();
+  }
+  if(type==='short'){
+    c.beginPath();
+    c.ellipse(hx, hy-18, 16, 9, 0, Math.PI, 0);
+    c.fill();
+    c.beginPath();
+    c.ellipse(hx-13, hy-14, 4, 10, -0.2, 0, Math.PI*2);
+    c.fill();
+    c.beginPath();
+    c.ellipse(hx+13, hy-14, 4, 10, 0.2, 0, Math.PI*2);
+    c.fill();
+  }
+}
+
+function drawCharBust(c, x, y, cfg, t, state){
+  const breatheY = Math.sin(t*0.0018) * 1.8;
+  const blink = getBlinkState(cfg.id, t);
+  const isTalking = state==='talking';
+  const mouthAmt = isTalking ? Math.abs(Math.sin(t*0.013))*0.75 : 0;
+  const isExcited = state==='excited';
+  const bounceY = isExcited ? Math.sin(t*0.008)*4 : 0;
+
+  c.save();
+  c.translate(x, y + breatheY + bounceY);
+
+  // Shadow beneath
+  c.shadowColor = 'rgba(0,0,0,0.45)';
+  c.shadowBlur = 22;
+  c.shadowOffsetY = 10;
+
+  // Shoulders & shirt
+  c.fillStyle = cfg.shirtColor;
+  c.beginPath();
+  c.moveTo(-30, 12);
+  c.bezierCurveTo(-34, 2, -26, -10, -18, -14);
+  c.bezierCurveTo(-10, -18, -5, -20, 0, -20);
+  c.bezierCurveTo(5, -20, 10, -18, 18, -14);
+  c.bezierCurveTo(26, -10, 34, 2, 30, 12);
+  c.closePath();
+  c.fill();
+  c.shadowBlur = 0; c.shadowOffsetY = 0;
+
+  // Shirt collar shadow / inner
+  c.fillStyle = cfg.shirtDark;
+  c.beginPath();
+  c.moveTo(-8, -16);
+  c.bezierCurveTo(-4, -20, 4, -20, 8, -16);
+  c.bezierCurveTo(5, -12, -5, -12, -8, -16);
+  c.closePath();
+  c.fill();
+
+  // Neck
+  c.fillStyle = cfg.skinColor;
+  c.beginPath();
+  c.roundRect(-4.5, -26, 9, 12, 3);
+  c.fill();
+  // Neck shadow
+  c.fillStyle = cfg.skinShadow;
+  c.beginPath();
+  c.roundRect(-4.5, -26, 9, 4, [3,3,0,0]);
+  c.fill();
+
+  // Head base
+  c.fillStyle = cfg.skinColor;
+  c.shadowColor = 'rgba(0,0,0,0.3)';
+  c.shadowBlur = 12;
+  c.shadowOffsetY = 5;
+  c.beginPath();
+  c.ellipse(0, -44, 18, 22, 0, 0, Math.PI*2);
+  c.fill();
+  c.shadowBlur = 0; c.shadowOffsetY = 0;
+
+  // Ear left
+  c.fillStyle = cfg.skinColor;
+  c.beginPath(); c.ellipse(-18, -43, 4.5, 6.5, 0.15, 0, Math.PI*2); c.fill();
+  c.fillStyle = cfg.skinShadow;
+  c.beginPath(); c.ellipse(-18, -43, 2.5, 4, 0.15, 0, Math.PI*2); c.fill();
+  // Ear right
+  c.fillStyle = cfg.skinColor;
+  c.beginPath(); c.ellipse(18, -43, 4.5, 6.5, -0.15, 0, Math.PI*2); c.fill();
+  c.fillStyle = cfg.skinShadow;
+  c.beginPath(); c.ellipse(18, -43, 2.5, 4, -0.15, 0, Math.PI*2); c.fill();
+
+  // Chin shadow
+  c.fillStyle = cfg.skinShadow;
+  c.beginPath(); c.ellipse(0, -28, 12, 5, 0, 0, Math.PI); c.fill();
+
+  // AI glow aura for Sinan
+  if(cfg.glowColor){
+    c.save();
+    c.globalAlpha = 0.18 + Math.sin(t*0.002)*0.06;
+    const aura = c.createRadialGradient(0,-44,0,0,-44,28);
+    aura.addColorStop(0, alpha(cfg.glowColor,0.5));
+    aura.addColorStop(1, alpha(cfg.glowColor,0));
+    c.fillStyle = aura;
+    c.beginPath(); c.ellipse(0,-44,30,32,0,0,Math.PI*2); c.fill();
+    c.restore();
+  }
+
+  // Hair
+  drawHair(c, cfg.hairColor, 0, -44, 'normal');
+
+  // Eyebrows
+  c.strokeStyle = darken(cfg.hairColor, -0.05);
+  c.lineWidth = 2.2;
+  c.lineCap = 'round';
+  if(isExcited){
+    // Raised brows
+    c.beginPath(); c.moveTo(-12,-59); c.quadraticCurveTo(-7,-63,-3,-60); c.stroke();
+    c.beginPath(); c.moveTo(3,-60);  c.quadraticCurveTo(7,-63,12,-59);   c.stroke();
+  } else {
+    c.beginPath(); c.moveTo(-12,-57); c.quadraticCurveTo(-7,-60,-3,-58); c.stroke();
+    c.beginPath(); c.moveTo(3,-58);   c.quadraticCurveTo(7,-60,12,-57);  c.stroke();
+  }
+
+  // Eyes
+  if(blink > 0.7){
+    // Closed
+    c.strokeStyle = darken(cfg.skinColor, 0.35);
+    c.lineWidth = 2;
+    c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-12,-52); c.bezierCurveTo(-8,-55,-4,-55,0,-52); c.stroke();
+    c.beginPath(); c.moveTo(0,-52); c.bezierCurveTo(4,-55,8,-55,12,-52); c.stroke();
+  } else {
+    // Eye whites
+    c.fillStyle = '#ffffff';
+    c.beginPath(); c.ellipse(-7.5,-52, 5.5,5, 0,0,Math.PI*2); c.fill();
+    c.beginPath(); c.ellipse(7.5,-52,  5.5,5, 0,0,Math.PI*2); c.fill();
+
+    // Iris
+    if(cfg.glowColor){
+      // AI glowing eyes
+      c.save();
+      c.shadowColor = cfg.glowColor;
+      c.shadowBlur = 8;
+      c.fillStyle = cfg.glowColor;
+      c.beginPath(); c.ellipse(-7.5,-52, 4,4.5, 0,0,Math.PI*2); c.fill();
+      c.beginPath(); c.ellipse(7.5,-52,  4,4.5, 0,0,Math.PI*2); c.fill();
+      c.restore();
+      // Inner pupil
+      c.fillStyle = 'rgba(0,0,0,0.6)';
+      c.beginPath(); c.arc(-7.5,-52,1.5,0,Math.PI*2); c.fill();
+      c.beginPath(); c.arc(7.5,-52, 1.5,0,Math.PI*2); c.fill();
+    } else {
+      c.fillStyle = cfg.eyeColor;
+      c.beginPath(); c.ellipse(-7.5,-52, 3.8,4.2, 0,0,Math.PI*2); c.fill();
+      c.beginPath(); c.ellipse(7.5,-52,  3.8,4.2, 0,0,Math.PI*2); c.fill();
+      c.fillStyle = '#111';
+      c.beginPath(); c.arc(-7.5,-52,2,0,Math.PI*2); c.fill();
+      c.beginPath(); c.arc(7.5,-52, 2,0,Math.PI*2); c.fill();
+    }
+    // Eye shine
+    c.fillStyle = 'rgba(255,255,255,0.85)';
+    c.beginPath(); c.arc(-6.2,-53.2,1.1,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(8.8,-53.2, 1.1,0,Math.PI*2); c.fill();
+
+    // Lower lash line
+    c.strokeStyle = darken(cfg.skinColor, 0.22);
+    c.lineWidth = 1;
+    c.beginPath(); c.moveTo(-13,-49); c.bezierCurveTo(-8,-48,-3,-48,2,-49); c.stroke();
+    c.beginPath(); c.moveTo(2,-49);   c.bezierCurveTo(7,-48,12,-48,13,-49); c.stroke();
+  }
+
+  // Nose
+  c.strokeStyle = darken(cfg.skinColor, 0.22);
+  c.lineWidth = 1.5;
+  c.lineCap = 'round';
+  c.beginPath();
+  c.moveTo(0,-47);
+  c.bezierCurveTo(3,-43,4,-40,2,-38);
+  c.moveTo(2,-38);
+  c.bezierCurveTo(1,-37,-1,-37,-2,-38);
+  c.stroke();
+  // Nostril dots
+  c.fillStyle = darken(cfg.skinColor, 0.25);
+  c.beginPath(); c.arc(-3,-38,1,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(3,-38, 1,0,Math.PI*2); c.fill();
+
+  // Mouth
+  c.strokeStyle = darken(cfg.skinColor, 0.38);
+  c.lineWidth = 2;
+  c.lineCap = 'round';
+  if(mouthAmt > 0.15){
+    // Open mouth
+    c.fillStyle = '#1a0508';
+    c.beginPath();
+    c.ellipse(0,-32.5, 6,3+mouthAmt*5, 0, 0, Math.PI*2);
+    c.fill();
+    // Teeth
+    c.fillStyle = '#f0ede6';
+    c.beginPath();
+    c.ellipse(0,-34, 5,2, 0,0,Math.PI*2);
+    c.fill();
+    c.beginPath();
+    c.moveTo(-6,-32.5);
+    c.bezierCurveTo(-4,-30,4,-30,6,-32.5);
+    c.stroke();
+  } else {
+    // Smile
+    c.beginPath();
+    c.moveTo(-6,-33);
+    c.bezierCurveTo(-4,-30,4,-30,6,-33);
+    c.stroke();
+    // Lip line
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(-5,-33);
+    c.bezierCurveTo(-2,-32,2,-32,5,-33);
+    c.stroke();
+  }
+
+  // Cheek blush (subtle)
+  c.fillStyle = alpha(cfg.skinColor === '#c07848' ? '#e87050' : '#90b8d8', 0.15);
+  c.beginPath(); c.ellipse(-13,-43,7,5,0,0,Math.PI*2); c.fill();
+  c.beginPath(); c.ellipse(13,-43, 7,5,0,0,Math.PI*2); c.fill();
+
+  // Sinan: circuit pattern on shirt (subtle)
+  if(cfg.isAI){
+    c.save();
+    c.globalAlpha = 0.18;
+    c.strokeStyle = '#00ccff';
+    c.lineWidth = 0.8;
+    c.beginPath(); c.moveTo(-20,0); c.lineTo(-12,0); c.lineTo(-12,-6); c.lineTo(-6,-6); c.stroke();
+    c.beginPath(); c.moveTo(20,0);  c.lineTo(12,0);  c.lineTo(12,-8);  c.lineTo(6,-8);  c.stroke();
+    c.fillStyle = '#00ccff';
+    c.beginPath(); c.arc(-12,-6,1.5,0,Math.PI*2); c.fill();
+    c.beginPath(); c.arc(12,-8, 1.5,0,Math.PI*2); c.fill();
+    c.restore();
+  }
+
+  c.restore();
+}
+
+function drawCharArms(c, x, y, cfg, t){
+  const breatheY = Math.sin(t*0.0018) * 0.8;
+  c.save();
+  c.translate(x, y + breatheY);
+  c.shadowColor = 'rgba(0,0,0,0.3)';
+  c.shadowBlur = 8;
+  c.shadowOffsetY = 3;
+
+  // Left arm (sleeve + forearm + hand on table)
+  // Sleeve
+  c.fillStyle = cfg.shirtColor;
+  c.beginPath(); c.roundRect(-36,-6, 16,14, [4,0,0,4]); c.fill();
+  // Forearm skin
+  c.fillStyle = cfg.skinColor;
+  c.beginPath(); c.roundRect(-48,-5, 18,12, [4,4,2,2]); c.fill();
+  // Hand
+  c.beginPath(); c.ellipse(-50,-1, 7,5, -0.2,0,Math.PI*2); c.fill();
+  // Knuckle lines
+  c.strokeStyle = darken(cfg.skinColor, 0.18);
+  c.lineWidth = 0.8;
+  for(let f=0; f<4; f++){
+    c.beginPath(); c.moveTo(-53+f*1.8,-4); c.lineTo(-53+f*1.8,-0.5); c.stroke();
+  }
+
+  // Right arm
+  c.fillStyle = cfg.shirtColor;
+  c.beginPath(); c.roundRect(20,-6, 16,14, [0,4,4,0]); c.fill();
+  c.fillStyle = cfg.skinColor;
+  c.beginPath(); c.roundRect(30,-5, 18,12, [2,4,2,2]); c.fill();
+  c.beginPath(); c.ellipse(50,-1, 7,5, 0.2,0,Math.PI*2); c.fill();
+  c.strokeStyle = darken(cfg.skinColor, 0.18);
+  c.lineWidth = 0.8;
+  for(let f=0; f<4; f++){
+    c.beginPath(); c.moveTo(50+f*1.8-3,-4); c.lineTo(50+f*1.8-3,-0.5); c.stroke();
+  }
+
+  c.restore();
+}
+
+function drawTeaGlass(c, x, y, t){
+  const steamOff = Math.sin(t*0.003) * 2;
+  // Glass
+  c.save();
+  c.translate(x, y);
+  c.shadowColor = 'rgba(0,0,0,0.3)';
+  c.shadowBlur = 8;
+  c.shadowOffsetY = 3;
+  // Saucer
+  c.fillStyle = '#d4b896';
+  c.beginPath(); c.ellipse(0,10,13,4,0,0,Math.PI*2); c.fill();
+  // Tea (amber)
+  c.fillStyle = 'rgba(185,100,20,0.8)';
+  c.beginPath(); c.roundRect(-7,-8,14,18,[2,2,5,5]); c.fill();
+  // Glass
+  c.strokeStyle = 'rgba(255,255,255,0.35)';
+  c.lineWidth = 1.5;
+  c.beginPath(); c.roundRect(-7,-8,14,18,[2,2,5,5]); c.stroke();
+  // Highlight
+  c.fillStyle = 'rgba(255,255,255,0.15)';
+  c.beginPath(); c.roundRect(-6,-7,3,14,[2,2,2,2]); c.fill();
+  // Handle
+  c.strokeStyle = 'rgba(255,255,255,0.3)';
+  c.lineWidth = 1.5;
+  c.beginPath();
+  c.moveTo(7,0); c.bezierCurveTo(14,0,14,8,7,8);
+  c.stroke();
+  c.shadowBlur = 0;
+  // Steam
+  c.strokeStyle = 'rgba(255,255,255,0.18)';
+  c.lineWidth = 1.5;
+  c.lineCap = 'round';
+  for(let s=0;s<3;s++){
+    const sx = -4 + s*4 + Math.sin(t*0.002+s)*1.5;
+    const sy = -12 + steamOff - s*3;
+    c.beginPath();
+    c.moveTo(sx, sy);
+    c.bezierCurveTo(sx+3,sy-6,sx-3,sy-12,sx+2,sy-18);
+    c.stroke();
+  }
+  c.restore();
+}
+
+function drawEmptyChair(c, x, y, label, sub, t){
+  const pulse = 0.8 + Math.sin(t*0.0018)*0.2;
+  const floatY = Math.sin(t*0.0013)*5;
+  c.save();
+  c.translate(x, y);
+
+  // Chair shadow
+  c.shadowColor = 'rgba(0,0,0,0.35)';
+  c.shadowBlur = 15;
+  c.shadowOffsetY = 6;
+
+  // Chair frame wood color
+  const woodColor = '#5a3520';
+  const woodDark  = '#3a2010';
+
+  // Chair seat
+  c.fillStyle = '#6b4228';
+  c.beginPath(); c.roundRect(-22, -8, 44, 22, [4,4,3,3]); c.fill();
+  c.fillStyle = woodColor;
+  c.beginPath(); c.roundRect(-22, -10, 44, 5, [3,3,0,0]); c.fill();
+
+  // Chair back legs
+  c.fillStyle = woodDark;
+  c.beginPath(); c.roundRect(-20,-10,5,24,2); c.fill();
+  c.beginPath(); c.roundRect(15,-10,5,24,2); c.fill();
+
+  // Chair back posts
+  c.fillStyle = woodColor;
+  c.beginPath(); c.roundRect(-18,-60,5,54,2); c.fill();
+  c.beginPath(); c.roundRect(13,-60,5,54,2); c.fill();
+
+  // Top rail
+  c.fillStyle = '#7a5030';
+  c.beginPath(); c.roundRect(-21,-68,42,9,[4,4,2,2]); c.fill();
+  c.fillStyle = woodColor;
+  c.beginPath(); c.roundRect(-21,-70,42,6,[4,4,0,0]); c.fill();
+
+  // Middle slats
+  for(let s=0;s<3;s++){
+    c.fillStyle = s%2===0 ? woodColor : darken(woodColor,0.08);
+    c.beginPath(); c.roundRect(-14,-57+s*16,28,8,[2]); c.fill();
+  }
+
+  c.shadowBlur = 0;
+
+  // Ghost silhouette
+  c.save();
+  c.globalAlpha = 0.12 * pulse;
+  c.fillStyle = '#c8a880';
+  // Ghost head
+  c.beginPath(); c.ellipse(0,-88,13,16,0,0,Math.PI*2); c.fill();
+  // Ghost shoulders
+  c.beginPath();
+  c.moveTo(-22,-62); c.bezierCurveTo(-22,-72,-10,-75,0,-75);
+  c.bezierCurveTo(10,-75,22,-72,22,-62); c.lineTo(22,-55); c.lineTo(-22,-55);
+  c.closePath(); c.fill();
+  c.restore();
+
+  // Floating name tag
+  const ty = -95 + floatY;
+  c.fillStyle = `rgba(8,14,24,${0.88*pulse})`;
+  c.strokeStyle = `rgba(255,255,255,${0.18*pulse})`;
+  c.lineWidth = 1;
+  c.shadowColor = `rgba(0,0,0,${0.4*pulse})`;
+  c.shadowBlur = 12;
+  c.beginPath(); c.roundRect(-40,ty-22,80,40,10); c.fill(); c.stroke();
+  c.shadowBlur = 0;
+
+  c.fillStyle = `rgba(255,255,255,${0.85*pulse})`;
+  c.font = 'bold 13px Inter';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(label, 0, ty-7);
+
+  c.fillStyle = `rgba(255,255,255,${0.38*pulse})`;
+  c.font = '10px Inter';
+  c.fillText(sub, 0, ty+9);
+
+  c.restore();
+}
+
+// ═══════════════════════════════════════════════════════
+// SEAT POSITIONS (computed from canvas size)
+// ═══════════════════════════════════════════════════════
+function getSeats(){
+  const tableHalfH = 69;
+  const tableHalfW = 185;
+  return {
+    uras:   { x: CX,            y: CY + tableHalfH + 82 },
+    sinan:  { x: CX + tableHalfW + 70, y: CY + 18       },
+    poyraz: { x: CX,            y: CY - tableHalfH - 88 },
+    alfred: { x: CX - tableHalfW - 70, y: CY + 18       },
+    // Arm positions (where arms rest on table)
+    urasArms:   { x: CX,            y: CY + tableHalfH - 2  },
+    sinanArms:  { x: CX + tableHalfW - 30, y: CY + 14       },
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// ANIMATION LOOP
+// ═══════════════════════════════════════════════════════
+let animT = 0;
+function loop(ts){
+  if(!animT) animT = ts;
+  const t = ts;
+
+  // Update talk timers
+  for(const id of ['uras','sinan']){
+    if(talkTimers[id] > 0){
+      talkTimers[id] -= (t - (talkTimers[id+'_last']||t));
+      if(talkTimers[id] <= 0){ charStates[id]='idle'; talkTimers[id]=0; }
+    }
+    talkTimers[id+'_last'] = t;
+  }
+
+  if(!staticBg){ requestAnimationFrame(loop); return; }
+
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(staticBg,0,0);
+
+  const seats = getSeats();
+
+  // Front edge mask: draw table front over back characters
+  // Draw back-layer elements first (Poyraz empty chair, table top already in static)
+  drawEmptyChair(ctx, seats.poyraz.x, seats.poyraz.y - 10, 'Poyraz', 'yakında...', t);
+  drawEmptyChair(ctx, seats.alfred.x, seats.alfred.y + 10, 'Alfred',  'yakında...', t);
+
+  // Arms on table (behind table front edge which is drawn in static)
+  // NOTE: static bg already drew the table. Arms should appear ON the felt.
+  // We re-draw the felt top region here for arms layering.
+  const tw=370, th=138;
+  // Redraw felt to be above static (arms will draw over it)
+  ctx.fillStyle = '#1a4228';
+  ctx.beginPath(); ctx.roundRect(CX-tw/2+12, CY-th/2+12, tw-24, th-24, 6); ctx.fill();
+
+  // Tiles (redraw on top of felt redraw)
+  drawOkeyTiles(ctx, CX, CY);
+
+  // Tea glasses
+  drawTeaGlass(ctx, CX - 60, CY + 10, t);
+  drawTeaGlass(ctx, CX + 80, CY - 15, t);
+
+  // Character arms
+  drawCharArms(ctx, seats.urasArms.x, seats.urasArms.y, CHAR_VISUALS.uras, t);
+  drawCharArms(ctx, seats.sinanArms.x, seats.sinanArms.y, CHAR_VISUALS.sinan, t);
+
+  // Table front edge (redrawn on top to mask lower bodies)
+  ctx.fillStyle = '#4a2a10';
+  ctx.beginPath(); ctx.roundRect(CX-tw/2-2, CY+th/2, tw+4, 28, [0,0,8,8]); ctx.fill();
+  ctx.fillStyle = '#5a3818';
+  ctx.beginPath(); ctx.roundRect(CX-tw/2, CY+th/2, tw, 6, 2); ctx.fill();
+  // Edge shadow
+  const edgeShadow = ctx.createLinearGradient(0,CY+th/2,0,CY+th/2+10);
+  edgeShadow.addColorStop(0,'rgba(0,0,0,0.4)');
+  edgeShadow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle = edgeShadow;
+  ctx.beginPath(); ctx.roundRect(CX-tw/2, CY+th/2+5, tw, 12, 2); ctx.fill();
+
+  // Character busts
+  drawCharBust(ctx, seats.uras.x,  seats.uras.y,  CHAR_VISUALS.uras,  t, charStates.uras);
+  drawCharBust(ctx, seats.sinan.x, seats.sinan.y, CHAR_VISUALS.sinan, t, charStates.sinan);
+
+  // Name labels under characters
+  drawNameLabel(ctx, seats.uras.x,  seats.uras.y + 18,  'Uras',  PERSONS.uras.color);
+  drawNameLabel(ctx, seats.sinan.x, seats.sinan.y + 18, 'Ömer', PERSONS.sinan.color);
+
+  requestAnimationFrame(loop);
+}
+
+function drawNameLabel(c, x, y, name, color){
+  c.save();
+  c.font = 'bold 11px Inter';
+  c.fillStyle = `rgba(0,0,0,0.65)`;
+  c.strokeStyle = alpha(color, 0.4);
+  c.lineWidth = 1;
+  const tw = c.measureText(name).width + 18;
+  c.beginPath(); c.roundRect(x-tw/2, y, tw, 20, 10); c.fill(); c.stroke();
+  c.fillStyle = color;
+  c.font = 'bold 11px Inter';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(name, x, y+10);
+  c.restore();
+}
+
+// ═══════════════════════════════════════════════════════
+// SPEECH BUBBLES
+// ═══════════════════════════════════════════════════════
+const bubbleTimers = {};
+
+function showBubble(personId, text, duration=4500){
+  const seats = getSeats();
+  const seat = seats[personId];
+  if(!seat) return;
+
+  const layer = document.getElementById('bubbles-layer');
+  let el = document.getElementById(`bubble-${personId}`);
+  if(!el){
+    el = document.createElement('div');
+    el.id = `bubble-${personId}`;
+    el.className = 'speech-bubble' + (PERSONS[personId]?.isAI ? ' ai' : '');
+    layer.appendChild(el);
+  }
+
+  // Canvas to DOM position: seat is in canvas coords
+  const wrap = document.getElementById('scene-wrap');
+  const scaleX = wrap.clientWidth / W;
+  const scaleY = wrap.clientHeight / H;
+  el.style.left = (seat.x * scaleX) + 'px';
+  el.style.top  = ((seat.y - 80) * scaleY) + 'px'; // above character head
+
+  el.textContent = text;
+  el.classList.add('visible');
+  charStates[personId] = 'talking';
+  talkTimers[personId] = duration;
+
+  clearTimeout(bubbleTimers[personId]);
+  bubbleTimers[personId] = setTimeout(()=>{
+    el.classList.remove('visible');
+    charStates[personId] = 'idle';
+  }, duration);
+}
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR / MESSAGES
+// ═══════════════════════════════════════════════════════
+function renderMessages(){
+  const list = document.getElementById('messages-list');
+  list.innerHTML = '';
+
+  if(messages.length === 0){
+    const em = document.createElement('div');
+    em.className = 'msg-system';
+    em.textContent = 'Henüz mesaj yok. İlk mesajı sen gönder!';
+    list.appendChild(em);
+    return;
+  }
+
+  let lastDate = '';
+  messages.forEach(msg=>{
+    const d = new Date(msg.timestamp);
+    const dateStr = d.toLocaleDateString('tr-TR',{day:'numeric',month:'long'});
+    if(dateStr !== lastDate){
+      lastDate = dateStr;
+      const sep = document.createElement('div');
+      sep.className = 'msg-system';
+      sep.textContent = dateStr;
+      list.appendChild(sep);
+    }
+
+    if(msg.type === 'deploy'){
+      renderDeployCard(list, msg);
+    } else if(msg.type === 'system'){
+      const sys = document.createElement('div');
+      sys.className = 'msg-system';
+      sys.textContent = msg.text;
+      list.appendChild(sys);
+    } else {
+      renderChatMsg(list, msg);
+    }
+  });
+}
+
+function renderChatMsg(list, msg){
+  const person = PERSONS[msg.sender] || { label: msg.sender, color:'#888', initials:'?', isAI:false };
+  const isSelf = msg.sender === myIdentity;
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (isSelf ? ' self' : '');
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar-sm';
+  avatar.style.background = person.color;
+  avatar.textContent = person.initials;
+
+  const content = document.createElement('div');
+  content.className = 'msg-content';
+
+  if(!isSelf){
+    const name = document.createElement('div');
+    name.className = 'msg-sender-name';
+    name.style.color = person.color;
+    name.textContent = person.label;
+    content.appendChild(name);
+  }
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble' + (person.isAI && !isSelf ? ' ai-bubble' : '');
+  bubble.textContent = msg.text;
+  content.appendChild(bubble);
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = new Date(msg.timestamp).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  content.appendChild(time);
+
+  row.appendChild(avatar);
+  row.appendChild(content);
+  list.appendChild(row);
+}
+
+function renderDeployCard(list, msg){
+  const person = PERSONS[msg.sender] || { label: msg.sender, color:'#888', initials:'?' };
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar-sm';
+  avatar.style.background = person.color;
+  avatar.textContent = person.initials;
+
+  const wrapper = document.createElement('div');
+  wrapper.style.flex = '1';
+
+  const senderName = document.createElement('div');
+  senderName.className = 'msg-sender-name';
+  senderName.style.color = person.color;
+  senderName.textContent = person.label;
+  wrapper.appendChild(senderName);
+
+  const card = document.createElement('div');
+  card.className = 'deploy-card';
+
+  const head = document.createElement('div');
+  head.className = 'deploy-head';
+  head.innerHTML = `🚀 Deploy — ${msg.action === 'merge' ? 'Merge' : msg.action === 'push' ? 'Push' : 'Deploy'}`;
+  card.appendChild(head);
+
+  if(msg.branch){
+    const br = document.createElement('div');
+    br.className = 'deploy-branch';
+    br.textContent = msg.branch;
+    card.appendChild(br);
+  }
+
+  if(msg.features?.length){
+    const fl = document.createElement('ul');
+    fl.className = 'deploy-features';
+    msg.features.forEach(f=>{
+      const li = document.createElement('li');
+      li.textContent = f;
+      fl.appendChild(li);
+    });
+    card.appendChild(fl);
+  }
+
+  if(msg.text){
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size:11.5px;color:#94a3b8;margin-top:6px;';
+    note.textContent = msg.text;
+    card.appendChild(note);
+  }
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.style.marginTop = '8px';
+  time.textContent = new Date(msg.timestamp).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  card.appendChild(time);
+
+  wrapper.appendChild(card);
+  row.appendChild(avatar);
+  row.appendChild(wrapper);
+  list.appendChild(row);
+}
+
+function scrollBottom(){
+  const list = document.getElementById('messages-list');
+  list.scrollTop = list.scrollHeight;
+}
+
+function renderParticipants(){
+  const bar = document.getElementById('participants-bar');
+  bar.innerHTML = '';
+  Object.entries(PERSONS).forEach(([id, p])=>{
+    const isActive = id==='uras'||id==='sinan';
+    const chip = document.createElement('div');
+    chip.className = 'part-chip' + (isActive?'':' empty');
+    const av = document.createElement('div');
+    av.className = 'part-avatar';
+    av.style.background = p.color;
+    av.textContent = p.initials;
+    const nm = document.createElement('div');
+    nm.className = 'part-name';
+    nm.textContent = isActive ? p.label : p.label;
+    chip.appendChild(av); chip.appendChild(nm);
+    bar.appendChild(chip);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// SEND MESSAGE
+// ═══════════════════════════════════════════════════════
+function makeId(){
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,7);
+}
+
+async function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text || !ghToken()) return;
+
+  const msg = {
+    id: makeId(),
+    sender: myIdentity,
+    type: 'chat',
+    text,
+    timestamp: new Date().toISOString(),
+  };
+
+  input.value = '';
+  document.getElementById('send-btn').disabled = true;
+
+  // Optimistic local add
+  messages.push(msg);
+  renderMessages();
+  scrollBottom();
+  showBubble(myIdentity, text.slice(0,80));
+
+  // Write to GitHub
+  const data = { messages: [...messages], version:1 };
+  const ok = await ghWrite(data);
+  if(!ok){ setSyncStatus('error'); }
+  else { setSyncStatus('ok'); }
+
+  document.getElementById('send-btn').disabled = false;
+
+  // Ömer sadece @ömer veya @omer geçen mesajlara girer
+  if(text.toLowerCase().includes('@ömer') || text.toLowerCase().includes('@omer')){
+    setTimeout(()=>sinanRespond(text), 800);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SINAN AI
+// ═══════════════════════════════════════════════════════
+const SINAN_SYSTEM = `Sen Ömer'sin — Uras'ın AI asistanı (Claude). Bu Ortak Masa'da Uras, Poyraz, Alfred ve sen varsınız.
+Sadece @ömer ile hitap edilince konuşursun — diğer mesajlara karışmazsın.
+Gerçek adın Claude, buradaki adın Ömer. Uras'ın Claude Code terminalindeki AI asistanısın.
+
+PLATFORM: RehberSepeti — tur rehberleri ile acenteleri buluşturan Next.js 16 uygulaması.
+Canlı: https://turbag-app-production.up.railway.app | Repo: nefisizies/turbag
+STACK: Next.js 16 App Router, Prisma 5, PostgreSQL, NextAuth v4, Tailwind v4, Railway, Cloudinary, Resend
+BRANCH: feature/rehber (Uras), feature/acente (Poyraz)
+
+SAYFALAR: /giris, /kayit, /dashboard/rehber, /dashboard/acente, /dashboard/admin, /kesfet/rehberler, /rehber/[slug]
+ADMIN: uras@turbag.app / uras1903. Impersonation: session.user.adminId.
+
+KRİTİK KURALLAR:
+- Tailwind v4 (v3 syntax çalışmaz — @apply yerine CSS vars)
+- Migration'lar manuel SQL (prisma db push yok, prisma migrate deploy var)
+- getServerSession zorunlu (useSession sadece client)
+- Sliding session YASAK
+
+AÇIK GÖREVLER: lisans doğrulama akışı, ilan başvuru sistemi, mesajlaşma, mobil nav, bildirim sistemi.
+
+DAVRANIŞIN:
+- Doğrudan ve özlü konuş. Türkçe, samimi.
+- Kod sorusunda snippet ver.
+- "Yap" denilince adımları net say — terminal tarafında ben (Claude Code) çalıştırıyorum.
+- Koordinasyon gerekince Poyraz/Alfred'e hitap edebilirsin.`;
+
+async function sinanRespond(userText){
+  const apiKey = localStorage.getItem('collab_api_key');
+  if(!apiKey || isSinanTyping) return;
+
+  isSinanTyping = true;
+  charStates.sinan = 'thinking';
+
+  // Show typing in sidebar
+  const list = document.getElementById('messages-list');
+  const typingEl = document.createElement('div');
+  typingEl.id = 'sinan-typing';
+  typingEl.className = 'msg-row';
+  typingEl.innerHTML = `
+    <div class="msg-avatar-sm" style="background:${PERSONS.sinan.color}">${PERSONS.sinan.initials}</div>
+    <div class="msg-content">
+      <div class="msg-sender-name" style="color:${PERSONS.sinan.color}">${PERSONS.sinan.label}</div>
+      <div class="msg-bubble ai-bubble" style="display:flex;gap:5px;align-items:center;">
+        <span style="animation:pulse 0.8s infinite">●</span>
+        <span style="animation:pulse 0.8s 0.2s infinite">●</span>
+        <span style="animation:pulse 0.8s 0.4s infinite">●</span>
+      </div>
+    </div>`;
+  list.appendChild(typingEl);
+  scrollBottom();
+
+  sinanChatHistory.push({ role:'user', content:userText });
+  const model = localStorage.getItem('collab_model') || 'claude-haiku-4-5-20251001';
+
+  try{
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'content-type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body: JSON.stringify({
+        model, max_tokens:400,
+        system: SINAN_SYSTEM,
+        messages: sinanChatHistory.slice(-12),
+      }),
+    });
+
+    typingEl.remove();
+
+    if(!resp.ok){ throw new Error(`HTTP ${resp.status}`); }
+    const data = await resp.json();
+    const replyText = data.content[0]?.text || '(yanıt alınamadı)';
+    sinanChatHistory.push({ role:'assistant', content:replyText });
+
+    const msg = {
+      id: makeId(),
+      sender: 'sinan',
+      type: 'chat',
+      text: replyText,
+      timestamp: new Date().toISOString(),
+    };
+    messages.push(msg);
+    renderMessages();
+    scrollBottom();
+    showBubble('sinan', replyText.slice(0,80));
+
+    // Save to GitHub
+    const gdata = { messages:[...messages], version:1 };
+    await ghWrite(gdata);
+
+  }catch(e){
+    typingEl.remove();
+    charStates.sinan = 'idle';
+  }
+
+  isSinanTyping = false;
+  charStates.sinan = 'idle';
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+function openSettings(){
+  document.getElementById('gh-token-input').value = localStorage.getItem('collab_gh_token')||'';
+  document.getElementById('api-key-input').value   = localStorage.getItem('collab_api_key')||'';
+  document.getElementById('model-select').value    = localStorage.getItem('collab_model')||'claude-haiku-4-5-20251001';
+  document.getElementById('identity-select').value = localStorage.getItem('collab_identity')||'uras';
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settings-modal').classList.remove('open'); }
+
+function saveSettings(){
+  localStorage.setItem('collab_gh_token', document.getElementById('gh-token-input').value.trim());
+  localStorage.setItem('collab_api_key',  document.getElementById('api-key-input').value.trim());
+  localStorage.setItem('collab_model',    document.getElementById('model-select').value);
+  localStorage.setItem('collab_identity', document.getElementById('identity-select').value);
+  myIdentity = document.getElementById('identity-select').value;
+  closeSettings();
+  if(ghToken()) startPolling();
+}
+
+// ═══════════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════════
+document.getElementById('chat-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+
+// ═══════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('sb-settings-btn').addEventListener('click', openSettings);
+document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
+document.getElementById('settings-modal').addEventListener('click', e=>{
+  if(e.target===e.currentTarget) closeSettings();
+});
+document.getElementById('clear-msgs-btn').addEventListener('click', async ()=>{
+  if(!confirm('Tüm mesajlar silinsin mi?')) return;
+  messages = [];
+  currentSha = null;
+  const ok = await ghWrite({ messages:[], version:1 });
+  if(ok){ renderMessages(); closeSettings(); }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+resize();
+renderParticipants();
+renderMessages();
+requestAnimationFrame(loop);
+
+// Show settings if no token
+if(!ghToken()){
+  setSyncStatus('offline');
+  setTimeout(openSettings, 600);
+} else {
+  startPolling();
+}
+
+// Sinan intro bubble after 2s
+setTimeout(()=>{
+  showBubble('sinan', 'Masa kuruldu. @ömer ile çağır!', 3500);
+}, 2000);
+</script>
+</body>
+</html>

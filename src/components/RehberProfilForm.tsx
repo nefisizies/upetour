@@ -12,7 +12,7 @@ type AcenteOption = Pick<AcenteProfile, "id" | "companyName" | "city">;
 type DilEntry = { dil: string; seviye: string; sertifika: string; sonuc: string };
 
 type FormState = {
-  name: string; bio: string; city: string; diller: DilEntry[];
+  name: string; bio: string; city: string; telefon: string; diller: DilEntry[];
   specialties: string[]; experienceYears: number; isAvailable: boolean;
   operatingCountries: string[]; photoUrl: string;
 };
@@ -52,6 +52,7 @@ export function RehberProfilForm({ profile, onFormChange, adminMode = false }: P
     name: profile?.name ?? "",
     bio: profile?.bio ?? "",
     city: profile?.city ?? "",
+    telefon: profile?.telefon ?? "",
     diller: profile?.languages?.map((d) => ({ dil: d.dil, seviye: d.seviye ?? "", sertifika: d.sertifika ?? "", sonuc: d.sonuc ?? "" })) ?? [],
     specialties: profile?.specialties ?? [],
     experienceYears: profile?.experienceYears ?? 0,
@@ -174,6 +175,12 @@ export function RehberProfilForm({ profile, onFormChange, adminMode = false }: P
           <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted, #94a3b8)" }}>Şehir</label>
           <input type="text" value={form.city} onChange={(e) => updateForm({ ...form, city: e.target.value })}
             placeholder="İstanbul, Antalya, Kapadokya..." className={inputCls} style={inputStyle} />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted, #94a3b8)" }}>Telefon</label>
+          <input type="tel" value={form.telefon} onChange={(e) => updateForm({ ...form, telefon: e.target.value })}
+            placeholder="+90 5XX XXX XX XX" className={inputCls} style={inputStyle} />
+          <p className="text-xs mt-1" style={{ color: "var(--text-muted, #94a3b8)" }}>Sadece acenteler görebilir, ziyaretçilere gizlidir.</p>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-muted, #94a3b8)" }}>Hakkımda</label>

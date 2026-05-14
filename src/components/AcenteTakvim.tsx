@@ -6,6 +6,7 @@ import {
   Clock, Pencil, Trash2, AlertCircle, CheckCircle, Send, Search,
 } from "lucide-react";
 import { SEHIR_LISTESI } from "@/lib/sehirler";
+import { RehberKarti } from "@/components/RehberKarti";
 
 type Rehber = { id: string; name: string; city: string | null; photoUrl: string | null; slug: string };
 
@@ -86,6 +87,11 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   // Silme onay
   const [silmeId, setSilmeId] = useState<string | null>(null);
   const [siliyor, setSiliyor] = useState(false);
+
+  // Rehber kart popup
+  const [rehberKartId, setRehberKartId] = useState<string | null>(null);
+  const [rehberKartData, setRehberKartData] = useState<{ rehber: any; acenteBaglantiSayisi: number } | null>(null);
+  const [rehberKartYukleniyor, setRehberKartYukleniyor] = useState(false);
 
   // ─── Veri yükleme ────────────────────────────────────────────────────────
   const yukle = useCallback(async () => {
@@ -184,6 +190,15 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
     setSilmeId(null);
     setSiliyor(false);
     await yukle();
+  }
+
+  async function rehberKartAc(id: string) {
+    setRehberKartId(id);
+    setRehberKartData(null);
+    setRehberKartYukleniyor(true);
+    const res = await fetch(`/api/acente/rehber-kart/${id}`);
+    if (res.ok) setRehberKartData(await res.json());
+    setRehberKartYukleniyor(false);
   }
 
   // ─── Gruplama ─────────────────────────────────────────────────────────────
@@ -390,6 +405,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                     <EtkinlikKart key={e.id} etkinlik={e}
                       onDuzenle={() => modalAc(e)}
                       onSil={() => setSilmeId(e.id)}
+                      onRehberKartAc={rehberKartAc}
                       onDavetGonder={async () => {
                         await fetch(`/api/acente/takvim/${e.id}/davet-gonder`, { method: "POST" });
                         await yukle();
@@ -503,6 +519,36 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
         </div>
       )}
 
+      {/* ─── Rehber Kart Popup ──────────────────────────────────────────────── */}
+      {rehberKartId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={(ev) => { if (ev.target === ev.currentTarget) { setRehberKartId(null); setRehberKartData(null); } }}>
+          <div className="w-full max-w-sm">
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => { setRehberKartId(null); setRehberKartData(null); }}
+                className="p-2 rounded-full"
+                style={{ background: "rgba(255,255,255,0.2)", color: "white" }}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {rehberKartYukleniyor ? (
+              <div className="rounded-2xl p-8 text-center text-sm" style={{ background: "white", color: "#6b7280" }}>
+                Yükleniyor...
+              </div>
+            ) : rehberKartData ? (
+              <RehberKarti profile={rehberKartData.rehber} acenteBaglantiSayisi={rehberKartData.acenteBaglantiSayisi} />
+            ) : (
+              <div className="rounded-2xl p-8 text-center text-sm" style={{ background: "white", color: "#ef4444" }}>
+                Profil yüklenemedi.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ─── Silme Onay Modal ─────────────────────────────────────────────── */}
       {silmeId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -605,11 +651,12 @@ function SehirSecici({
 }
 
 // ─── Etkinlik Kartı ───────────────────────────────────────────────────────────
-function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder }: {
+function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder, onRehberKartAc }: {
   etkinlik: Etkinlik;
   onDuzenle: () => void;
   onSil: () => void;
   onDavetGonder: () => Promise<void>;
+  onRehberKartAc?: (id: string) => void;
 }) {
   const [davetGonderiyor, setDavetGonderiyor] = useState(false);
   const baslangic = new Date(e.baslangic);
@@ -639,9 +686,14 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder }: {
             </span>
           )}
           {e.rehber && (
-            <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+            <button
+              type="button"
+              onClick={() => onRehberKartAc?.(e.rehber!.id)}
+              className="text-xs flex items-center gap-1 hover:underline"
+              style={{ color: "var(--text-muted)" }}
+            >
               <User className="w-3 h-3" />{e.rehber.name}
-            </span>
+            </button>
           )}
           {e.rehberYanit === "BEKLIYOR" && (
             <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, orange 15%, transparent)", color: "orange" }}>
