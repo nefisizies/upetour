@@ -13,6 +13,7 @@ export async function GET(req: Request) {
   const sekme = searchParams.get("sekme") ?? "gelecek";
   const lokasyon = searchParams.get("lokasyon") ?? "";
   const rehberId = searchParams.get("rehberId") ?? "";
+  const programId = searchParams.get("programId") ?? "";
   const siralama = searchParams.get("siralama") ?? "tarih_asc";
   const ay = searchParams.get("ay") ? parseInt(searchParams.get("ay")!) : null;
   const yil = searchParams.get("yil") ? parseInt(searchParams.get("yil")!) : new Date().getFullYear();
@@ -45,9 +46,11 @@ export async function GET(req: Request) {
       ...dateWhere,
       ...(lokasyon ? { lokasyon } : {}),
       ...(rehberId ? { rehberId } : {}),
+      ...(programId ? { programId } : {}),
     },
     include: {
       rehber: { select: { id: true, name: true, city: true, photoUrl: true, slug: true } },
+      program: { select: { id: true, ad: true } },
     },
     orderBy,
   });
@@ -61,7 +64,13 @@ export async function GET(req: Request) {
   tumEtkinlikler.forEach((e) => { if (e.rehberId && e.rehber) rehberMap.set(e.rehberId, e.rehber.name); });
   const rehberler = [...rehberMap.entries()].map(([id, name]) => ({ id, name }));
 
-  return NextResponse.json({ etkinlikler, lokasyonlar, rehberler });
+  const programlar = await prisma.turProgrami.findMany({
+    where: { acenteId: acenteProfile.id, aktif: true },
+    select: { id: true, ad: true },
+    orderBy: { ad: "asc" },
+  });
+
+  return NextResponse.json({ etkinlikler, lokasyonlar, rehberler, programlar });
 }
 
 export async function POST(req: Request) {

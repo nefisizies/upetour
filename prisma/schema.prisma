@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -87,34 +88,52 @@ model RehberLicense {
 }
 
 model AcenteProfile {
-  id          String                  @id @default(cuid())
-  userId      String                  @unique
-  slug        String                  @unique
-  companyName String
-  description String?
-  city        String?
-  logoUrl     String?
-  website     String?
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
-  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bloklar     AcenteRehberBlok[]
-  referanslar Referans[]
-  etkinlikler AcenteTakvimEtkinlik[]
+  id             String                  @id @default(cuid())
+  userId         String                  @unique
+  slug           String                  @unique
+  companyName    String
+  description    String?
+  city           String?
+  logoUrl        String?
+  website        String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloklar        AcenteRehberBlok[]
+  referanslar    Referans[]
+  etkinlikler    AcenteTakvimEtkinlik[]
   turProgramlari TurProgrami[]
 }
 
 model TurProgrami {
-  id          String        @id @default(cuid())
+  id          String                 @id @default(cuid())
   acenteId    String
   ad          String
   sure        Int
   // [{ lokasyon: string, gun: number }]
   segmentler  Json
-  aktif       Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  acente      AcenteProfile @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  aktif       Boolean                @default(true)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  acente      AcenteProfile          @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  etkinlikler AcenteTakvimEtkinlik[]
+  turistler   TuristKayit[]
+}
+
+model TuristKayit {
+  id          String      @id @default(cuid())
+  programId   String
+  ad          String
+  soyad       String
+  pasaportNo  String?
+  uyruk       String?
+  dogumTarihi String?
+  telefon     String?
+  eposta      String?
+  notlar      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  program     TurProgrami @relation(fields: [programId], references: [id], onDelete: Cascade)
 }
 
 model AcenteRehberBlok {
@@ -182,19 +201,21 @@ model TakvimEtkinlik {
 }
 
 model AcenteTakvimEtkinlik {
-  id          String             @id @default(cuid())
+  id          String            @id @default(cuid())
   acenteId    String
   baslik      String
   baslangic   DateTime
   bitis       DateTime?
   lokasyon    String?
   rehberId    String?
+  programId   String?
   notlar      String?
   rehberYanit RehberYanitDurum?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  acente      AcenteProfile      @relation(fields: [acenteId], references: [id], onDelete: Cascade)
-  rehber      RehberProfile?     @relation(fields: [rehberId], references: [id], onDelete: SetNull)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  acente      AcenteProfile     @relation(fields: [acenteId], references: [id], onDelete: Cascade)
+  rehber      RehberProfile?    @relation(fields: [rehberId], references: [id], onDelete: SetNull)
+  program     TurProgrami?      @relation(fields: [programId], references: [id], onDelete: SetNull)
 }
 
 model Message {

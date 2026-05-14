@@ -19,6 +19,8 @@ type Etkinlik = {
   rehberId: string | null;
   rehberYanit: string | null;
   rehber: Rehber | null;
+  programId: string | null;
+  program: { id: string; ad: string } | null;
 };
 
 type ReferansRehber = { id: string; name: string; city: string | null };
@@ -57,6 +59,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   const [filtrePanelAcik, setFiltrePanelAcik] = useState(false);
   const [filtreLokasyon, setFiltreLokasyon] = useState("");
   const [filtreRehber, setFiltreRehber] = useState("");
+  const [filtreProgram, setFiltreProgram] = useState("");
   const [siralama, setSiralama] = useState("tarih_asc");
   const [filtreAy, setFiltreAy] = useState<number | null>(null);
   const [filtreYil, setFiltreYil] = useState(new Date().getFullYear());
@@ -65,6 +68,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   const [etkinlikler, setEtkinlikler] = useState<Etkinlik[]>([]);
   const [lokasyonlar, setLokasyonlar] = useState<string[]>([]);
   const [filtreRehberler, setFiltreRehberler] = useState<{ id: string; name: string }[]>([]);
+  const [filtreProgramlar, setFiltreProgramlar] = useState<{ id: string; ad: string }[]>([]);
   const [yukleniyor, setYukleniyor] = useState(true);
 
   // Form modal
@@ -89,14 +93,16 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
     const p = new URLSearchParams({ sekme, siralama });
     if (filtreLokasyon) p.set("lokasyon", filtreLokasyon);
     if (filtreRehber)  p.set("rehberId", filtreRehber);
+    if (filtreProgram) p.set("programId", filtreProgram);
     if (sekme === "tumu" && filtreAy) { p.set("ay", String(filtreAy)); p.set("yil", String(filtreYil)); }
     const res = await fetch(`/api/acente/takvim?${p}`);
     const data = await res.json();
     setEtkinlikler(data.etkinlikler ?? []);
     setLokasyonlar(data.lokasyonlar ?? []);
     setFiltreRehberler(data.rehberler ?? []);
+    setFiltreProgramlar(data.programlar ?? []);
     setYukleniyor(false);
-  }, [sekme, siralama, filtreLokasyon, filtreRehber, filtreAy, filtreYil]);
+  }, [sekme, siralama, filtreLokasyon, filtreRehber, filtreProgram, filtreAy, filtreYil]);
 
   useEffect(() => { yukle(); }, [yukle]);
 
@@ -192,7 +198,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
     return g;
   }
 
-  const aktifFiltre = [filtreLokasyon, filtreRehber, siralama !== "tarih_asc", sekme === "tumu" && filtreAy].filter(Boolean).length;
+  const aktifFiltre = [filtreLokasyon, filtreRehber, filtreProgram, siralama !== "tarih_asc", sekme === "tumu" && filtreAy].filter(Boolean).length;
   const gruplar = grupla(etkinlikler);
 
   // ─── Müsaitlik göstergesi ─────────────────────────────────────────────────
@@ -274,6 +280,39 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
               </select>
             </div>
 
+            {filtreProgramlar.length > 0 && (
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Program</label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setFiltreProgram("")}
+                    className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+                    style={{
+                      background: !filtreProgram ? "var(--primary)" : "transparent",
+                      color: !filtreProgram ? "white" : "var(--text-muted)",
+                      borderColor: !filtreProgram ? "var(--primary)" : "var(--card-inner-border, rgba(0,0,0,0.1))",
+                    }}
+                  >
+                    Tümü
+                  </button>
+                  {filtreProgramlar.map((prog) => (
+                    <button
+                      key={prog.id}
+                      onClick={() => setFiltreProgram(filtreProgram === prog.id ? "" : prog.id)}
+                      className="text-xs px-3 py-1.5 rounded-lg border transition-colors"
+                      style={{
+                        background: filtreProgram === prog.id ? "var(--primary)" : "transparent",
+                        color: filtreProgram === prog.id ? "white" : "var(--text-muted)",
+                        borderColor: filtreProgram === prog.id ? "var(--primary)" : "var(--card-inner-border, rgba(0,0,0,0.1))",
+                      }}
+                    >
+                      {prog.ad}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {sekme === "tumu" && (
               <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Dönem</label>
@@ -315,7 +354,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
           </div>
 
           <div className="flex justify-end">
-            <button onClick={() => { setFiltreLokasyon(""); setFiltreRehber(""); setSiralama("tarih_asc"); setFiltreAy(null); setFiltreYil(new Date().getFullYear()); }}
+            <button onClick={() => { setFiltreLokasyon(""); setFiltreRehber(""); setFiltreProgram(""); setSiralama("tarih_asc"); setFiltreAy(null); setFiltreYil(new Date().getFullYear()); }}
               className="text-xs hover:underline" style={{ color: "var(--text-muted)" }}>
               Filtreleri temizle
             </button>
@@ -589,6 +628,11 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder }: {
       <div className="flex-1 min-w-0">
         <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>{e.baslik}</p>
         <div className="flex flex-wrap items-center gap-3 mt-1.5">
+          {e.program && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
+              {e.program.ad}
+            </span>
+          )}
           {e.lokasyon && (
             <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
               <MapPin className="w-3 h-3" />{e.lokasyon}
