@@ -125,11 +125,9 @@ export function AdminSonKayitlar({ users }: { users: User[] }) {
 
               {/* Şifre hash */}
               <div>
-                <p className="text-xs text-white/40 mb-1">
-                  Şifre <span className="text-white/25">(bcrypt hash — düz metin görüntülenemez)</span>
-                </p>
+                <p className="text-xs text-white/40 mb-1">Şifre</p>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <p className="text-xs text-white/50 flex-1 font-mono break-all select-all">{detay.password}</p>
+                  <p className="text-xs text-white/70 flex-1 font-mono break-all select-all">{detay.password}</p>
                   <KopyaButonu metin={detay.password} />
                 </div>
               </div>

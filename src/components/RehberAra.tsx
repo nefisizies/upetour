@@ -258,7 +258,7 @@ export function RehberAra() {
         {hata && <p className="text-sm text-red-500">{hata}</p>}
 
         <button
-          onClick={ara}
+          onClick={() => ara()}
           disabled={yukleniyor}
           className="w-full md:w-auto bg-[#0a7ea4] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#065f7d] transition-colors disabled:opacity-60 flex items-center gap-2"
         >
