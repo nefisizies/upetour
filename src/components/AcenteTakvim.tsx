@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   CalendarDays, SlidersHorizontal, Plus, X, MapPin, User,
-  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Send,
+  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Send, Search,
 } from "lucide-react";
 import { SEHIR_LISTESI } from "@/lib/sehirler";
 
@@ -654,9 +654,22 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onDavetGonder }: {
             </span>
           )}
           {e.rehberYanit === "RED" && (
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #ef4444 15%, transparent)", color: "#ef4444" }}>
-              Reddedildi
-            </span>
+            <>
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, #ef4444 15%, transparent)", color: "#ef4444" }}>
+                Reddedildi
+              </span>
+              <a
+                href={`/dashboard/acente/rehber-bul?${new URLSearchParams({
+                  ...(e.lokasyon ? { lokasyonlar: e.lokasyon } : {}),
+                  baslangic: e.baslangic.split("T")[0],
+                  ...(e.bitis ? { bitis: e.bitis.split("T")[0] } : {}),
+                }).toString()}`}
+                className="text-xs px-2 py-0.5 rounded-full flex items-center gap-1 font-medium"
+                style={{ background: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}
+              >
+                <Search className="w-3 h-3" /> Rehber Ara
+              </a>
+            </>
           )}
           {bitis && (
             <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>

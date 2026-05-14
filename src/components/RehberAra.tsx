@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, Calendar, MapPin, X, User, ChevronDown, ChevronUp } from "lucide-react";
 import { SEHIR_LISTESI, type SehirBilgi } from "@/lib/sehirler";
 import { RehberKarti } from "@/components/RehberKarti";
@@ -30,11 +31,22 @@ const UZMANLIKLAR = [
 
 export function RehberAra() {
   const bugun = new Date().toISOString().split("T")[0];
+  const searchParams = useSearchParams();
 
-  const [baslangic, setBaslangic] = useState(bugun);
-  const [bitis, setBitis] = useState(bugun);
+  const initLokasyonlar = searchParams.get("lokasyonlar") ?? "";
+  const initBaslangic = searchParams.get("baslangic") ?? bugun;
+  const initBitis = searchParams.get("bitis") ?? bugun;
+
+  const [baslangic, setBaslangic] = useState(initBaslangic);
+  const [bitis, setBitis] = useState(initBitis);
   const [sehirArama, setSehirArama] = useState("");
-  const [secilenSehirler, setSecilenSehirler] = useState<SehirBilgi[]>([]);
+  const [secilenSehirler, setSecilenSehirler] = useState<SehirBilgi[]>(() => {
+    if (!initLokasyonlar) return [];
+    return initLokasyonlar.split(",").map((s) => {
+      const bulunan = SEHIR_LISTESI.find((x) => x.sehir.toLowerCase() === s.trim().toLowerCase());
+      return bulunan ?? { sehir: s.trim(), ulke: "", ulkeKod: "" };
+    });
+  });
   const [secilenUzmanliklar, setSecilenUzmanliklar] = useState<string[]>([]);
   const [dropdown, setDropdown] = useState(false);
   const [uzmanlikAcik, setUzmanlikAcik] = useState(false);
@@ -49,6 +61,27 @@ export function RehberAra() {
       (s.sehir.toLowerCase().includes(sehirArama.toLowerCase()) ||
         s.ulke.toLowerCase().includes(sehirArama.toLowerCase()))
   ).slice(0, 8);
+
+  const ara = useCallback(async (sSehirler = secilenSehirler, sUzmanliklar = secilenUzmanliklar) => {
+    if (!baslangic || !bitis) { setHata("Lütfen tarih aralığı seçin."); return; }
+    if (new Date(bitis) < new Date(baslangic)) { setHata("Bitiş tarihi başlangıçtan önce olamaz."); return; }
+    setHata("");
+    setYukleniyor(true);
+    setRehberler(null);
+    const params = new URLSearchParams({ baslangic, bitis });
+    if (sSehirler.length > 0) params.set("sehirler", sSehirler.map((s) => s.sehir).join(","));
+    if (sUzmanliklar.length > 0) params.set("uzmanliklar", sUzmanliklar.join(","));
+    const res = await fetch(`/api/rehber-ara?${params}`);
+    setYukleniyor(false);
+    if (!res.ok) { const data = await res.json(); setHata(data.error ?? "Bir hata oluştu."); return; }
+    setRehberler(await res.json());
+  }, [baslangic, bitis, secilenSehirler, secilenUzmanliklar]);
+
+  // URL'den lokasyon gelince otomatik ara
+  useEffect(() => {
+    if (initLokasyonlar) { ara(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -76,36 +109,6 @@ export function RehberAra() {
     );
   }
 
-  async function ara() {
-    if (!baslangic || !bitis) {
-      setHata("Lütfen tarih aralığı seçin.");
-      return;
-    }
-    if (new Date(bitis) < new Date(baslangic)) {
-      setHata("Bitiş tarihi başlangıçtan önce olamaz.");
-      return;
-    }
-    setHata("");
-    setYukleniyor(true);
-    setRehberler(null);
-
-    const params = new URLSearchParams({ baslangic, bitis });
-    if (secilenSehirler.length > 0)
-      params.set("sehirler", secilenSehirler.map((s) => s.sehir).join(","));
-    if (secilenUzmanliklar.length > 0)
-      params.set("uzmanliklar", secilenUzmanliklar.join(","));
-
-    const res = await fetch(`/api/rehber-ara?${params}`);
-    setYukleniyor(false);
-
-    if (!res.ok) {
-      const data = await res.json();
-      setHata(data.error ?? "Bir hata oluştu.");
-      return;
-    }
-
-    setRehberler(await res.json());
-  }
 
   const secilenUlkeler = [...new Set(secilenSehirler.map((s) => s.ulke))];
 
