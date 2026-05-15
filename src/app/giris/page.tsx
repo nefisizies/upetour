@@ -249,6 +249,11 @@ function GirisForm() {
                 <span className="text-xs font-medium text-white/40 group-hover:text-white/70 transition-colors">Acente Kaydı</span>
               </Link>
             </div>
+            <div className="mt-4 text-center">
+              <Link href="/dashboard/admin" className="text-xs text-white/20 hover:text-white/50 transition-colors">
+                Admin Girişi
+              </Link>
+            </div>
           </div>
 
         </div>
