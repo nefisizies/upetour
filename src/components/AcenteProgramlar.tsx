@@ -91,6 +91,9 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
   const [turistKaydediyor, setTuristKaydediyor] = useState(false);
   const [turistDuzenleId, setTuristDuzenleId] = useState<string | null>(null);
   const [turistDuzenleData, setTuristDuzenleData] = useState<Omit<Turist, "id"> | null>(null);
+  const [turistOneri, setTuristOneri] = useState<Omit<Turist, "id">[]>([]);
+  const [turistOneriGoster, setTuristOneriGoster] = useState(false);
+  const turistOneriRef = useRef<HTMLDivElement>(null);
 
   async function yukle() {
     setYukleniyor(true);
@@ -104,6 +107,16 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
   }
 
   useEffect(() => { yukle(); }, []);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (turistOneriRef.current && !turistOneriRef.current.contains(e.target as Node)) {
+        setTuristOneriGoster(false);
+      }
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
 
   function modalAc(p?: Program) {
     if (p) {
@@ -209,6 +222,20 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
     const data = await res.json();
     setTuristler(Array.isArray(data) ? data : []);
     setTuristYukleniyor(false);
+  }
+
+  async function turistAdAra(q: string) {
+    if (q.length < 2) { setTuristOneri([]); setTuristOneriGoster(false); return; }
+    const res = await fetch(`/api/acente/turistler/ara?q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    setTuristOneri(Array.isArray(data) ? data : []);
+    setTuristOneriGoster(Array.isArray(data) && data.length > 0);
+  }
+
+  function turistOneriSec(t: Omit<Turist, "id">) {
+    setTuristEkleRow({ ad: t.ad, soyad: t.soyad, pasaportNo: t.pasaportNo, uyruk: t.uyruk, dogumTarihi: t.dogumTarihi, telefon: t.telefon, eposta: t.eposta, notlar: t.notlar });
+    setTuristOneriGoster(false);
+    setTuristOneri([]);
   }
 
   async function turistEkle() {
@@ -772,14 +799,52 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                       <tr style={{ borderBottom: "1px solid var(--card-border)", background: "color-mix(in srgb, var(--primary) 5%, transparent)" }}>
                         {(["ad", "soyad", "pasaportNo", "uyruk", "dogumTarihi", "telefon", "eposta", "notlar"] as const).map((field, i) => (
                           <td key={field} className="px-2 py-1.5">
-                            <input
-                              type="text"
-                              value={turistEkleRow[field] ?? ""}
-                              placeholder={["Ad *", "Soyad *", "Pasaport No", "Uyruk", "Doğum Tarihi", "Telefon", "E-posta", "Notlar"][i]}
-                              onChange={(e) => setTuristEkleRow((prev) => prev ? { ...prev, [field]: e.target.value || null } : prev)}
-                              className="w-full text-sm rounded px-2 py-1 focus:outline-none min-w-[80px]"
-                              style={innerInputStyle}
-                            />
+                            {field === "ad" ? (
+                              <div className="relative" ref={turistOneriRef}>
+                                <input
+                                  type="text"
+                                  value={turistEkleRow.ad ?? ""}
+                                  placeholder="Ad *"
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setTuristEkleRow((prev) => prev ? { ...prev, ad: val } : prev);
+                                    turistAdAra(val);
+                                  }}
+                                  onFocus={() => turistOneri.length > 0 && setTuristOneriGoster(true)}
+                                  className="w-full text-sm rounded px-2 py-1 focus:outline-none min-w-[80px]"
+                                  style={innerInputStyle}
+                                />
+                                {turistOneriGoster && (
+                                  <div
+                                    className="absolute left-0 top-full mt-1 z-50 rounded-lg shadow-lg py-1 min-w-[220px]"
+                                    style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
+                                  >
+                                    <p className="text-xs px-3 py-1 font-medium" style={{ color: "var(--text-muted)" }}>Kayıtlı Turistler</p>
+                                    {turistOneri.map((t, idx) => (
+                                      <button
+                                        key={idx}
+                                        type="button"
+                                        onMouseDown={() => turistOneriSec(t)}
+                                        className="w-full text-left px-3 py-1.5 text-sm hover:opacity-80 transition-opacity"
+                                        style={{ color: "var(--text-primary)" }}
+                                      >
+                                        {t.ad} {t.soyad}
+                                        {t.pasaportNo && <span className="text-xs ml-1.5" style={{ color: "var(--text-muted)" }}>{t.pasaportNo}</span>}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                value={turistEkleRow[field] ?? ""}
+                                placeholder={["Ad *", "Soyad *", "Pasaport No", "Uyruk", "Doğum Tarihi", "Telefon", "E-posta", "Notlar"][i]}
+                                onChange={(e) => setTuristEkleRow((prev) => prev ? { ...prev, [field]: e.target.value || null } : prev)}
+                                className="w-full text-sm rounded px-2 py-1 focus:outline-none min-w-[80px]"
+                                style={innerInputStyle}
+                              />
+                            )}
                           </td>
                         ))}
                         <td className="px-2 py-1.5 whitespace-nowrap">
