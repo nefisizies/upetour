@@ -94,10 +94,8 @@ export default async function AcenteDashboard() {
           { icon: Search, color: "var(--upe-teal)", num: "→", label: "Rehber Bul", href: "/dashboard/acente/rehber-bul" },
         ].map((s, i) => (
           <Link key={i} href={s.href}
-            className="card"
+            className="card upe-hover-lift"
             style={{ padding: 16, textDecoration: "none", display: "block" }}
-            onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
-            onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
           >
             <s.icon size={18} style={{ color: s.color, marginBottom: 12 }} />
             <div style={{ fontSize: 24, fontWeight: 700, color: "var(--upe-ink)", lineHeight: 1 }}>{s.num}</div>
@@ -122,10 +120,8 @@ export default async function AcenteDashboard() {
         </Link>
 
         <Link href="/dashboard/acente/programlar"
-          className="card flex items-center gap-4 px-6 py-5"
+          className="card upe-hover-lift flex items-center gap-4 px-6 py-5"
           style={{ textDecoration: "none" }}
-          onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
-          onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
         >
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--upe-teal-50)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <BookOpen size={20} style={{ color: "var(--upe-teal)" }} />
@@ -158,8 +154,6 @@ export default async function AcenteDashboard() {
               <Link key={msg.id} href="/dashboard/acente/mesajlar"
                 className="flex items-center gap-3 px-5 py-3.5 transition-colors"
                 style={{ borderTop: "1px solid var(--border-1)", textDecoration: "none" }}
-                onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
-                onMouseLeave={ev => (ev.currentTarget.style.background = "")}
               >
                 <Avatar name={ad} />
                 <div style={{ flex: 1, minWidth: 0 }}>

@@ -205,8 +205,6 @@ export default async function RehberDashboard() {
                     borderTop: i > 0 ? "1px solid var(--border-1)" : "none",
                     textDecoration: "none",
                   }}
-                  onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
-                  onMouseLeave={ev => (ev.currentTarget.style.background = "")}
                 >
                   <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--upe-teal-50)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "var(--upe-teal)", lineHeight: 1 }}>{String(bas.getDate()).padStart(2,"0")}</span>
@@ -284,8 +282,6 @@ export default async function RehberDashboard() {
                 <Link key={msg.id} href="/dashboard/rehber/mesajlar"
                   className="flex items-center gap-3 px-5 py-3.5 transition-colors"
                   style={{ borderTop: "1px solid var(--border-1)", textDecoration: "none" }}
-                  onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
-                  onMouseLeave={ev => (ev.currentTarget.style.background = "")}
                 >
                   <Avatar name={ad} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -311,8 +307,6 @@ export default async function RehberDashboard() {
             <Link key={q.href} href={q.href}
               className="card flex items-center gap-4 px-4 py-4 transition-shadow"
               style={{ textDecoration: "none" }}
-              onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
-              onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
             >
               <div style={{ width: 38, height: 38, borderRadius: 10, background: q.tint, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <q.icon size={18} style={{ color: q.iconColor }} />

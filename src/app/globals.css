@@ -91,6 +91,13 @@
 .card-pad    { padding: 20px; }
 .card-pad-sm { padding: 14px 16px; }
 
+.upe-hover-lift:hover {
+  box-shadow: var(--shadow-sm) !important;
+}
+.upe-hover-teal:hover {
+  background: var(--upe-teal-50) !important;
+}
+
 .pill {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 3px 10px; border-radius: 9999px;
