@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, MapPin, FileText, Building2, CheckCircle, XCircle, Clock, PenLine } from "lucide-react";
+import { CalendarDays, MapPin, FileText, Building2, CheckCircle, XCircle, Clock, PenLine, Users } from "lucide-react";
 
 type Acente = { companyName: string; city: string | null; logoUrl: string | null };
+
+type TuristSatir = {
+  ad: string; soyad: string; pasaportNo: string | null;
+  uyruk: string | null; dogumTarihi: string | null;
+  telefon: string | null; eposta: string | null;
+};
 
 type Props = {
   etkinlik: {
@@ -17,6 +23,7 @@ type Props = {
     rehberYanit: string | null;
     acente: Acente;
   };
+  turistler?: TuristSatir[];
 };
 
 const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -32,7 +39,7 @@ const innerInputStyle = {
   color: "var(--text-primary)",
 } as React.CSSProperties;
 
-export function DavetYanit({ etkinlik: e }: Props) {
+export function DavetYanit({ etkinlik: e, turistler }: Props) {
   const router = useRouter();
   const [yukleniyor, setYukleniyor] = useState<"KABUL" | "RED" | "OZEL" | null>(null);
   const [sonuc, setSonuc] = useState<"KABUL" | "RED" | null>(
@@ -105,6 +112,38 @@ export function DavetYanit({ etkinlik: e }: Props) {
           )}
         </div>
       </div>
+
+      {/* Katılımcı listesi — sadece okunur */}
+      {turistler && turistler.length > 0 && (
+        <div className="rounded-2xl p-5 space-y-3"
+          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" style={{ color: "var(--primary)" }} />
+            <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
+              Katılımcılar ({turistler.length})
+            </p>
+          </div>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Bu listeyi yalnızca acente düzenleyebilir.
+          </p>
+          <div className="space-y-2">
+            {turistler.map((t, i) => (
+              <div key={i} className="rounded-xl px-3 py-2.5 flex flex-col gap-0.5"
+                style={{ background: "var(--card-inner-bg, rgba(0,0,0,0.04))", border: "1px solid var(--card-inner-border, rgba(0,0,0,0.08))" }}>
+                <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {i + 1}. {t.ad} {t.soyad}
+                </p>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs" style={{ color: "var(--text-muted)" }}>
+                  {t.uyruk && <span>{t.uyruk}</span>}
+                  {t.pasaportNo && <span>Pasaport: {t.pasaportNo}</span>}
+                  {t.telefon && <span>{t.telefon}</span>}
+                  {t.dogumTarihi && <span>D.T: {t.dogumTarihi}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Sonuç durumları */}
       {sonuc === "KABUL" && (

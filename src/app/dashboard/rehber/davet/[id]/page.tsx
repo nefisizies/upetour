@@ -16,7 +16,10 @@ export default async function DavetPage({ params }: { params: Promise<{ id: stri
 
   const etkinlik = await prisma.acenteTakvimEtkinlik.findUnique({
     where: { id },
-    include: { acente: { select: { companyName: true, city: true, logoUrl: true } } },
+    include: {
+      acente: { select: { companyName: true, city: true, logoUrl: true } },
+      turistler: { orderBy: { createdAt: "asc" } },
+    },
   });
 
   if (!etkinlik || etkinlik.rehberId !== rehberProfile.id) redirect("/dashboard/rehber");
@@ -33,6 +36,15 @@ export default async function DavetPage({ params }: { params: Promise<{ id: stri
         rehberYanit: etkinlik.rehberYanit,
         acente: etkinlik.acente,
       }}
+      turistler={etkinlik.turistler.map((t) => ({
+        ad: t.ad,
+        soyad: t.soyad,
+        pasaportNo: t.pasaportNo,
+        uyruk: t.uyruk,
+        dogumTarihi: t.dogumTarihi,
+        telefon: t.telefon,
+        eposta: t.eposta,
+      }))}
     />
   );
 }

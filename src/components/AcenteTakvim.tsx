@@ -106,8 +106,8 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   const [siliyor, setSiliyor] = useState(false);
 
   // Turist modal
-  const [turistProgramId, setTuristProgramId] = useState<string | null>(null);
-  const [turistProgramAd, setTuristProgramAd] = useState("");
+  const [turistEtkinlikId, setTuristEtkinlikId] = useState<string | null>(null);
+  const [turistEtkinlikBaslik, setTuristEtkinlikBaslik] = useState("");
   const [turistler, setTuristler] = useState<Turist[]>([]);
   const [turistYukleniyor, setTuristYukleniyor] = useState(false);
   const [turistEkleRow, setTuristEkleRow] = useState<Omit<Turist, "id"> | null>(null);
@@ -228,22 +228,22 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
     setRehberKartYukleniyor(false);
   }
 
-  async function turistAc(programId: string, programAd: string) {
-    setTuristProgramId(programId);
-    setTuristProgramAd(programAd);
+  async function turistAc(etkinlikId: string, baslik: string) {
+    setTuristEtkinlikId(etkinlikId);
+    setTuristEtkinlikBaslik(baslik);
     setTuristEkleRow(null);
     setTuristDuzenleId(null);
     setTuristYukleniyor(true);
-    const res = await fetch(`/api/acente/programlar/${programId}/turistler`);
+    const res = await fetch(`/api/acente/takvim/${etkinlikId}/turistler`);
     setTuristler(res.ok ? await res.json() : []);
     setTuristYukleniyor(false);
   }
 
   async function turistEkle() {
-    if (!turistEkleRow || !turistProgramId) return;
+    if (!turistEkleRow || !turistEtkinlikId) return;
     if (!turistEkleRow.ad.trim() || !turistEkleRow.soyad.trim()) return;
     setTuristKaydediyor(true);
-    const res = await fetch(`/api/acente/programlar/${turistProgramId}/turistler`, {
+    const res = await fetch(`/api/acente/takvim/${turistEtkinlikId}/turistler`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(turistEkleRow),
@@ -253,9 +253,9 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   }
 
   async function turistGuncelle() {
-    if (!turistDuzenleId || !turistDuzenleData || !turistProgramId) return;
+    if (!turistDuzenleId || !turistDuzenleData || !turistEtkinlikId) return;
     setTuristKaydediyor(true);
-    const res = await fetch(`/api/acente/programlar/${turistProgramId}/turistler/${turistDuzenleId}`, {
+    const res = await fetch(`/api/acente/takvim/${turistEtkinlikId}/turistler/${turistDuzenleId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(turistDuzenleData),
@@ -270,8 +270,8 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   }
 
   async function turistSil(turistId: string) {
-    if (!turistProgramId) return;
-    await fetch(`/api/acente/programlar/${turistProgramId}/turistler/${turistId}`, { method: "DELETE" });
+    if (!turistEtkinlikId) return;
+    await fetch(`/api/acente/takvim/${turistEtkinlikId}/turistler/${turistId}`, { method: "DELETE" });
     setTuristler((p) => p.filter((t) => t.id !== turistId));
   }
 
@@ -480,7 +480,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                       onDuzenle={() => modalAc(e)}
                       onSil={() => setSilmeId(e.id)}
                       onRehberKartAc={rehberKartAc}
-                      onTuristler={e.programId && e.program ? () => turistAc(e.programId!, e.program!.ad) : undefined} />
+                      onTuristler={() => turistAc(e.id, e.baslik)} />
                   ))}
                 </div>
               </div>
@@ -621,7 +621,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
       )}
 
       {/* ─── Turist Listesi Modal ─────────────────────────────────────────── */}
-      {turistProgramId && (
+      {turistEtkinlikId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
           <div className="w-full max-w-5xl rounded-2xl flex flex-col" style={{ ...cardStyle, maxHeight: "90vh" }}>
@@ -631,7 +631,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                   <Users className="w-4 h-4" style={{ color: "var(--primary)" }} />
                   Turist Listesi
                 </h2>
-                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{turistProgramAd}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{turistEtkinlikBaslik}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -640,7 +640,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                   style={{ background: "var(--primary)" }}>
                   <Plus className="w-3.5 h-3.5" /> Turist Ekle
                 </button>
-                <button onClick={() => { setTuristProgramId(null); setTuristEkleRow(null); setTuristDuzenleId(null); }} style={{ color: "var(--text-muted)" }}>
+                <button onClick={() => { setTuristEtkinlikId(null); setTuristEkleRow(null); setTuristDuzenleId(null); }} style={{ color: "var(--text-muted)" }}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -749,7 +749,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
 
             <div className="flex items-center justify-between px-6 py-3 border-t" style={{ borderColor: "var(--card-border)" }}>
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>{turistler.length} turist kayıtlı</span>
-              <button onClick={() => { setTuristProgramId(null); setTuristEkleRow(null); setTuristDuzenleId(null); }}
+              <button onClick={() => { setTuristEtkinlikId(null); setTuristEkleRow(null); setTuristDuzenleId(null); }}
                 className="text-sm px-4 py-1.5 rounded-lg border"
                 style={{ borderColor: "var(--card-inner-border, rgba(0,0,0,0.1))", color: "var(--text-muted)" }}>
                 Kapat

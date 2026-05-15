@@ -189,16 +189,18 @@ model Bildirim {
 }
 
 model TakvimEtkinlik {
-  id        String        @id @default(cuid())
-  rehberId  String
-  baslik    String
-  baslangic DateTime
-  bitis     DateTime?
-  notlar    String?
-  tur       EtkinlikTur   @default(MANUEL)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  rehber    RehberProfile @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  id                 String                @id @default(cuid())
+  rehberId           String
+  baslik             String
+  baslangic          DateTime
+  bitis              DateTime?
+  notlar             String?
+  tur                EtkinlikTur           @default(MANUEL)
+  acenteEtkinlikId   String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  rehber             RehberProfile         @relation(fields: [rehberId], references: [id], onDelete: Cascade)
+  acenteEtkinlik     AcenteTakvimEtkinlik? @relation(fields: [acenteEtkinlikId], references: [id], onDelete: SetNull)
 }
 
 model AcenteTakvimEtkinlik {
@@ -217,6 +219,23 @@ model AcenteTakvimEtkinlik {
   acente      AcenteProfile     @relation(fields: [acenteId], references: [id], onDelete: Cascade)
   rehber      RehberProfile?    @relation(fields: [rehberId], references: [id], onDelete: SetNull)
   program     TurProgrami?      @relation(fields: [programId], references: [id], onDelete: SetNull)
+  turistler   EtkinlikTurist[]
+  rehberKopya TakvimEtkinlik[]
+}
+
+model EtkinlikTurist {
+  id          String               @id @default(cuid())
+  etkinlikId  String
+  ad          String
+  soyad       String
+  pasaportNo  String?
+  uyruk       String?
+  dogumTarihi String?
+  telefon     String?
+  eposta      String?
+  notlar      String?
+  createdAt   DateTime             @default(now())
+  etkinlik    AcenteTakvimEtkinlik @relation(fields: [etkinlikId], references: [id], onDelete: Cascade)
 }
 
 model Message {
