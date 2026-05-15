@@ -6,24 +6,35 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  User, Star, MessageCircle, ArrowRight, AlertCircle,
-  MapPin, Globe, Briefcase, CheckCircle, Clock, TrendingUp,
-  ChevronRight, CalendarDays, Trophy,
+  User, Star, MessageCircle, MapPin, Globe, Briefcase,
+  CheckCircle, Clock, TrendingUp, CalendarDays, Trophy,
+  ArrowRight, Rss, Plus,
 } from "lucide-react";
 import { MiniTakvim } from "@/components/MiniTakvim";
 import { HizliEtkinlikEkle } from "@/components/HizliEtkinlikEkle";
 
-function TamamlanmaBar({ yuzde }: { yuzde: number }) {
-  const renk = yuzde < 40 ? "bg-red-400" : yuzde < 80 ? "bg-yellow-400" : "bg-green-400";
+const UNVAN_LABEL: Record<string, string> = {
+  YENI_REHBER:      "Yeni Rehber",
+  AKTIF_REHBER:     "Aktif Rehber",
+  DENEYIMLI_REHBER: "Deneyimli Rehber",
+  UZMAN_REHBER:     "Uzman Rehber",
+  SUPER_REHBER:     "Süper Rehber",
+  ELIT_REHBER:      "Elit Rehber",
+};
+
+function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+  const s = size === "sm" ? 32 : size === "lg" ? 56 : 40;
+  const fs = size === "sm" ? 12 : size === "lg" ? 20 : 15;
+  const initials = name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const hue = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
   return (
-    <div className="mt-3">
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-white/50">Profil tamamlanma</span>
-        <span className="text-xs font-semibold text-white/70">%{yuzde}</span>
-      </div>
-      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${renk}`} style={{ width: `${yuzde}%` }} />
-      </div>
+    <div style={{
+      width: s, height: s, borderRadius: "50%", flexShrink: 0,
+      background: `hsl(${hue},45%,55%)`,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      fontSize: fs, fontWeight: 700, color: "#fff",
+    }}>
+      {initials}
     </div>
   );
 }
@@ -41,377 +52,280 @@ export default async function RehberDashboard() {
   const buAyBaslangic = new Date(simdi.getFullYear(), simdi.getMonth(), 1);
   const buAyBitis = new Date(simdi.getFullYear(), simdi.getMonth() + 1, 1);
 
-  const [unreadCount, totalMessages, reviewData, sonMesajlar, yaklasanEtkinlikler, buAyEtkinlikler] = await Promise.all([
-    prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
-    prisma.message.count({ where: { toUserId: session.user.id } }),
-    prisma.review.aggregate({
-      where: { revieweeId: session.user.id },
-      _count: true,
-      _avg: { rating: true },
-    }),
-    prisma.message.findMany({
-      where: { toUserId: session.user.id },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-      include: { from: { include: { acenteProfile: true } } },
-    }),
-    profile ? prisma.takvimEtkinlik.findMany({
-      where: {
-        rehberId: profile.id,
-        OR: [
-          { bitis: { gte: simdi } },
-          { baslangic: { gte: simdi }, bitis: null },
-        ],
-      },
-      orderBy: { baslangic: "asc" },
-      take: 4,
-    }) : Promise.resolve([]),
-    profile ? prisma.takvimEtkinlik.findMany({
-      where: {
-        rehberId: profile.id,
-        baslangic: { lt: buAyBitis },
-        OR: [
-          { bitis: null },
-          { bitis: { gte: buAyBaslangic } },
-          { baslangic: { gte: buAyBaslangic } },
-        ],
-      },
-    }) : Promise.resolve([]),
-  ]);
+  const [unreadCount, totalMessages, reviewData, sonMesajlar, yaklasanEtkinlikler, buAyEtkinlikler] =
+    await Promise.all([
+      prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
+      prisma.message.count({ where: { toUserId: session.user.id } }),
+      prisma.review.aggregate({
+        where: { revieweeId: session.user.id },
+        _count: true, _avg: { rating: true },
+      }),
+      prisma.message.findMany({
+        where: { toUserId: session.user.id },
+        orderBy: { createdAt: "desc" }, take: 4,
+        include: { from: { include: { acenteProfile: true } } },
+      }),
+      profile ? prisma.takvimEtkinlik.findMany({
+        where: {
+          rehberId: profile.id,
+          OR: [{ bitis: { gte: simdi } }, { baslangic: { gte: simdi }, bitis: null }],
+        },
+        orderBy: { baslangic: "asc" }, take: 4,
+      }) : Promise.resolve([]),
+      profile ? prisma.takvimEtkinlik.findMany({
+        where: {
+          rehberId: profile.id,
+          baslangic: { lt: buAyBitis },
+          OR: [{ bitis: null }, { bitis: { gte: buAyBaslangic } }, { baslangic: { gte: buAyBaslangic } }],
+        },
+      }) : Promise.resolve([]),
+    ]);
 
-  // Profil tamamlanma yüzdesi
   const alanlar = [
-    !!profile?.name,
-    !!profile?.bio,
-    !!profile?.city,
+    !!profile?.name, !!profile?.bio, !!profile?.city,
     (profile?.languages?.length ?? 0) > 0,
     (profile?.specialties?.length ?? 0) > 0,
     (profile?.experienceYears ?? 0) > 0,
     (profile?.operatingCountries?.length ?? 0) > 0,
   ];
   const tamamlanma = Math.round((alanlar.filter(Boolean).length / alanlar.length) * 100);
-  const profilTam = tamamlanma === 100;
-
-  const verifiedLicenses = profile?.licenses.filter((l) => l.status === "VERIFIED").length ?? 0;
-  const pendingLicenses = profile?.licenses.filter((l) => l.status === "PENDING").length ?? 0;
+  const verifiedLicenses = profile?.licenses.filter(l => l.status === "VERIFIED").length ?? 0;
+  const pendingLicenses = profile?.licenses.filter(l => l.status === "PENDING").length ?? 0;
   const avgRating = reviewData._avg.rating ? reviewData._avg.rating.toFixed(1) : "—";
+  const displayName = profile?.name ?? session.user.email ?? "Rehber";
+  const unvanLabel = UNVAN_LABEL[profile?.unvan ?? "YENI_REHBER"] ?? "Yeni Rehber";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
-      {/* Profil Özet Kartı */}
-      <div className="backdrop-blur-sm rounded-2xl p-6" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden" style={{ background: "color-mix(in srgb, var(--primary) 15%, transparent)" }}>
-            {profile?.photoUrl ? (
-              <img src={profile.photoUrl} alt="" className="w-16 h-16 rounded-2xl object-cover" />
-            ) : (
-              <User className="w-8 h-8" style={{ color: "var(--primary)" }} />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-white">
-                {profile?.name ?? session.user.email}
-              </h1>
-              {profile?.isAvailable ? (
-                <span className="inline-flex items-center gap-1 text-xs bg-green-500/15 text-green-400 border border-green-500/25 px-2 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  Müsait
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--card-bg)", color: "rgba(255,255,255,0.5)", border: "1px solid var(--card-border)" }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.4)" }} />
-                  Müsait Değil
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 mt-1 text-sm text-white/50 flex-wrap">
-              {profile?.city && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" /> {profile.city}
-                </span>
-              )}
-              {(profile?.experienceYears ?? 0) > 0 && (
-                <span className="flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5" /> {profile?.experienceYears} yıl deneyim
-                </span>
-              )}
-              {(profile?.languages?.length ?? 0) > 0 && (
-                <span className="flex items-center gap-1">
-                  <Globe className="w-3.5 h-3.5" /> {profile?.languages.slice(0, 3).map((l) => l.dil).join(", ")}
-                  {(profile?.languages.length ?? 0) > 3 && ` +${(profile?.languages.length ?? 0) - 3}`}
-                </span>
-              )}
-            </div>
-            <TamamlanmaBar yuzde={tamamlanma} />
-          </div>
-          <Link
-            href="/dashboard/rehber/profil"
-            className="shrink-0 text-sm font-medium hidden sm:block hover:underline"
-            style={{ color: "var(--primary)" }}
-          >
-            Düzenle
-          </Link>
-        </div>
-      </div>
-
-      {/* Profil eksik uyarısı */}
-      {!profilTam && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-300">Profilin %{100 - tamamlanma} eksik</p>
-            <p className="text-sm text-amber-400 mt-0.5">
-              Eksik bilgileri tamamla, acentelerin seni daha kolay bulsun.
-            </p>
-          </div>
-          <Link href="/dashboard/rehber/profil" className="shrink-0 text-sm font-medium text-amber-300 hover:underline flex items-center gap-1">
-            Tamamla <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      )}
-
-      {/* İstatistik Kartları */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Link href="/dashboard/rehber/mesajlar" className="backdrop-blur-sm rounded-xl p-5 transition-shadow group" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <div className="flex items-center justify-between mb-3">
-            <MessageCircle className="w-5 h-5" style={{ color: "var(--primary)" }} />
-            {unreadCount > 0 && (
-              <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
-                {unreadCount}
+      {/* Profile summary card */}
+      <div className="card card-pad flex items-start gap-4">
+        {profile?.photoUrl ? (
+          <img src={profile.photoUrl} alt="" className="w-14 h-14 rounded-full object-cover shrink-0" />
+        ) : (
+          <Avatar name={displayName} size="lg" />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "var(--upe-ink)" }}>{displayName}</h1>
+            {profile?.isAvailable ? (
+              <span className="pill success" style={{ gap: 4 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A" }} />Müsait
               </span>
-            )}
-          </div>
-          <div className="text-2xl font-bold text-white">{totalMessages}</div>
-          <div className="text-xs text-white/50 mt-1">Mesaj</div>
-          {unreadCount > 0 && <div className="text-xs text-red-400 mt-0.5">{unreadCount} okunmamış</div>}
-        </Link>
-
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <Star className="w-5 h-5 text-yellow-400 mb-3" />
-          <div className="text-2xl font-bold text-white">{avgRating}</div>
-          <div className="text-xs text-white/50 mt-1">Ortalama Puan</div>
-          <div className="text-xs text-white/40 mt-0.5">{reviewData._count} değerlendirme</div>
-        </div>
-
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <CheckCircle className="w-5 h-5 text-green-500 mb-3" />
-          <div className="text-2xl font-bold text-white">{verifiedLicenses}</div>
-          <div className="text-xs text-white/50 mt-1">Onaylı Lisans</div>
-          {pendingLicenses > 0 && (
-            <div className="text-xs text-amber-400 mt-0.5 flex items-center gap-1">
-              <Clock className="w-3 h-3" /> {pendingLicenses} bekliyor
-            </div>
-          )}
-        </div>
-
-        <div className="backdrop-blur-sm rounded-xl p-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <TrendingUp className="w-5 h-5 text-purple-400 mb-3" />
-          <div className="text-2xl font-bold text-white">{tamamlanma}%</div>
-          <div className="text-xs text-white/50 mt-1">Profil Gücü</div>
-          <div className="text-xs text-white/40 mt-0.5">{profilTam ? "Tamamlandı" : "Geliştir"}</div>
-        </div>
-
-        <Link href="/dashboard/rehber/checkin" className="backdrop-blur-sm rounded-xl p-5 transition-colors hover:bg-white/5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <MapPin className="w-5 h-5 mb-3" style={{ color: "var(--primary)" }} />
-          <div className="text-2xl font-bold text-white">{profile?.checkInSayisi ?? 0}</div>
-          <div className="text-xs text-white/50 mt-1">Check-in</div>
-          <div className="text-xs text-white/40 mt-0.5 flex items-center gap-1">
-            <Trophy className="w-3 h-3 text-yellow-400" />
-            {profile?.unvan === "YENI_REHBER" ? "Yeni Rehber" :
-             profile?.unvan === "AKTIF_REHBER" ? "Aktif Rehber" :
-             profile?.unvan === "DENEYIMLI_REHBER" ? "Deneyimli Rehber" :
-             profile?.unvan === "UZMAN_REHBER" ? "Uzman Rehber" :
-             profile?.unvan === "SUPER_REHBER" ? "Süper Rehber" : "Elit Rehber"}
-          </div>
-        </Link>
-      </div>
-
-      {/* Yaklaşan Etkinlikler + Mini Takvim */}
-      <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-        <div className="grid grid-cols-3 items-center px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-          <h2 className="font-semibold text-white flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" style={{ color: "var(--primary)" }} /> Yaklaşan Etkinlikler
-          </h2>
-          <div className="flex justify-center">
-            <HizliEtkinlikEkle />
-          </div>
-          <div className="flex justify-end">
-            <Link
-              href="/dashboard/rehber/takvim"
-              className="text-xs inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-colors hover:opacity-80"
-              style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
-            >
-              Takvime git
-            </Link>
-          </div>
-        </div>
-        <div className="flex divide-x divide-white/8">
-          {/* Sol: Yaklaşan liste */}
-          <div className="flex-1 min-w-0">
-            {yaklasanEtkinlikler.length === 0 ? (
-              <div className="px-5 py-6 text-center">
-                <CalendarDays className="w-7 h-7 text-white/20 mx-auto mb-2" />
-                <p className="text-xs text-white/40">Yaklaşan etkinlik yok</p>
-              </div>
             ) : (
-              <div className="divide-y divide-white/8">
-                {yaklasanEtkinlikler.map((e) => {
-                  const bas = new Date(e.baslangic);
-                  const bit = e.bitis ? new Date(e.bitis) : null;
-                  const bugunD = new Date(); bugunD.setHours(0, 0, 0, 0);
-                  const basGun = new Date(bas); basGun.setHours(0, 0, 0, 0);
-                  const fark = Math.ceil((basGun.getTime() - bugunD.getTime()) / 86400000);
-                  const etiket = fark === 0 ? "Bugün" : fark === 1 ? "Yarın" : `${fark}g`;
-                  const acil = fark <= 1;
-                  return (
-                    <Link key={e.id} href="/dashboard/rehber/takvim"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors">
-                      <div className={`w-9 h-9 rounded-lg flex flex-col items-center justify-center shrink-0 ${e.tur === "REZERVASYON" ? "bg-purple-500/15" : ""}`}
-                        style={e.tur !== "REZERVASYON" ? { background: "color-mix(in srgb, var(--primary) 10%, transparent)" } : undefined}>
-                        <span className={`text-xs font-bold leading-none ${e.tur === "REZERVASYON" ? "text-purple-400" : ""}`}
-                          style={e.tur !== "REZERVASYON" ? { color: "var(--primary)" } : undefined}>
-                          {String(bas.getDate()).padStart(2, "0")}
-                        </span>
-                        <span className={`text-[9px] leading-none mt-0.5 ${e.tur === "REZERVASYON" ? "text-purple-400/70" : "text-white/40"}`}>
-                          {["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"][bas.getMonth()]}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-white truncate">{e.baslik}</p>
-                        {bit ? (
-                          <p className="text-[10px] text-white/40 mt-0.5">
-                            {bas.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })} – {bit.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
-                          </p>
-                        ) : e.notlar ? (
-                          <p className="text-[10px] text-white/40 truncate">{e.notlar}</p>
-                        ) : null}
-                      </div>
-                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${acil ? "bg-red-500/15 text-red-400" : "text-white/40"}`}
-                        style={!acil ? { background: "var(--card-bg)" } : undefined}>
-                        {etiket}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
+              <span className="pill neutral">Müsait Değil</span>
+            )}
+            <span className="pill teal">{unvanLabel}</span>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5" style={{ fontSize: 13, color: "var(--fg-3)" }}>
+            {profile?.city && (
+              <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{profile.city}</span>
+            )}
+            {(profile?.experienceYears ?? 0) > 0 && (
+              <span className="flex items-center gap-1"><Briefcase className="w-3.5 h-3.5" />{profile?.experienceYears} yıl</span>
+            )}
+            {(profile?.languages?.length ?? 0) > 0 && (
+              <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" />{profile?.languages.slice(0, 3).map(l => l.dil).join(", ")}</span>
             )}
           </div>
-          {/* Sağ: Mini takvim */}
-          <div className="p-4 w-52 shrink-0">
-            <MiniTakvim
-              etkinlikler={buAyEtkinlikler}
-              yil={simdi.getFullYear()}
-              ay={simdi.getMonth() + 1}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Check-in Bölümü */}
-      <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-          <div>
-            <h2 className="font-semibold text-white flex items-center gap-2">
-              <MapPin className="w-4 h-4" style={{ color: "var(--primary)" }} /> Check-in
-            </h2>
-            <p className="text-xs text-white/35 mt-0.5">Tur anlarını paylaş, profilini güçlendir</p>
-          </div>
-          <Link
-            href="/dashboard/rehber/checkin"
-            className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:opacity-80"
-            style={{ color: "var(--primary)", borderColor: "var(--primary)" }}
-          >
-            Tümünü gör
-          </Link>
-        </div>
-        <div className="p-5 flex items-center gap-6">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">{profile?.checkInSayisi ?? 0}</div>
-            <div className="text-xs text-white/40 mt-0.5">Check-in</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">{profile?.benzersizSehir ?? 0}</div>
-            <div className="text-xs text-white/40 mt-0.5">Şehir</div>
-          </div>
-          <div className="flex-1 flex justify-end">
-            <Link
-              href="/dashboard/rehber/checkin"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
-              style={{ background: "var(--primary)", color: "white" }}
-            >
-              <MapPin className="w-4 h-4" /> Check-in Yap
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Alt İki Kolon */}
-      <div className="grid md:grid-cols-2 gap-6">
-
-        {/* Son Mesajlar */}
-        <div className="backdrop-blur-sm rounded-2xl overflow-hidden" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-            <h2 className="font-semibold text-white flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" style={{ color: "var(--primary)" }} /> Mesajlar
-            </h2>
-            <Link href="/dashboard/rehber/mesajlar" className="text-xs hover:underline" style={{ color: "var(--primary)" }}>
-              Tümünü gör
-            </Link>
-          </div>
-          {sonMesajlar.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <MessageCircle className="w-8 h-8 text-white/20 mx-auto mb-2" />
-              <p className="text-sm text-white/40">Henüz mesajın yok</p>
-              <p className="text-xs text-white/30 mt-1">Acenteler seninle iletişime geçtiğinde burada görünür</p>
+          <div style={{ marginTop: 14 }}>
+            <div className="flex justify-between mb-1.5">
+              <span style={{ fontSize: 12, color: "var(--fg-3)" }}>Profil tamamlanma</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--fg-2)" }}>%{tamamlanma}</span>
             </div>
-          ) : (
-            <div className="divide-y divide-white/8">
-              {sonMesajlar.map((msg) => (
-                <Link key={msg.id} href="/dashboard/rehber/mesajlar" className="flex items-start gap-3 px-6 py-4 hover:bg-white/5 transition-colors">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: "color-mix(in srgb, var(--primary) 15%, transparent)" }}>
-                    <User className="w-4 h-4" style={{ color: "var(--primary)" }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-white truncate">
-                        {msg.from.acenteProfile?.companyName ?? msg.from.email}
-                      </p>
-                      {!msg.isRead && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: "var(--primary)" }} />}
-                    </div>
-                    <p className="text-xs text-white/50 truncate mt-0.5">{msg.content}</p>
-                  </div>
-                </Link>
-              ))}
+            <div style={{ height: 6, background: "var(--bg-muted)", borderRadius: 9999, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${tamamlanma}%`, background: "linear-gradient(to right, var(--upe-teal), var(--upe-teal-400))", borderRadius: 9999 }} />
             </div>
-          )}
+          </div>
         </div>
-
+        <Link href="/dashboard/rehber/profil"
+          className="shrink-0 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+          style={{ color: "var(--upe-teal)", background: "var(--upe-teal-50)", border: "1px solid var(--upe-teal-200)" }}>
+          Düzenle
+        </Link>
       </div>
 
-      {/* Hızlı Aksiyonlar */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          { href: "/dashboard/rehber/profil", icon: User, bgStyle: { background: "color-mix(in srgb, var(--primary) 10%, transparent)" }, iconStyle: { color: "var(--primary)" }, title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
-          { href: "/dashboard/rehber/mesajlar", icon: MessageCircle, bgStyle: { background: "rgba(168,85,247,0.15)" }, iconStyle: { color: "rgb(192,132,252)" }, title: "Mesajlar", desc: "Acentelerle iletişim" },
-          { href: "/kesfet/feed", icon: Globe, bgStyle: { background: "rgba(34,197,94,0.15)" }, iconStyle: { color: "rgb(74,222,128)" }, title: "Rehber Feed", desc: "Canlı paylaşımlar" },
-        ].map((item) => (
-          <Link key={item.href} href={item.href}
-            className="backdrop-blur-sm rounded-xl p-5 transition-shadow flex items-center gap-4 group hover:bg-white/5"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={item.bgStyle}>
-              <item.icon className="w-5 h-5" style={item.iconStyle} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-white text-sm">{item.title}</p>
-              <p className="text-xs text-white/50">{item.desc}</p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors shrink-0" />
+          { icon: MessageCircle, color: "var(--upe-teal)", num: totalMessages, label: "Mesaj", sub: unreadCount > 0 ? `${unreadCount} okunmamış` : undefined, subColor: "var(--upe-danger)", href: "/dashboard/rehber/mesajlar" },
+          { icon: Star,          color: "#F59E0B",         num: avgRating,      label: "Puan",   sub: `${reviewData._count} değerlendirme` },
+          { icon: CheckCircle,   color: "#16A34A",         num: verifiedLicenses, label: "Onaylı Lisans", sub: pendingLicenses > 0 ? `${pendingLicenses} bekliyor` : undefined, subColor: "#D97706" },
+          { icon: TrendingUp,    color: "#A855F7",         num: `%${tamamlanma}`, label: "Profil Gücü", sub: tamamlanma === 100 ? "Tamamlandı" : "Geliştir" },
+          { icon: MapPin,        color: "var(--upe-teal)", num: profile?.checkInSayisi ?? 0, label: "Check-in", sub: unvanLabel, href: "/dashboard/rehber/checkin" },
+        ].map((s, i) => (
+          <Link key={i} href={(s as any).href ?? "#"}
+            className="card"
+            style={{ padding: 16, textDecoration: "none", display: "block" }}
+          >
+            <s.icon size={18} style={{ color: s.color, marginBottom: 12 }} />
+            <div style={{ fontSize: 24, fontWeight: 700, color: "var(--upe-ink)", lineHeight: 1 }}>{s.num}</div>
+            <div style={{ fontSize: 11.5, color: "var(--fg-3)", marginTop: 6 }}>{s.label}</div>
+            {s.sub && <div style={{ fontSize: 11, color: s.subColor ?? "var(--fg-4)", marginTop: 2 }}>{s.sub}</div>}
           </Link>
         ))}
       </div>
 
+      {/* Upcoming events + check-in */}
+      <div className="grid md:grid-cols-5 gap-5">
+
+        {/* Upcoming events */}
+        <div className="md:col-span-3 card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-1)" }}>
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--upe-ink)", display: "flex", alignItems: "center", gap: 8 }}>
+              <CalendarDays size={15} style={{ color: "var(--upe-teal)" }} />Yaklaşan Etkinlikler
+            </h2>
+            <div className="flex items-center gap-2">
+              <HizliEtkinlikEkle />
+              <Link href="/dashboard/rehber/takvim"
+                style={{ fontSize: 12, color: "var(--upe-teal)", fontWeight: 500 }}>
+                Takvime git →
+              </Link>
+            </div>
+          </div>
+          {yaklasanEtkinlikler.length === 0 ? (
+            <div className="py-12 text-center">
+              <CalendarDays size={32} style={{ color: "var(--fg-4)", margin: "0 auto 8px" }} />
+              <p style={{ color: "var(--fg-3)", fontSize: 13 }}>Yaklaşan etkinlik yok</p>
+            </div>
+          ) : (
+            yaklasanEtkinlikler.map((e, i) => {
+              const bas = new Date(e.baslangic);
+              const bit = e.bitis ? new Date(e.bitis) : null;
+              const bugunD = new Date(); bugunD.setHours(0,0,0,0);
+              const basGun = new Date(bas); basGun.setHours(0,0,0,0);
+              const fark = Math.ceil((basGun.getTime() - bugunD.getTime()) / 86400000);
+              const etiket = fark === 0 ? "Bugün" : fark === 1 ? "Yarın" : `${fark}g`;
+              const acil = fark <= 1;
+              const aylar = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+              return (
+                <Link key={e.id} href="/dashboard/rehber/takvim"
+                  className="flex items-center gap-3 px-5 py-3.5 transition-colors"
+                  style={{
+                    borderTop: i > 0 ? "1px solid var(--border-1)" : "none",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
+                  onMouseLeave={ev => (ev.currentTarget.style.background = "")}
+                >
+                  <div style={{ width: 42, height: 42, borderRadius: 10, background: "var(--upe-teal-50)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--upe-teal)", lineHeight: 1 }}>{String(bas.getDate()).padStart(2,"0")}</span>
+                    <span style={{ fontSize: 9, color: "var(--upe-teal-700)", marginTop: 2 }}>{aylar[bas.getMonth()]}</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "var(--upe-ink)" }}>{e.baslik}</p>
+                    {bit && <p style={{ margin: 0, fontSize: 11.5, color: "var(--fg-3)", marginTop: 2 }}>
+                      {bas.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })} – {bit.toLocaleDateString("tr-TR", { day: "numeric", month: "short" })}
+                    </p>}
+                  </div>
+                  <span style={{ fontSize: 10.5, fontWeight: 600, padding: "3px 8px", borderRadius: 9999, background: acil ? "rgba(220,38,38,0.1)" : "var(--bg-muted)", color: acil ? "var(--upe-danger)" : "var(--fg-3)" }}>{etiket}</span>
+                </Link>
+              );
+            })
+          )}
+          {/* Mini calendar */}
+          <div style={{ padding: "12px 20px 16px", borderTop: "1px solid var(--border-1)" }}>
+            <MiniTakvim etkinlikler={buAyEtkinlikler} yil={simdi.getFullYear()} ay={simdi.getMonth() + 1} />
+          </div>
+        </div>
+
+        {/* Check-in card */}
+        <div className="md:col-span-2 card" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-1)" }}>
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--upe-ink)", display: "flex", alignItems: "center", gap: 8 }}>
+              <MapPin size={15} style={{ color: "var(--upe-teal)" }} />Check-in
+            </h2>
+            <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--fg-3)" }}>Tur anlarını paylaş, profilini güçlendir</p>
+          </div>
+          <div style={{ padding: 20 }}>
+            <div className="flex gap-6 mb-4">
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "var(--upe-ink)" }}>{profile?.checkInSayisi ?? 0}</div>
+                <div style={{ fontSize: 11.5, color: "var(--fg-3)" }}>Check-in</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "var(--upe-ink)" }}>{profile?.benzersizSehir ?? 0}</div>
+                <div style={{ fontSize: 11.5, color: "var(--fg-3)" }}>Şehir</div>
+              </div>
+            </div>
+            <Link href="/dashboard/rehber/checkin"
+              className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold w-full"
+              style={{ background: "var(--upe-teal)", color: "#fff", textDecoration: "none" }}>
+              <Plus size={16} />Yeni Check-in
+            </Link>
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--border-1)", fontSize: 11.5, color: "var(--fg-3)", display: "flex", alignItems: "center", gap: 8 }}>
+              <Trophy size={13} style={{ color: "#D97706" }} />
+              <span><b style={{ color: "var(--upe-ink)" }}>Hedef:</b> {unvanLabel}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages + quick actions */}
+      <div className="grid md:grid-cols-5 gap-5">
+
+        {/* Messages */}
+        <div className="md:col-span-3 card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-1)" }}>
+            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--upe-ink)", display: "flex", alignItems: "center", gap: 8 }}>
+              <MessageCircle size={15} style={{ color: "var(--upe-teal)" }} />Son Mesajlar
+            </h2>
+            <Link href="/dashboard/rehber/mesajlar" style={{ fontSize: 12, color: "var(--upe-teal)" }}>Tümünü gör</Link>
+          </div>
+          {sonMesajlar.length === 0 ? (
+            <div className="py-10 text-center">
+              <MessageCircle size={32} style={{ color: "var(--fg-4)", margin: "0 auto 8px" }} />
+              <p style={{ color: "var(--fg-3)", fontSize: 13 }}>Henüz mesaj yok</p>
+            </div>
+          ) : (
+            sonMesajlar.map((msg, i) => {
+              const ad = msg.from.acenteProfile?.companyName ?? msg.from.email ?? "Acente";
+              return (
+                <Link key={msg.id} href="/dashboard/rehber/mesajlar"
+                  className="flex items-center gap-3 px-5 py-3.5 transition-colors"
+                  style={{ borderTop: "1px solid var(--border-1)", textDecoration: "none" }}
+                  onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
+                  onMouseLeave={ev => (ev.currentTarget.style.background = "")}
+                >
+                  <Avatar name={ad} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex items-center justify-between">
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--upe-ink)" }}>{ad}</p>
+                      {!msg.isRead && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--upe-teal)", flexShrink: 0 }} />}
+                    </div>
+                    <p style={{ margin: 0, fontSize: 12, color: "var(--fg-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{msg.content}</p>
+                  </div>
+                </Link>
+              );
+            })
+          )}
+        </div>
+
+        {/* Quick actions */}
+        <div className="md:col-span-2 flex flex-col gap-3">
+          {[
+            { href: "/dashboard/rehber/profil", icon: User, tint: "var(--upe-teal-50)", iconColor: "var(--upe-teal)", title: "Profil Düzenle", desc: "Bilgilerini güncelle" },
+            { href: "/dashboard/rehber/mesajlar", icon: MessageCircle, tint: "rgba(168,85,247,0.1)", iconColor: "#A855F7", title: "Mesajlar", desc: "Acentelerle iletişim" },
+            { href: "/kesfet/feed", icon: Rss, tint: "rgba(34,197,94,0.1)", iconColor: "#16A34A", title: "Rehber Feed", desc: "Canlı paylaşımlar" },
+          ].map(q => (
+            <Link key={q.href} href={q.href}
+              className="card flex items-center gap-4 px-4 py-4 transition-shadow"
+              style={{ textDecoration: "none" }}
+              onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
+              onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
+            >
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: q.tint, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <q.icon size={18} style={{ color: q.iconColor }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: "var(--upe-ink)" }}>{q.title}</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--fg-3)" }}>{q.desc}</p>
+              </div>
+              <ArrowRight size={14} style={{ color: "var(--fg-4)" }} />
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

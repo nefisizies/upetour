@@ -115,8 +115,8 @@ export function RehberAra() {
   return (
     <div className="space-y-6">
       {/* Filtre kartı */}
-      <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-5">
-        <h2 className="text-base font-semibold text-gray-800">Müsait Rehber Ara</h2>
+      <div className="card card-pad space-y-5">
+        <h2 className="text-base font-semibold" style={{ color: "var(--upe-ink)" }}>Müsait Rehber Ara</h2>
 
         {/* Tarihler */}
         <div className="grid md:grid-cols-2 gap-4">
@@ -129,7 +129,7 @@ export function RehberAra() {
               value={baslangic}
               min={bugun}
               onChange={(e) => setBaslangic(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]/30 focus:border-[#0a7ea4]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:outline-none"
             />
           </div>
           <div className="space-y-1.5">
@@ -141,7 +141,7 @@ export function RehberAra() {
               value={bitis}
               min={baslangic}
               onChange={(e) => setBitis(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]/30 focus:border-[#0a7ea4]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:outline-none"
             />
           </div>
         </div>
@@ -159,7 +159,7 @@ export function RehberAra() {
               {secilenSehirler.map((s) => (
                 <span
                   key={s.sehir}
-                  className="inline-flex items-center gap-1.5 text-sm bg-[#0a7ea4]/10 text-[#0a7ea4] border border-[#0a7ea4]/20 px-2.5 py-1 rounded-full"
+                  className="pill teal"
                 >
                   {s.sehir}
                   <span className="text-xs text-[#0a7ea4]/60">{s.ulke}</span>
@@ -183,7 +183,7 @@ export function RehberAra() {
               value={sehirArama}
               onChange={(e) => { setSehirArama(e.target.value); setDropdown(true); }}
               onFocus={() => setDropdown(true)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0a7ea4]/30 focus:border-[#0a7ea4]"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:outline-none"
             />
             {dropdown && filtreliSehirler.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-lg z-20 overflow-hidden">
@@ -212,7 +212,7 @@ export function RehberAra() {
             <Search className="w-3.5 h-3.5" />
             Uzmanlık Alanları
             {secilenUzmanliklar.length > 0 && (
-              <span className="bg-[#0a7ea4] text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span style={{ background: "var(--upe-teal)", color: "#fff", fontSize: 10, fontWeight: 700, width: 16, height: 16, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                 {secilenUzmanliklar.length}
               </span>
             )}
@@ -228,11 +228,13 @@ export function RehberAra() {
                     key={u}
                     type="button"
                     onClick={() => uzmanlikToggle(u)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                      secili
-                        ? "bg-[#0a7ea4] text-white border-[#0a7ea4]"
-                        : "border-gray-200 text-gray-600 hover:border-[#0a7ea4] hover:text-[#0a7ea4]"
-                    }`}
+                    style={{
+                      fontSize: 11.5, padding: "5px 12px", borderRadius: 9999, border: "1px solid",
+                      background: secili ? "var(--upe-teal)" : "transparent",
+                      color: secili ? "#fff" : "var(--fg-2)",
+                      borderColor: secili ? "var(--upe-teal)" : "var(--border-2)",
+                      cursor: "pointer", fontFamily: "inherit", transition: "all 180ms",
+                    }}
                   >
                     {u}
                   </button>
@@ -244,7 +246,7 @@ export function RehberAra() {
           {secilenUzmanliklar.length > 0 && !uzmanlikAcik && (
             <div className="flex flex-wrap gap-1.5">
               {secilenUzmanliklar.map((u) => (
-                <span key={u} className="inline-flex items-center gap-1 text-xs bg-[#0a7ea4]/10 text-[#0a7ea4] border border-[#0a7ea4]/20 px-2 py-0.5 rounded-full">
+                <span key={u} className="pill teal">
                   {u}
                   <button onClick={() => uzmanlikToggle(u)} className="hover:text-red-500">
                     <X className="w-3 h-3" />
@@ -260,7 +262,8 @@ export function RehberAra() {
         <button
           onClick={() => ara()}
           disabled={yukleniyor}
-          className="w-full md:w-auto bg-[#0a7ea4] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#065f7d] transition-colors disabled:opacity-60 flex items-center gap-2"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60 transition-opacity hover:opacity-90"
+          style={{ background: "var(--upe-teal)", color: "#fff" }}
         >
           <Search className="w-4 h-4" />
           {yukleniyor ? "Aranıyor..." : "Rehber Ara"}
@@ -277,17 +280,17 @@ export function RehberAra() {
             </div>
           ) : (
             <>
-              <p className="text-sm text-gray-500 mb-4">
-                <span className="font-semibold text-gray-800">{rehberler.length}</span> müsait rehber bulundu
+              <p className="text-sm mb-4" style={{ color: "var(--fg-3)" }}>
+                <span className="font-semibold" style={{ color: "var(--upe-ink)" }}>{rehberler.length}</span> müsait rehber bulundu
                 {secilenSehirler.length > 0 && (
-                  <span> — <span className="text-[#0a7ea4]">{secilenSehirler.map((s) => s.sehir).join(", ")}</span></span>
+                  <span> — <span style={{ color: "var(--upe-teal)" }}>{secilenSehirler.map((s) => s.sehir).join(", ")}</span></span>
                 )}
               </p>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {rehberler.map((r) => (
                   <div key={r.id} className="relative">
                     {r._puan > 0 && (
-                      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-[#0a7ea4] text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow">
+                      <div className="absolute top-3 right-3 z-10" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 9999, background: "rgba(13,115,119,0.95)", color: "#fff", fontSize: 11, fontWeight: 600, boxShadow: "0 2px 8px rgba(10,22,40,0.3)" }}>
                         {r._puan} eşleşme
                       </div>
                     )}

@@ -37,6 +37,72 @@
   --nav-active-text:  #ffffff;
 }
 
+/* ── vol2 UpeTour Design System tokens ─────────────────────────────────────── */
+:root {
+  /* Brand aliases (same value as --primary / --accent) */
+  --upe-teal:      #0D7377;
+  --upe-teal-50:   #F0FAFA;
+  --upe-teal-200:  #A7D8DA;
+  --upe-teal-300:  #7AC9CC;
+  --upe-teal-400:  #4EB6BB;
+  --upe-teal-700:  #0A5F63;
+  --upe-coral:     #F4845F;
+  --upe-ink:       #0A1628;
+  --upe-danger:    #DC2626;
+
+  /* Text hierarchy */
+  --fg-1:   #0A1628;
+  --fg-2:   #334155;
+  --fg-3:   #64748B;
+  --fg-4:   #94A3B8;
+
+  /* Surfaces */
+  --bg-page:  #F0FAFA;
+  --bg-card:  #FFFFFF;
+  --bg-muted: #F1F5F9;
+
+  /* Borders */
+  --border-1: rgba(10, 22, 40, 0.08);
+  --border-2: rgba(10, 22, 40, 0.14);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* card-bg/border used by legacy components */
+  --card-bg:     #FFFFFF;
+  --card-border: rgba(10, 22, 40, 0.08);
+  --card-inner-bg:     rgba(10, 22, 40, 0.03);
+  --card-inner-border: rgba(10, 22, 40, 0.08);
+
+  /* text vars used by legacy components */
+  --text-primary: #0A1628;
+  --text-muted:   #64748B;
+  --text-faint:   #94A3B8;
+}
+
+/* ── vol2 utility classes ─────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xs);
+}
+.card-pad    { padding: 20px; }
+.card-pad-sm { padding: 14px 16px; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 9999px;
+  font-size: 11.5px; font-weight: 500; line-height: 1.4;
+}
+.pill.teal    { background: rgba(13,115,119,0.1); color: var(--upe-teal-700); }
+.pill.success { background: #ECFDF5; color: #15803d; }
+.pill.warn    { background: #FFFBEB; color: #92400E; }
+.pill.coral   { background: rgba(244,132,95,0.15); color: #C2500F; }
+.pill.outline { background: transparent; border: 1px solid var(--border-2); color: var(--fg-2); }
+.pill.neutral { background: var(--bg-muted); color: var(--fg-3); }
+
 /* Apply dynamic font */
 body { font-family: var(--font-family); }
 
@@ -95,6 +161,8 @@ html[data-dark="true"] body {
   background-color: #0f172a;
   color: #e2e8f0;
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Dashboard card surfaces — CSS class approach (reliable, optimizer-proof) ──
    These classes anchor the CSS vars so the optimizer keeps them, AND provide

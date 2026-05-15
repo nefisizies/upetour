@@ -43,7 +43,7 @@ export default async function Home() {
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium mb-6 border border-white/20"
-            style={{ background: "rgba(224,123,57,0.2)", backdropFilter: "blur(8px)" }}>
+            style={{ background: "rgba(13,115,119,0.2)", backdropFilter: "blur(8px)" }}>
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             Türkiye&apos;nin Tur Profesyonelleri Burada
           </div>

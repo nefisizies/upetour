@@ -5,7 +5,27 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, Users, ArrowRight, AlertCircle, Building2, Search } from "lucide-react";
+import {
+  MessageCircle, Building2, Search, BookOpen, Users,
+  ArrowRight, AlertCircle, CalendarDays, MapPin,
+} from "lucide-react";
+
+function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" }) {
+  const s = size === "sm" ? 32 : 40;
+  const fs = size === "sm" ? 12 : 15;
+  const initials = name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const hue = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return (
+    <div style={{
+      width: s, height: s, borderRadius: "50%", flexShrink: 0,
+      background: `hsl(${hue},45%,55%)`,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      fontSize: fs, fontWeight: 700, color: "#fff",
+    }}>
+      {initials}
+    </div>
+  );
+}
 
 export default async function AcenteDashboard() {
   const session = await getServerSession(authOptions);
@@ -15,85 +35,144 @@ export default async function AcenteDashboard() {
     where: { userId: session.user.id },
   });
 
-  const [unreadCount, bekleyenReferansCount] = await Promise.all([
+  const [unreadCount, bekleyenReferansCount, sonMesajlar, programCount] = await Promise.all([
     prisma.message.count({ where: { toUserId: session.user.id, isRead: false } }),
     profile ? prisma.referans.count({ where: { acenteId: profile.id, durum: "BEKLIYOR" } }) : Promise.resolve(0),
+    prisma.message.findMany({
+      where: { toUserId: session.user.id },
+      orderBy: { createdAt: "desc" }, take: 4,
+      include: { from: { include: { rehberProfile: { select: { name: true, photoUrl: true } } } } },
+    }),
+    Promise.resolve(0),
   ]);
 
+  const companyName = profile?.companyName ?? session.user.email ?? "Acente";
   const profileComplete = !!(profile?.description && profile?.city);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary, #f1f5f9)" }}>
-          Merhaba, {profile?.companyName} 👋
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-muted, #94a3b8)" }}>Acente panelinize hoş geldiniz</p>
+    <div className="space-y-5">
+
+      {/* Header */}
+      <div className="card card-pad">
+        <div className="flex items-center gap-4">
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--upe-teal-50)", border: "2px solid var(--upe-teal-200)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Building2 size={24} style={{ color: "var(--upe-teal)" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "var(--upe-ink)" }}>{companyName}</h1>
+              {profile?.city && (
+                <span className="pill teal"><MapPin size={11} />{profile.city}</span>
+              )}
+            </div>
+            <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--fg-3)" }}>Acente Paneli</p>
+          </div>
+          <Link href="/dashboard/acente/profil"
+            className="shrink-0 text-sm font-medium px-3 py-1.5 rounded-lg"
+            style={{ color: "var(--upe-teal)", background: "var(--upe-teal-50)", border: "1px solid var(--upe-teal-200)" }}>
+            Düzenle
+          </Link>
+        </div>
+        {!profileComplete && (
+          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl" style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)" }}>
+            <AlertCircle size={16} className="text-yellow-500 mt-0.5 shrink-0" />
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#92400E" }}>Profil eksik</p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, color: "#92400E" }}>Şirket açıklaması ve şehir bilgisini ekleyin.</p>
+            </div>
+            <Link href="/dashboard/acente/profil" style={{ fontSize: 12, fontWeight: 600, color: "#92400E" }}>Tamamla →</Link>
+          </div>
+        )}
       </div>
 
-      {!profileComplete && (
-        <div className="rounded-xl p-4 flex items-start gap-3" style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)" }}>
-          <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-yellow-300">Profil eksik</p>
-            <p className="text-sm text-yellow-400/70 mt-0.5">Şirket açıklaması ve şehir bilgisini ekleyin.</p>
-            <Link href="/dashboard/acente/profil" className="inline-flex items-center gap-1 text-sm font-medium text-yellow-300 hover:underline mt-2">
-              Profili Tamamla <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Okunmamış Mesaj", value: unreadCount, icon: MessageCircle, href: "/dashboard/acente/mesajlar", badge: 0 },
-          { label: "Referans İstekleri", value: bekleyenReferansCount, icon: Building2, href: "/dashboard/acente/referanslar", badge: bekleyenReferansCount },
-          { label: "Rehber Bul", value: "→", icon: Search, href: "/dashboard/acente/rehber-bul", badge: 0 },
-        ].map((card) => (
-          <Link key={card.label} href={card.href}
-            className="relative rounded-xl p-5 transition-all hover:brightness-110"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-            {card.badge > 0 && (
-              <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {card.badge}
-              </span>
-            )}
-            <card.icon className="w-5 h-5 text-[#0a7ea4] mb-3" />
-            <div className="text-2xl font-bold" style={{ color: "var(--text-primary, #f1f5f9)" }}>{card.value}</div>
-            <div className="text-xs mt-1" style={{ color: "var(--text-muted, #94a3b8)" }}>{card.label}</div>
+          { icon: MessageCircle, color: "var(--upe-teal)", num: unreadCount, label: "Okunmamış Mesaj", href: "/dashboard/acente/mesajlar" },
+          { icon: Building2, color: "#D97706", num: bekleyenReferansCount, label: "Bekleyen Referans", href: "/dashboard/acente/referanslar" },
+          { icon: BookOpen, color: "#A855F7", num: programCount, label: "Aktif Program", href: "/dashboard/acente/programlar" },
+          { icon: Search, color: "var(--upe-teal)", num: "→", label: "Rehber Bul", href: "/dashboard/acente/rehber-bul" },
+        ].map((s, i) => (
+          <Link key={i} href={s.href}
+            className="card"
+            style={{ padding: 16, textDecoration: "none", display: "block" }}
+            onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
+            onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
+          >
+            <s.icon size={18} style={{ color: s.color, marginBottom: 12 }} />
+            <div style={{ fontSize: 24, fontWeight: 700, color: "var(--upe-ink)", lineHeight: 1 }}>{s.num}</div>
+            <div style={{ fontSize: 11.5, color: "var(--fg-3)", marginTop: 6 }}>{s.label}</div>
           </Link>
         ))}
       </div>
 
+      {/* Quick actions */}
       <div className="grid md:grid-cols-2 gap-4">
         <Link href="/dashboard/acente/rehber-bul"
-          className="bg-[#0a7ea4] text-white rounded-xl p-6 hover:bg-[#065f7d] transition-colors flex items-center justify-between group">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <Search className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="font-medium">Rehber Ara</p>
-              <p className="text-sm text-blue-100">Tarih, şehir ve uzmanlığa göre filtrele</p>
-            </div>
+          className="flex items-center gap-4 px-6 py-5 rounded-2xl transition-opacity hover:opacity-90"
+          style={{ background: "var(--upe-teal)", textDecoration: "none" }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Search size={20} style={{ color: "#fff" }} />
           </div>
-          <ArrowRight className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontWeight: 600, color: "#fff", fontSize: 15 }}>Rehber Ara</p>
+            <p style={{ margin: "2px 0 0", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Tarih, şehir ve uzmanlığa göre filtrele</p>
+          </div>
+          <ArrowRight size={18} style={{ color: "rgba(255,255,255,0.7)" }} />
         </Link>
 
-        <Link href="/kesfet/rehberler"
-          className="rounded-xl p-6 transition-all hover:brightness-110 flex items-center justify-between group"
-          style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "rgba(10,126,164,0.15)" }}>
-              <Users className="w-5 h-5 text-[#0a7ea4]" />
-            </div>
-            <div>
-              <p className="font-medium" style={{ color: "var(--text-primary, #f1f5f9)" }}>Rehber Ara</p>
-              <p className="text-sm" style={{ color: "var(--text-muted, #94a3b8)" }}>Tüm rehberlere göz at</p>
-            </div>
+        <Link href="/dashboard/acente/programlar"
+          className="card flex items-center gap-4 px-6 py-5"
+          style={{ textDecoration: "none" }}
+          onMouseEnter={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-sm)")}
+          onMouseLeave={ev => (ev.currentTarget.style.boxShadow = "var(--shadow-xs)")}
+        >
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--upe-teal-50)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <BookOpen size={20} style={{ color: "var(--upe-teal)" }} />
           </div>
-          <ArrowRight className="w-4 h-4 transition-colors" style={{ color: "var(--text-muted, #94a3b8)" }} />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontWeight: 600, color: "var(--upe-ink)", fontSize: 15 }}>Programlarım</p>
+            <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--fg-3)" }}>Tur programlarını yönet</p>
+          </div>
+          <ArrowRight size={18} style={{ color: "var(--fg-4)" }} />
         </Link>
+      </div>
+
+      {/* Messages */}
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-1)" }}>
+          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--upe-ink)", display: "flex", alignItems: "center", gap: 8 }}>
+            <MessageCircle size={15} style={{ color: "var(--upe-teal)" }} />Son Mesajlar
+          </h2>
+          <Link href="/dashboard/acente/mesajlar" style={{ fontSize: 12, color: "var(--upe-teal)" }}>Tümünü gör</Link>
+        </div>
+        {sonMesajlar.length === 0 ? (
+          <div className="py-10 text-center">
+            <MessageCircle size={32} style={{ color: "var(--fg-4)", margin: "0 auto 8px" }} />
+            <p style={{ color: "var(--fg-3)", fontSize: 13 }}>Henüz mesaj yok</p>
+          </div>
+        ) : (
+          sonMesajlar.map((msg, i) => {
+            const ad = msg.from.rehberProfile?.name ?? msg.from.email ?? "Rehber";
+            return (
+              <Link key={msg.id} href="/dashboard/acente/mesajlar"
+                className="flex items-center gap-3 px-5 py-3.5 transition-colors"
+                style={{ borderTop: "1px solid var(--border-1)", textDecoration: "none" }}
+                onMouseEnter={ev => (ev.currentTarget.style.background = "var(--upe-teal-50)")}
+                onMouseLeave={ev => (ev.currentTarget.style.background = "")}
+              >
+                <Avatar name={ad} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="flex items-center justify-between">
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--upe-ink)" }}>{ad}</p>
+                    {!msg.isRead && <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--upe-teal)", flexShrink: 0 }} />}
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: "var(--fg-3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{msg.content}</p>
+                </div>
+              </Link>
+            );
+          })
+        )}
       </div>
     </div>
   );

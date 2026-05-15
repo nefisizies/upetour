@@ -2,17 +2,17 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { MapPin, Trophy, Camera, Clock } from "lucide-react";
+import { MapPin, Trophy, Camera, Clock, Plus } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
 const UNVAN_LABEL: Record<string, string> = {
-  AKTIF_REHBER: "Aktif Rehber",
+  AKTIF_REHBER:     "Aktif Rehber",
   DENEYIMLI_REHBER: "Deneyimli Rehber",
-  UZMAN_REHBER: "Uzman Rehber",
-  SUPER_REHBER: "Süper Rehber",
-  ELIT_REHBER: "Elit Rehber",
+  UZMAN_REHBER:     "Uzman Rehber",
+  SUPER_REHBER:     "Süper Rehber",
+  ELIT_REHBER:      "Elit Rehber",
 };
 
 function zamanFarki(dateStr: Date) {
@@ -26,6 +26,21 @@ function zamanFarki(dateStr: Date) {
   return new Date(dateStr).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 }
 
+function Avatar({ name }: { name: string }) {
+  const initials = name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const hue = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return (
+    <div style={{
+      width: 38, height: 38, borderRadius: "50%", flexShrink: 0,
+      background: `hsl(${hue},45%,60%)`,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      fontSize: 13, fontWeight: 700, color: "#fff",
+    }}>
+      {initials}
+    </div>
+  );
+}
+
 export default async function FeedPage() {
   const session = await getServerSession(authOptions);
 
@@ -34,125 +49,104 @@ export default async function FeedPage() {
     take: 40,
     include: {
       rehber: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          photoUrl: true,
-          city: true,
-          unvan: true,
-          checkInSayisi: true,
-        },
+        select: { id: true, name: true, slug: true, photoUrl: true, city: true, unvan: true, checkInSayisi: true },
       },
     },
   });
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
-      <nav className="sticky top-0 z-30 border-b backdrop-blur-md px-4 h-14 flex items-center justify-between"
-        style={{ background: "rgba(12,5,0,0.85)", borderColor: "rgba(255,255,255,0.08)" }}>
-        <div className="flex items-center gap-4">
+    <div style={{ minHeight: "100vh", background: "#050D1A", color: "#F1F5F9" }}>
+      {/* Nav */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 30, background: "rgba(5,13,26,0.92)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Logo size="sm" darkBg />
-          <span className="text-white/40 text-sm hidden sm:block">Rehber Feed</span>
-        </div>
-        <div className="flex items-center gap-3">
-          {session ? (
-            <Link href={`/dashboard/${session.user.role === "REHBER" ? "rehber" : session.user.role === "ACENTE" ? "acente" : "admin"}`}
-              className="text-sm font-medium px-4 py-1.5 rounded-lg"
-              style={{ background: "var(--primary)", color: "white" }}>
-              Dashboard
-            </Link>
-          ) : (
-            <Link href="/giris" className="text-sm text-white/60 hover:text-white transition-colors">
-              Giriş Yap
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            {session ? (
+              <Link href={`/dashboard/${session.user.role === "REHBER" ? "rehber" : session.user.role === "ACENTE" ? "acente" : "admin"}`}
+                className="text-sm font-semibold px-4 py-1.5 rounded-lg"
+                style={{ background: "var(--upe-teal)", color: "#fff" }}>
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/giris" style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>Giriş Yap</Link>
+            )}
+          </div>
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Rehber Feed</h1>
-          <p className="text-white/40 text-sm mt-1">Rehberlerin tur anlarından canlı paylaşımlar</p>
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 24px 80px" }}>
+        <div style={{ marginBottom: 26 }}>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Rehber Feed</h1>
+          <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "rgba(255,255,255,0.4)" }}>Rehberlerin tur anlarından canlı paylaşımlar</p>
         </div>
 
         {checkInler.length === 0 ? (
-          <div className="text-center py-20">
-            <MapPin className="w-12 h-12 text-white/15 mx-auto mb-3" />
-            <p className="text-white/40">Henüz paylaşım yok</p>
-            <p className="text-white/25 text-sm mt-1">Rehberler check-in yaptıkça burada görünür</p>
+          <div style={{ textAlign: "center", paddingTop: 80 }}>
+            <MapPin size={48} style={{ color: "rgba(255,255,255,0.15)", margin: "0 auto 12px" }} />
+            <p style={{ color: "rgba(255,255,255,0.4)" }}>Henüz paylaşım yok</p>
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 13, marginTop: 4 }}>Rehberler check-in yaptıkça burada görünür</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {checkInler.map((ci) => (
-              <article
-                key={ci.id}
-                className="rounded-2xl overflow-hidden transition-all hover:brightness-110"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)" }}
-              >
-                {/* Fotoğraf */}
+              <article key={ci.id} style={{ borderRadius: 16, overflow: "hidden", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
                 {ci.fotografUrl && (
-                  <div className="relative">
-                    <img src={ci.fotografUrl} alt={ci.baslik} className="w-full max-h-72 object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div style={{ position: "relative", height: 240 }}>
+                    <img src={ci.fotografUrl} alt={ci.baslik} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 40%)" }} />
+                    {(ci.sehir || ci.ulke) && (
+                      <div style={{ position: "absolute", bottom: 12, left: 14, display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 9999, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", fontSize: 11, fontWeight: 500 }}>
+                        <MapPin size={11} style={{ color: "var(--upe-teal-300)" }} />
+                        {ci.ulke ? `${ci.sehir}, ${ci.ulke}` : ci.sehir}
+                      </div>
+                    )}
                   </div>
                 )}
-
-                <div className="p-5">
-                  {/* Rehber başlık */}
-                  <Link href={`/rehber/${ci.rehber.slug}`} className="flex items-center gap-3 mb-3 group">
-                    <div className="w-9 h-9 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold"
-                      style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                      {ci.rehber.photoUrl
-                        ? <img src={ci.rehber.photoUrl} alt="" className="w-full h-full object-cover" />
-                        : ci.rehber.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-white group-hover:underline">{ci.rehber.name}</span>
+                <div style={{ padding: 20 }}>
+                  <Link href={`/rehber/${ci.rehber.slug}`} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, textDecoration: "none" }}>
+                    {ci.rehber.photoUrl ? (
+                      <img src={ci.rehber.photoUrl} alt="" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    ) : (
+                      <Avatar name={ci.rehber.name} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 13.5, fontWeight: 600 }}>{ci.rehber.name}</span>
                         {ci.rehber.unvan !== "YENI_REHBER" && UNVAN_LABEL[ci.rehber.unvan] && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-0.5"
-                            style={{ background: "rgba(234,179,8,0.12)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.2)" }}>
-                            <Trophy className="w-2.5 h-2.5" /> {UNVAN_LABEL[ci.rehber.unvan]}
+                          <span style={{ fontSize: 10.5, padding: "2px 8px", borderRadius: 9999, background: "rgba(234,179,8,0.12)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.2)", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                            <Trophy size={10} />{UNVAN_LABEL[ci.rehber.unvan]}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-white/35 mt-0.5">
-                        <span className="flex items-center gap-0.5">
-                          <Clock className="w-2.5 h-2.5" /> {zamanFarki(ci.createdAt)}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                          <Clock size={10} />{zamanFarki(ci.createdAt)}
                         </span>
-                        {ci.rehber.checkInSayisi > 1 && (
-                          <span>{ci.rehber.checkInSayisi} check-in</span>
-                        )}
+                        {ci.rehber.checkInSayisi > 1 && <span>· {ci.rehber.checkInSayisi} check-in</span>}
                       </div>
                     </div>
                   </Link>
 
-                  {/* İçerik */}
-                  <p className="font-semibold text-white text-sm leading-snug">{ci.baslik}</p>
-                  {ci.sehir && (
-                    <p className="text-xs text-white/45 flex items-center gap-1 mt-1.5">
-                      <MapPin className="w-3 h-3 shrink-0" style={{ color: "var(--primary)" }} />
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>{ci.baslik}</p>
+                  {!ci.fotografUrl && (ci.sehir || ci.ulke) && (
+                    <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                      <MapPin size={12} style={{ color: "var(--upe-teal-300)" }} />
                       {ci.ulke ? `${ci.sehir}, ${ci.ulke}` : ci.sehir}
-                    </p>
+                    </div>
                   )}
                   {ci.aciklama && (
-                    <p className="text-sm text-white/50 mt-2 leading-relaxed">{ci.aciklama}</p>
+                    <p style={{ margin: "10px 0 0", fontSize: 13, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>{ci.aciklama}</p>
                   )}
 
-                  {/* Alt meta */}
-                  <div className="flex items-center gap-3 mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: 11.5 }}>
                     {ci.fotografUrl && (
-                      <span className="text-[11px] text-white/30 flex items-center gap-1">
-                        <Camera className="w-3 h-3" /> Fotoğraflı
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.4)" }}>
+                        <Camera size={11} />Fotoğraflı
                       </span>
                     )}
-                    {ci.dogrulandi && (
-                      <span className="text-[11px] text-green-400 flex items-center gap-1">✅ Doğrulandı</span>
-                    )}
+                    {ci.dogrulandi && <span style={{ color: "#4ADE80" }}>✅ Doğrulandı</span>}
                     <Link href={`/rehber/${ci.rehber.slug}`}
-                      className="ml-auto text-[11px] hover:underline"
-                      style={{ color: "var(--primary)" }}>
+                      style={{ marginLeft: "auto", color: "var(--upe-teal-300)", fontWeight: 500, textDecoration: "none" }}>
                       Profile git →
                     </Link>
                   </div>
@@ -162,6 +156,14 @@ export default async function FeedPage() {
           </div>
         )}
       </div>
+
+      {/* FAB for rehber */}
+      {session?.user.role === "REHBER" && (
+        <Link href="/dashboard/rehber/checkin"
+          style={{ position: "fixed", bottom: 80, right: 32, width: 56, height: 56, borderRadius: 9999, background: "var(--upe-teal)", color: "#fff", border: "none", boxShadow: "0 8px 24px rgba(13,115,119,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, textDecoration: "none" }}>
+          <Plus size={22} />
+        </Link>
+      )}
     </div>
   );
 }

@@ -51,7 +51,7 @@ function KayitForm() {
   if (!seciliRol) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4"
-        style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #051214 0%, #0A1628 50%, #051214 100%)" }}>
         <Logo size="md" darkBg className="mb-10" />
         <p className="text-sm text-white/40 mb-8 uppercase tracking-wider">Nasıl katılmak istiyorsunuz?</p>
         <div className="grid sm:grid-cols-2 gap-4 w-full max-w-md">
@@ -102,7 +102,7 @@ function KayitForm() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
+      style={{ background: "linear-gradient(135deg, #051214 0%, #0A1628 50%, #051214 100%)" }}>
       <Logo size="md" darkBg className="mb-8" />
       <div className="w-full max-w-sm rounded-2xl p-8"
         style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>

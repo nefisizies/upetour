@@ -80,8 +80,8 @@ export default async function AcenteMesajlarPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-white">Mesajlar</h1>
-        <p className="text-sm text-white/40 mt-1">Rehberlerle yazışmalarınız</p>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--upe-ink)" }}>Mesajlar</h1>
+        <p className="text-sm mt-1" style={{ color: "var(--fg-3)" }}>Rehberlerle yazışmalarınız</p>
       </div>
       <MesajlarClient
         benimId={session.user.id}

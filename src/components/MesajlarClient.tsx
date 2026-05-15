@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle, MapPin, Phone, Calendar, MoreHorizontal, Paperclip, CheckCheck } from "lucide-react";
 
 type Konusmaci = {
   userId: string;
@@ -26,6 +26,30 @@ type Mesaj = {
   };
 };
 
+function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" }) {
+  const s = size === "sm" ? 28 : 40;
+  const fs = size === "sm" ? 11 : 14;
+  const initials = name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+  const hue = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return (
+    <div style={{
+      width: s, height: s, borderRadius: "50%", flexShrink: 0,
+      background: `hsl(${hue},45%,55%)`,
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      fontSize: fs, fontWeight: 700, color: "#fff",
+    }}>
+      {initials}
+    </div>
+  );
+}
+
+const iconBtn: React.CSSProperties = {
+  width: 36, height: 36, borderRadius: 10,
+  background: "transparent", border: "none",
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+  cursor: "pointer", padding: 0,
+};
+
 export function MesajlarClient({
   benimId,
   konusmalar,
@@ -42,11 +66,10 @@ export function MesajlarClient({
   const [gonderiyor, startTransition] = useTransition();
   const altRef = useRef<HTMLDivElement>(null);
 
-  const seciliKisi = konusmalar.find((k) => k.userId === secili);
+  const seciliKisi = konusmalar.find(k => k.userId === secili);
 
   useEffect(() => {
     if (!secili) return;
-
     async function yukle() {
       setYukleniyor(true);
       try {
@@ -56,23 +79,18 @@ export function MesajlarClient({
         setYukleniyor(false);
       }
     }
-
     async function polling() {
       try {
         const data = await fetch(`/api/mesaj?ile=${secili}`).then(r => r.json());
         setMesajlar(data);
       } catch {}
     }
-
     yukle();
-
-    // Okundu işaretle
     fetch("/api/mesaj/oku", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fromUserId: secili }),
     });
-
     const interval = setInterval(polling, 5000);
     return () => clearInterval(interval);
   }, [secili]);
@@ -86,7 +104,6 @@ export function MesajlarClient({
     if (!secili || !yeni.trim()) return;
     const icerik = yeni.trim();
     setYeni("");
-
     startTransition(async () => {
       const res = await fetch("/api/mesaj", {
         method: "POST",
@@ -95,113 +112,122 @@ export function MesajlarClient({
       });
       if (res.ok) {
         const mesaj = await res.json();
-        setMesajlar((prev) => [...prev, mesaj]);
+        setMesajlar(prev => [...prev, mesaj]);
       }
     });
   }
 
   return (
-    <div className="flex gap-0 h-[calc(100vh-8rem)] rounded-2xl overflow-hidden" style={{ border: "1px solid var(--card-border)" }}>
+    <div style={{ display: "flex", gap: 16, height: "calc(100vh - 140px)", minHeight: 500 }}>
 
-      {/* Sol — Konuşmalar */}
-      <div className="w-72 shrink-0 flex flex-col border-r" style={{ background: "rgba(255,255,255,0.04)", borderColor: "var(--card-inner-border)" }}>
-        <div className="px-4 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-          <p className="text-sm font-semibold text-white">Konuşmalar</p>
-          <p className="text-xs text-white/40 mt-0.5">{konusmalar.length} konuşma</p>
+      {/* Threads sidebar */}
+      <aside className="card" style={{ width: 320, flexShrink: 0, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--border-1)" }}>
+          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--upe-ink)" }}>Mesajlar</h2>
+          <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--fg-3)" }}>{konusmalar.length} konuşma</p>
         </div>
-
-        {konusmalar.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 px-4">
-            <MessageCircle className="w-8 h-8 text-white/20" />
-            <p className="text-sm text-white/40 text-center">Henüz mesaj yok</p>
-            <p className="text-xs text-white/25 text-center">Acenteler seninle iletişime geçtiğinde burada görünür</p>
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto">
-            {konusmalar.map((k) => (
-              <button
-                key={k.userId}
-                onClick={() => setSecili(k.userId)}
-                className="w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors"
-                style={{
-                  background: secili === k.userId ? "rgba(255,255,255,0.08)" : "transparent",
-                  borderBottom: "1px solid rgba(255,255,255,0.05)",
-                }}
-                onMouseEnter={(e) => { if (secili !== k.userId) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
-                onMouseLeave={(e) => { if (secili !== k.userId) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-              >
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden" style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                  {k.foto ? <img src={k.foto} alt="" className="w-full h-full object-cover" /> : k.ad[0]?.toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="text-sm font-medium text-white truncate">{k.ad}</p>
-                    {k.okunmamis > 0 && (
-                      <span className="shrink-0 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-full min-w-[18px] text-center" style={{ background: "var(--primary)" }}>
-                        {k.okunmamis}
-                      </span>
-                    )}
+        <div style={{ overflow: "auto", flex: 1 }}>
+          {konusmalar.length === 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 200, padding: 24, gap: 8 }}>
+              <MessageCircle size={32} style={{ color: "var(--fg-4)" }} />
+              <p style={{ fontSize: 13, color: "var(--fg-3)", textAlign: "center" }}>Henüz mesaj yok</p>
+            </div>
+          ) : (
+            konusmalar.map(k => {
+              const on = k.userId === secili;
+              return (
+                <button
+                  key={k.userId}
+                  onClick={() => setSecili(k.userId)}
+                  style={{
+                    width: "100%", display: "flex", gap: 12, padding: "12px 16px",
+                    cursor: "pointer", textAlign: "left",
+                    background: on ? "var(--upe-teal-50)" : "transparent",
+                    borderTop: "1px solid var(--border-1)",
+                    borderLeft: on ? "3px solid var(--upe-teal)" : "3px solid transparent",
+                    borderRight: "none", borderBottom: "none",
+                    outline: "none",
+                  }}
+                >
+                  {k.foto
+                    ? <img src={k.foto} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    : <Avatar name={k.ad} />
+                  }
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--upe-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{k.ad}</span>
+                      {k.okunmamis > 0 && (
+                        <span style={{ minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9999, background: "var(--upe-teal)", color: "#fff", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{k.okunmamis}</span>
+                      )}
+                    </div>
+                    <p style={{ margin: 0, fontSize: 12, color: k.okunmamis > 0 ? "var(--fg-1)" : "var(--fg-3)", fontWeight: k.okunmamis > 0 ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 2 }}>{k.sonMesaj}</p>
                   </div>
-                  <p className="text-xs text-white/40 truncate mt-0.5">{k.sonMesaj}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </aside>
 
-      {/* Sağ — Mesaj thread */}
-      <div className="flex-1 flex flex-col" style={{ background: "var(--card-inner-bg)" }}>
+      {/* Thread panel */}
+      <section className="card" style={{ flex: 1, display: "flex", flexDirection: "column", padding: 0, overflow: "hidden" }}>
         {!secili ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-3">
-            <MessageCircle className="w-12 h-12 text-white/15" />
-            <p className="text-white/40">Bir konuşma seç</p>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <MessageCircle size={40} style={{ color: "var(--fg-4)" }} />
+            <p style={{ color: "var(--fg-3)" }}>Bir konuşma seç</p>
           </div>
         ) : (
           <>
-            {/* Thread header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "var(--card-inner-border)" }}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold overflow-hidden" style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid var(--border-1)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 {seciliKisi?.foto
-                  ? <img src={seciliKisi.foto} alt="" className="w-full h-full object-cover" />
-                  : seciliKisi?.ad[0]?.toUpperCase()}
+                  ? <img src={seciliKisi.foto} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+                  : <Avatar name={seciliKisi?.ad ?? ""} />
+                }
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--upe-ink)" }}>{seciliKisi?.ad}</span>
+                  <p style={{ margin: 0, fontSize: 11.5, color: "var(--fg-3)" }}>
+                    {seciliKisi?.rol === "ACENTE" ? "Seyahat Acentesi" : "Tur Rehberi"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-white">{seciliKisi?.ad}</p>
-                <p className="text-xs text-white/40">Seyahat Acentesi</p>
+              <div style={{ display: "flex", gap: 4 }}>
+                <button style={iconBtn}><Phone size={16} style={{ color: "var(--fg-2)" }} /></button>
+                <button style={iconBtn}><Calendar size={16} style={{ color: "var(--fg-2)" }} /></button>
+                <button style={iconBtn}><MoreHorizontal size={16} style={{ color: "var(--fg-2)" }} /></button>
               </div>
             </div>
 
-            {/* Mesajlar */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+            {/* Messages */}
+            <div style={{ flex: 1, overflow: "auto", padding: "20px 24px", background: "linear-gradient(to bottom, var(--bg-page) 0%, var(--bg-card) 100%)", display: "flex", flexDirection: "column", gap: 8 }}>
               {yukleniyor ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 120 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid var(--upe-teal)", borderTopColor: "transparent", animation: "spin 0.7s linear infinite" }} />
                 </div>
               ) : mesajlar.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-white/30 text-sm">Henüz mesaj yok</div>
+                <div style={{ textAlign: "center", color: "var(--fg-3)", fontSize: 13 }}>Henüz mesaj yok</div>
               ) : (
-                mesajlar.map((m) => {
+                mesajlar.map(m => {
                   const benden = m.fromUserId === benimId;
-                  const isim = m.from.acenteProfile?.companyName ?? m.from.rehberProfile?.name ?? "";
                   const tarih = new Date(m.createdAt).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
                   return (
-                    <div key={m.id} className={`flex gap-2 ${benden ? "flex-row-reverse" : "flex-row"}`}>
-                      {!benden && (
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-1" style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)", color: "var(--primary)" }}>
-                          {isim[0]?.toUpperCase()}
-                        </div>
-                      )}
-                      <div className={`max-w-[70%] ${benden ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                        <div className="px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
-                          style={benden
-                            ? { background: "var(--primary)", color: "white" }
-                            : { background: "var(--card-bg)", color: "rgba(255,255,255,0.85)" }
-                          }>
-                          {m.content}
-                        </div>
-                        <span className="text-[10px] text-white/30 px-1">{tarih}</span>
+                    <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: benden ? "flex-end" : "flex-start", maxWidth: "75%", alignSelf: benden ? "flex-end" : "flex-start" }}>
+                      <div style={{
+                        padding: "10px 14px",
+                        borderRadius: benden ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+                        background: benden ? "var(--upe-teal)" : "#fff",
+                        color: benden ? "#fff" : "var(--fg-1)",
+                        border: benden ? "none" : "1px solid var(--border-1)",
+                        fontSize: 13.5, lineHeight: 1.55,
+                        boxShadow: benden ? "0 1px 2px rgba(13,115,119,0.18)" : "var(--shadow-xs)",
+                      }}>
+                        {m.content}
                       </div>
+                      <span style={{ fontSize: 10.5, color: "var(--fg-4)", marginTop: 4, padding: "0 6px", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        {tarih}
+                        {benden && <CheckCheck size={10} style={{ color: "var(--upe-teal)" }} />}
+                      </span>
                     </div>
                   );
                 })
@@ -209,27 +235,50 @@ export function MesajlarClient({
               <div ref={altRef} />
             </div>
 
-            {/* Yanıt formu */}
-            <form onSubmit={gonder} className="flex gap-3 px-4 py-4 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
-              <input
-                value={yeni}
-                onChange={(e) => setYeni(e.target.value)}
-                placeholder="Mesajınızı yazın..."
-                className="flex-1 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none"
-                style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
-              />
-              <button
-                type="submit"
-                disabled={!yeni.trim() || gonderiyor}
-                className="px-4 py-2.5 rounded-xl text-white disabled:opacity-40 transition-all hover:brightness-110 flex items-center gap-1.5"
-                style={{ background: "var(--primary)" }}
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+            {/* Composer */}
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border-1)", background: "#fff" }}>
+              <form onSubmit={gonder} style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+                <button type="button" style={iconBtn}><Paperclip size={16} style={{ color: "var(--fg-2)" }} /></button>
+                <textarea
+                  value={yeni}
+                  onChange={e => setYeni(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); gonder(e as any); } }}
+                  rows={1}
+                  placeholder="Mesajını yaz..."
+                  style={{
+                    flex: 1, padding: "10px 14px", borderRadius: 16,
+                    border: "1px solid var(--border-2)", fontSize: 13.5,
+                    fontFamily: "inherit", resize: "none", outline: "none",
+                    color: "var(--fg-1)", lineHeight: 1.5,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={!yeni.trim() || gonderiyor}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "10px 16px", borderRadius: 12, border: "none",
+                    background: yeni.trim() ? "var(--upe-teal)" : "var(--bg-muted)",
+                    color: yeni.trim() ? "#fff" : "var(--fg-4)",
+                    fontSize: 13.5, fontWeight: 600, cursor: yeni.trim() ? "pointer" : "default",
+                    fontFamily: "inherit", transition: "all 150ms",
+                  }}
+                >
+                  <Send size={15} />
+                </button>
+              </form>
+              <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {["Müsaitim, devam edelim", "Fiyat listesini gönderiyorum", "Biraz sonra geri dönerim"].map(q => (
+                  <button key={q} type="button" onClick={() => setYeni(q)}
+                    style={{ fontSize: 11.5, padding: "4px 10px", borderRadius: 9999, background: "var(--upe-teal-50)", color: "var(--upe-teal-700)", border: "1px solid var(--upe-teal-200)", fontFamily: "inherit", cursor: "pointer" }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
           </>
         )}
-      </div>
+      </section>
     </div>
   );
 }

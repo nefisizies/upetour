@@ -4,27 +4,29 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, User, MessageCircle, LogOut, CalendarDays, BookOpen, Menu, X, MapPin, Rss, Search } from "lucide-react";
+import {
+  LayoutDashboard, User, MessageCircle, LogOut, CalendarDays, BookOpen,
+  Menu, X, MapPin, Rss, Search, Bell,
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { BildirimDropdown } from "@/components/BildirimDropdown";
 
 const rehberLinks = [
-  { href: "/dashboard/rehber", label: "Genel Bakış", icon: LayoutDashboard },
-  { href: "/dashboard/rehber/checkin", label: "Check-in", icon: MapPin },
-  { href: "/kesfet/feed", label: "Feed", icon: Rss },
-  { href: "/dashboard/rehber/takvim", label: "Takvim", icon: CalendarDays },
-  { href: "/dashboard/rehber/mesajlar", label: "Mesajlar", icon: MessageCircle },
-  { href: "/dashboard/rehber/profil", label: "Profilim", icon: User },
+  { href: "/dashboard/rehber",           label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/dashboard/rehber/checkin",   label: "Check-in",    icon: MapPin },
+  { href: "/kesfet/feed",                label: "Feed",         icon: Rss },
+  { href: "/dashboard/rehber/takvim",    label: "Takvim",       icon: CalendarDays },
+  { href: "/dashboard/rehber/mesajlar",  label: "Mesajlar",     icon: MessageCircle },
+  { href: "/dashboard/rehber/profil",    label: "Profil",       icon: User },
 ];
 
 const acenteLinks = [
-  { href: "/dashboard/acente", label: "Genel Bakış", icon: LayoutDashboard },
-  { href: "/dashboard/acente/rehber-bul", label: "Rehber Bul", icon: Search },
-  { href: "/dashboard/acente/profil", label: "Profilim", icon: User },
-  { href: "/dashboard/acente/programlar", label: "Programlar", icon: BookOpen },
-  { href: "/dashboard/acente/takvim", label: "Takvim", icon: CalendarDays },
-  { href: "/dashboard/acente/mesajlar", label: "Mesajlar", icon: MessageCircle },
+  { href: "/dashboard/acente",              label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/dashboard/acente/rehber-bul",   label: "Rehber Bul",   icon: Search },
+  { href: "/kesfet/feed",                   label: "Feed",          icon: Rss },
+  { href: "/dashboard/acente/programlar",   label: "Programlar",    icon: BookOpen },
+  { href: "/dashboard/acente/mesajlar",     label: "Mesajlar",      icon: MessageCircle },
+  { href: "/dashboard/acente/profil",       label: "Profil",        icon: User },
 ];
 
 export function DashboardNav({ role, email }: { role: string; email: string }) {
@@ -33,93 +35,102 @@ export function DashboardNav({ role, email }: { role: string; email: string }) {
   const links = role === "REHBER" ? rehberLinks : acenteLinks;
   const homeHref = role === "REHBER" ? "/dashboard/rehber" : "/dashboard/acente";
 
-  function NavLink({ href, label, icon: NavIcon }: { href: string; label: string; icon: React.ElementType }) {
-    const isActive = pathname === href || (href !== homeHref && pathname.startsWith(href));
-    return (
-      <Link
-        href={href}
-        onClick={() => setMobileOpen(false)}
-        className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-all"
-        style={isActive ? {
-          backgroundColor: "var(--nav-active-bg)",
-          color: "var(--nav-active-text)",
-          fontWeight: 600,
-        } : { color: "var(--nav-text, #4b5563)" }}
-        onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(0,0,0,0.05)"; (e.currentTarget as HTMLElement).style.color = "var(--nav-text-hover, #111827)"; } }}
-        onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = ""; (e.currentTarget as HTMLElement).style.color = "var(--nav-text, #4b5563)"; } }}
-      >
-        <NavIcon className="w-4 h-4" />
-        {label}
-      </Link>
-    );
+  function isActive(href: string) {
+    if (href === homeHref) return pathname === href;
+    return pathname.startsWith(href);
   }
 
   return (
     <>
-      <nav className="sticky top-0 z-30 border-b"
-        style={{ backgroundColor: "color-mix(in srgb, var(--sidebar-bg) 92%, transparent)", backdropFilter: "blur(12px)", borderColor: "rgba(0,0,0,0.06)" }}>
+      <nav
+        className="sticky top-0 z-30"
+        style={{
+          background: "rgba(10,22,40,0.96)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Mobile hamburger */}
+          {/* Left: logo + links */}
+          <div className="flex items-center gap-6">
             <button
-              className="md:hidden p-2 rounded-lg transition-colors"
-              style={{ color: "var(--nav-text, #4b5563)" }}
+              className="md:hidden p-2 rounded-lg text-white/60 hover:text-white transition-colors"
               onClick={() => setMobileOpen(o => !o)}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <Logo size="sm" href={homeHref} />
-            {/* Desktop links */}
-            <div className="hidden md:flex items-center gap-0.5">
-              {links.map(l => <NavLink key={l.href} {...l} />)}
+            <Logo size="sm" darkBg href={homeHref} />
+            <div className="hidden md:flex items-center gap-1">
+              {links.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all"
+                    style={active
+                      ? { background: "rgba(13,115,119,0.25)", color: "var(--upe-teal-300)", fontWeight: 600 }
+                      : { color: "rgba(255,255,255,0.55)" }}
+                    onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)"; }}
+                    onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; }}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: notifications + logout */}
+          <div className="flex items-center gap-1">
             <BildirimDropdown />
-            <DarkModeToggle />
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="flex items-center gap-1.5 text-sm transition-colors p-2 rounded-lg"
-              style={{ color: "var(--nav-text, #4b5563)" }}
+              className="flex items-center gap-1.5 text-sm p-2 rounded-lg transition-colors"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.85)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)"; }}
               title="Çıkış"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:block text-sm">Çıkış</span>
+              <span className="hidden sm:block">Çıkış</span>
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile dropdown */}
+      {/* Mobile menu */}
       {mobileOpen && (
         <div
           className="md:hidden fixed inset-0 z-20 pt-14"
+          style={{ background: "rgba(10,22,40,0.6)", backdropFilter: "blur(4px)" }}
           onClick={() => setMobileOpen(false)}
         >
           <div
-            className="dash-card mx-4 mt-2 rounded-2xl shadow-xl p-3 space-y-0.5"
+            className="mx-4 mt-2 rounded-2xl p-3 space-y-0.5"
+            style={{ background: "rgba(10,22,40,0.98)", border: "1px solid rgba(255,255,255,0.08)" }}
             onClick={e => e.stopPropagation()}
           >
-            {links.map(l => (
+            {links.map(({ href, label, icon: Icon }) => (
               <Link
-                key={l.href}
-                href={l.href}
+                key={href}
+                href={href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm"
-                style={pathname === l.href
-                  ? { backgroundColor: "var(--nav-active-bg)", color: "var(--nav-active-text)", fontWeight: 600 }
-                  : { color: "var(--nav-text, #4b5563)" }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors"
+                style={isActive(href)
+                  ? { background: "rgba(13,115,119,0.25)", color: "var(--upe-teal-300)", fontWeight: 600 }
+                  : { color: "rgba(255,255,255,0.6)" }}
               >
-                <l.icon className="w-4 h-4" />
-                {l.label}
+                <Icon className="w-4 h-4" />
+                {label}
               </Link>
             ))}
-            <div className="pt-2 mt-2 border-t" style={{ borderColor: "var(--card-inner-border)" }}>
-              <p className="px-4 py-1 text-xs" style={{ color: "var(--text-muted, #94a3b8)" }}>{email}</p>
+            <div className="pt-2 mt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <p className="px-4 py-1 text-xs text-white/30">{email}</p>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors text-red-500"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-400"
               >
                 <LogOut className="w-4 h-4" /> Çıkış Yap
               </button>

@@ -35,7 +35,7 @@ function GirisForm() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0c0500" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#051214" }}>
         <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }} />
       </div>
     );
@@ -46,7 +46,7 @@ function GirisForm() {
     const roleLabel = session.user.role === "REHBER" ? "Rehber" : session.user.role === "ACENTE" ? "Acente" : "Admin";
     const dashHref = session.user.role === "REHBER" ? "/dashboard/rehber" : session.user.role === "ACENTE" ? "/dashboard/acente" : "/dashboard/admin";
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #051214 0%, #0A1628 50%, #051214 100%)" }}>
         <div className="w-full max-w-sm text-center space-y-6">
           <Logo size="md" darkBg href="/" className="justify-center" />
           <div className="rounded-2xl p-6 space-y-4" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
@@ -104,7 +104,7 @@ function GirisForm() {
   const isAcente = rol === "acente";
 
   return (
-    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #0c0500 0%, #1a0900 50%, #0c0500 100%)" }}>
+    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #051214 0%, #0A1628 50%, #051214 100%)" }}>
 
       {/* Sol — görsel panel */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden">

@@ -10,9 +10,9 @@ export type SiteSettingsMap = {
 
 const DEFAULTS: SiteSettingsMap = {
   bg_theme: "ocean",
-  primary_color: "#0a7ea4",
+  primary_color: "#0D7377",
   sidebar_color: "#ffffff",
-  font_family: "inter",
+  font_family: "figtree",
   card_style: "rounded",
 };
 
@@ -33,6 +33,7 @@ export async function getSiteSettings(): Promise<SiteSettingsMap> {
 // Build CSS variable string from settings (injected into <html style>)
 export function settingsToCssVars(s: SiteSettingsMap): Record<string, string> {
   const fontMap: Record<string, string> = {
+    figtree: "var(--font-figtree, 'Figtree'), system-ui, sans-serif",
     inter: "'Inter', sans-serif",
     nunito: "'Nunito', sans-serif",
     poppins: "'Poppins', sans-serif",
