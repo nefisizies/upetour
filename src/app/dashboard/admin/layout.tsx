@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { AdminNav } from "@/components/AdminNav";
 import { AdminTopBar } from "@/components/AdminTopBar";
-import { WaveBackgroundClient as WaveBackground } from "@/components/WaveBackgroundClient";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
@@ -14,8 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen flex" data-layout="dashboard">
-      <WaveBackground />
+    <div className="min-h-screen flex" data-layout="dashboard" style={{ background: "var(--bg-page)" }}>
       {/* Sidebar */}
       <aside className="w-56 shrink-0 sticky top-0 h-screen flex flex-col border-r z-20 bg-white/95"
         style={{ backdropFilter: "blur(12px)", borderColor: "var(--panel-border, rgba(0,0,0,0.08))" }}>
