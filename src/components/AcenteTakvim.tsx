@@ -942,19 +942,17 @@ function EtkinlikKart({ etkinlik: e, onDuzenle, onSil, onRehberKartAc, onTuristl
         {e.notlar && (
           <p className="text-xs mt-1.5 line-clamp-2" style={{ color: "var(--text-muted)" }}>{e.notlar}</p>
         )}
+        {onTuristler && (
+          <button onClick={onTuristler}
+            className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border font-medium mt-2 hover:opacity-80 transition-opacity"
+            style={{ borderColor: "var(--card-inner-border, rgba(0,0,0,0.12))", color: "var(--text-muted)" }}>
+            <Users className="w-3 h-3" /> Turist Listesi
+          </button>
+        )}
       </div>
 
       {/* Aksiyon butonları */}
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        {onTuristler && (
-          <button onClick={onTuristler}
-            className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg border font-medium hover:opacity-80 transition-opacity"
-            style={{ borderColor: "var(--card-inner-border, rgba(0,0,0,0.12))", color: "var(--text-muted)" }}
-            title="Turist Listesi">
-            <Users className="w-3.5 h-3.5" />
-            <span>Turistler</span>
-          </button>
-        )}
         <button onClick={onDuzenle} className="p-1.5 rounded-lg transition-colors hover:opacity-70" style={{ color: "var(--text-muted)" }}>
           <Pencil className="w-3.5 h-3.5" />
         </button>
