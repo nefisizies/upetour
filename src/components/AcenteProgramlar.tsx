@@ -6,12 +6,21 @@ import { sortSehirlerByProximity } from "@/lib/sehirler";
 
 type Segment = { lokasyonlar: string[]; gun: number };
 
+type AktifEtkinlik = {
+  id: string;
+  baslangic: string;
+  bitis: string;
+  rehberYanit: string | null;
+  rehber: { name: string } | null;
+};
+
 type Program = {
   id: string;
   ad: string;
   sure: number;
   segmentler: Segment[];
   createdAt: string;
+  etkinlikler: AktifEtkinlik[];
 };
 
 type Turist = {
@@ -319,13 +328,16 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate" style={{ color: "var(--text-primary)" }}>{p.ad}</p>
-                    <div className="flex items-center gap-3 mt-0.5">
+                    <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                       <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
                         <Clock className="w-3 h-3" /> {p.sure} gün
                       </span>
                       <span className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
                         <MapPin className="w-3 h-3" /> {p.segmentler.length} lokasyon
                       </span>
+                      {p.etkinlikler[0] && (
+                        <AktifTurBadge etkinlik={p.etkinlikler[0]} />
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -339,16 +351,18 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); turistAc(p); }}
-                      className="p-1.5 rounded-lg hover:opacity-70"
-                      style={{ color: "var(--text-muted)" }}
-                      title="Turist Listesi"
+                      className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium hover:opacity-80 transition-opacity"
+                      style={{ borderColor: "var(--card-inner-border, rgba(0,0,0,0.12))", color: "var(--text-muted)" }}
+                      title="Turist Listesini Düzenle"
                     >
                       <Users className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Turistler</span>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); modalAc(p); }}
                       className="p-1.5 rounded-lg hover:opacity-70"
                       style={{ color: "var(--text-muted)" }}
+                      title="Programı Düzenle"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
@@ -848,6 +862,30 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Aktif Tur Badge ─────────────────────────────────────────────────────────
+function AktifTurBadge({ etkinlik }: { etkinlik: AktifEtkinlik }) {
+  const bas = new Date(etkinlik.baslangic).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+  const bit = new Date(etkinlik.bitis).toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+
+  const yanit = etkinlik.rehberYanit;
+  const { bg, text, dot } =
+    yanit === "KABUL"   ? { bg: "rgba(34,197,94,0.12)",  text: "#16a34a", dot: "#22c55e" } :
+    yanit === "RED"     ? { bg: "rgba(239,68,68,0.12)",   text: "#dc2626", dot: "#ef4444" } :
+    yanit === "BEKLIYOR"? { bg: "rgba(245,158,11,0.12)", text: "#d97706", dot: "#f59e0b" } :
+                          { bg: "rgba(99,102,241,0.12)",  text: "#6366f1", dot: "#818cf8" };
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full"
+      style={{ background: bg, color: text }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: dot }} />
+      {bas} – {bit}
+      {etkinlik.rehber && <span className="opacity-70">· {etkinlik.rehber.name.split(" ")[0]}</span>}
+    </span>
   );
 }
 

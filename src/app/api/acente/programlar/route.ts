@@ -14,9 +14,19 @@ export async function GET() {
   const acente = await getAcente(session.user.id);
   if (!acente) return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 });
 
+  const bugun = new Date();
+
   const programlar = await prisma.turProgrami.findMany({
     where: { acenteId: acente.id, aktif: true },
     orderBy: { createdAt: "desc" },
+    include: {
+      etkinlikler: {
+        where: { bitis: { gte: bugun } },
+        orderBy: { baslangic: "asc" },
+        take: 1,
+        include: { rehber: { select: { name: true } } },
+      },
+    },
   });
 
   return NextResponse.json(programlar);
