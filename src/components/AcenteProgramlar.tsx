@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, X, Pencil, Trash2, MapPin, Clock, Play, ChevronDown, ChevronUp, Check, Users } from "lucide-react";
+import { Plus, X, Pencil, Trash2, MapPin, Clock, Play, ChevronDown, ChevronUp, Check, Users, FileSpreadsheet } from "lucide-react";
 import { sortSehirlerByProximity } from "@/lib/sehirler";
+import { TuristExcelYukle } from "./TuristExcelYukle";
 
 type Segment = { lokasyonlar: string[]; gun: number };
 
@@ -94,6 +95,7 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
   const [turistOneri, setTuristOneri] = useState<Omit<Turist, "id">[]>([]);
   const [turistOneriGoster, setTuristOneriGoster] = useState(false);
   const turistOneriRef = useRef<HTMLDivElement>(null);
+  const [excelModalAcik, setExcelModalAcik] = useState(false);
 
   async function yukle() {
     setYukleniyor(true);
@@ -691,6 +693,13 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={() => setExcelModalAcik(true)}
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
+                  style={{ borderColor: "var(--card-border)", color: "var(--text-primary)" }}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel'den Yükle
+                </button>
+                <button
                   onClick={() => { setTuristEkleRow(BOSH_TURIST()); setTuristDuzenleId(null); }}
                   className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-white"
                   style={{ background: "var(--primary)" }}
@@ -896,6 +905,20 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
             </div>
           </div>
         </div>
+      )}
+
+      {/* ─── Excel Yükleme Modal ──────────────────────────────────────────── */}
+      {excelModalAcik && turistModalProgram && (
+        <TuristExcelYukle
+          programId={turistModalProgram.id}
+          cardStyle={cardStyle}
+          innerInputStyle={innerInputStyle}
+          onKapat={() => setExcelModalAcik(false)}
+          onTamamla={(eklenenler) => {
+            setTuristler((prev) => [...prev, ...eklenenler]);
+            setExcelModalAcik(false);
+          }}
+        />
       )}
 
       {/* ─── Silme Onay Modal ─────────────────────────────────────────────── */}
