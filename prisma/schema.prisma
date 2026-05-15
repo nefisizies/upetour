@@ -235,6 +235,7 @@ model EtkinlikTurist {
   telefon     String?
   eposta      String?
   notlar      String?
+  ekAlanlar   Json?
   createdAt   DateTime             @default(now())
   etkinlik    AcenteTakvimEtkinlik @relation(fields: [etkinlikId], references: [id], onDelete: Cascade)
 }

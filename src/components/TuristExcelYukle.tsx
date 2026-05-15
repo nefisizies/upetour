@@ -83,14 +83,14 @@ function parseExcel(dosya: File): Promise<SatirVeri[]> {
 }
 
 type Props = {
-  programId: string;
+  apiUrl: string;
   onTamamla: (eklenenler: any[]) => void;
   onKapat: () => void;
   cardStyle: React.CSSProperties;
   innerInputStyle: React.CSSProperties;
 };
 
-export function TuristExcelYukle({ programId, onTamamla, onKapat, cardStyle, innerInputStyle }: Props) {
+export function TuristExcelYukle({ apiUrl, onTamamla, onKapat, cardStyle, innerInputStyle }: Props) {
   const [surukleniyor, setSurukleniyor] = useState(false);
   const [satirlar, setSatirlar] = useState<SatirVeri[] | null>(null);
   const [dosyaAdi, setDosyaAdi] = useState("");
@@ -125,7 +125,7 @@ export function TuristExcelYukle({ programId, onTamamla, onKapat, cardStyle, inn
     setYukleniyor(true);
     setHata("");
     try {
-      const res = await fetch(`/api/acente/programlar/${programId}/turistler`, {
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(gecerli),

@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   CalendarDays, SlidersHorizontal, Plus, X, MapPin, User,
-  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Search, Users,
+  Clock, Pencil, Trash2, AlertCircle, CheckCircle, Search, Users, FileSpreadsheet,
 } from "lucide-react";
 import { SEHIR_LISTESI } from "@/lib/sehirler";
 import { RehberKarti } from "@/components/RehberKarti";
+import { TuristExcelYukle } from "@/components/TuristExcelYukle";
 
 type Rehber = { id: string; name: string; city: string | null; photoUrl: string | null; slug: string };
 
@@ -114,6 +115,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
   const [turistKaydediyor, setTuristKaydediyor] = useState(false);
   const [turistDuzenleId, setTuristDuzenleId] = useState<string | null>(null);
   const [turistDuzenleData, setTuristDuzenleData] = useState<Omit<Turist, "id"> | null>(null);
+  const [excelModalAcik, setExcelModalAcik] = useState(false);
 
   // Rehber kart popup
   const [rehberKartId, setRehberKartId] = useState<string | null>(null);
@@ -635,6 +637,12 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  onClick={() => setExcelModalAcik(true)}
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border"
+                  style={{ borderColor: "var(--card-border)", color: "var(--text-primary)" }}>
+                  <FileSpreadsheet className="w-3.5 h-3.5" /> Excel'den Yükle
+                </button>
+                <button
                   onClick={() => { setTuristEkleRow(BOSH_TURIST()); setTuristDuzenleId(null); }}
                   className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-white"
                   style={{ background: "var(--primary)" }}>
@@ -757,6 +765,20 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
             </div>
           </div>
         </div>
+      )}
+
+      {/* ─── Excel Yükleme Modal ──────────────────────────────────────────── */}
+      {excelModalAcik && turistEtkinlikId && (
+        <TuristExcelYukle
+          apiUrl={`/api/acente/takvim/${turistEtkinlikId}/turistler`}
+          cardStyle={cardStyle}
+          innerInputStyle={innerInputStyle}
+          onKapat={() => setExcelModalAcik(false)}
+          onTamamla={(eklenenler) => {
+            setTuristler((prev) => [...prev, ...eklenenler]);
+            setExcelModalAcik(false);
+          }}
+        />
       )}
 
       {/* ─── Silme Onay Modal ─────────────────────────────────────────────── */}

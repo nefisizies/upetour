@@ -910,7 +910,7 @@ export function AcenteProgramlar({ referansRehberler }: { referansRehberler: Reh
       {/* ─── Excel Yükleme Modal ──────────────────────────────────────────── */}
       {excelModalAcik && turistModalProgram && (
         <TuristExcelYukle
-          programId={turistModalProgram.id}
+          apiUrl={`/api/acente/programlar/${turistModalProgram.id}/turistler`}
           cardStyle={cardStyle}
           innerInputStyle={innerInputStyle}
           onKapat={() => setExcelModalAcik(false)}

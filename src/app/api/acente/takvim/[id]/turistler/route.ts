@@ -52,6 +52,31 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!etkinlik) return NextResponse.json({ error: "Etkinlik bulunamadı" }, { status: 404 });
 
   const body = await req.json();
+
+  if (Array.isArray(body)) {
+    const gecerli = body.filter((t: any) => t.ad?.trim() && t.soyad?.trim());
+    if (gecerli.length === 0) return NextResponse.json({ error: "Geçerli kayıt yok." }, { status: 400 });
+    const eklenenler = await prisma.$transaction(
+      gecerli.map((t: any) =>
+        prisma.etkinlikTurist.create({
+          data: {
+            etkinlikId: id,
+            ad: t.ad.trim(),
+            soyad: t.soyad.trim(),
+            pasaportNo: t.pasaportNo || null,
+            uyruk: t.uyruk || null,
+            dogumTarihi: t.dogumTarihi || null,
+            telefon: t.telefon || null,
+            eposta: t.eposta || null,
+            notlar: t.notlar || null,
+            ekAlanlar: t.ekAlanlar && Object.keys(t.ekAlanlar).length > 0 ? t.ekAlanlar : undefined,
+          },
+        })
+      )
+    );
+    return NextResponse.json(eklenenler, { status: 201 });
+  }
+
   if (!body.ad?.trim() || !body.soyad?.trim()) {
     return NextResponse.json({ error: "Ad ve soyad zorunlu" }, { status: 400 });
   }
@@ -67,6 +92,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       telefon: body.telefon || null,
       eposta: body.eposta || null,
       notlar: body.notlar || null,
+      ekAlanlar: body.ekAlanlar && Object.keys(body.ekAlanlar).length > 0 ? body.ekAlanlar : undefined,
     },
   });
 
