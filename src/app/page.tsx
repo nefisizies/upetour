@@ -33,6 +33,11 @@ export default async function Home() {
               <Building2 className="w-4 h-4" />
               <span className="hidden sm:block">Acente Girişi</span>
             </Link>
+            <Link href="/giris?rol=admin"
+              className="flex items-center gap-2 text-sm text-white/30 hover:text-white/70 px-3 py-2 rounded-lg hover:bg-white/8 transition-all">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:block">Admin</span>
+            </Link>
           </div>
         </div>
       </nav>

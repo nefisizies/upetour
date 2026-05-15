@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Compass, Building2, Eye, EyeOff, ArrowLeft, LogOut, LayoutDashboard } from "lucide-react";
+import { Compass, Building2, Shield, Eye, EyeOff, ArrowLeft, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 // localStorage key'i rol bazlı — her rol bağımsız
@@ -41,8 +41,16 @@ function GirisForm() {
     );
   }
 
-  // Zaten giriş yapılmışsa → geç veya çıkış yap ekranı
-  if (status === "authenticated" && session) {
+  // Zaten giriş yapılmışsa → sadece aynı rol istiyorsa "zaten giriş yapıldı" ekranı göster
+  // Farklı rol istiyorsa (örn. rehber girişli iken admin sayfasına gidince) login formu göster
+  const sessionRolMatch = status === "authenticated" && session && (
+    (rol === "rehber" && session.user.role === "REHBER") ||
+    (rol === "acente" && session.user.role === "ACENTE") ||
+    (rol === "admin" && session.user.role === "ADMIN") ||
+    (!rol)
+  );
+
+  if (sessionRolMatch && session) {
     const roleLabel = session.user.role === "REHBER" ? "Rehber" : session.user.role === "ACENTE" ? "Acente" : "Admin";
     const dashHref = session.user.role === "REHBER" ? "/dashboard/rehber" : session.user.role === "ACENTE" ? "/dashboard/acente" : "/dashboard/admin";
     return (
@@ -92,16 +100,21 @@ function GirisForm() {
       setError("Email veya şifre hatalı.");
       return;
     }
-    // Başarılı giriş — bu rol için email'i kaydet veya temizle (diğer roller etkilenmez)
     if (rememberMe) {
       localStorage.setItem(rolKey(rol), form.email);
     } else {
       localStorage.removeItem(rolKey(rol));
     }
+    // Giriş başarılı — rol'e göre panele yönlendir
+    if (isAdmin) router.push("/dashboard/admin");
+    else if (isAcente) router.push("/dashboard/acente");
+    else if (isRehber) router.push("/dashboard/rehber");
+    else router.push("/dashboard");
   }
 
   const isRehber = rol === "rehber";
   const isAcente = rol === "acente";
+  const isAdmin = rol === "admin";
 
   return (
     <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #051214 0%, #0A1628 50%, #051214 100%)" }}>
@@ -113,6 +126,8 @@ function GirisForm() {
           style={{
             backgroundImage: isAcente
               ? "url(https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80)"
+              : isAdmin
+              ? "url(https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&q=80)"
               : "url(https://images.unsplash.com/photo-1569958132716-89b39cf2c4f1?w=1200&q=80)",
           }}
         />
@@ -123,17 +138,19 @@ function GirisForm() {
           <Logo size="md" darkBg href="/" />
           <div>
             <div className="flex items-center gap-3 mb-4">
-              {isAcente ? <Building2 className="w-8 h-8" style={{ color: "var(--primary)" }} /> : <Compass className="w-8 h-8" style={{ color: "var(--primary)" }} />}
+              {isAcente ? <Building2 className="w-8 h-8" style={{ color: "var(--primary)" }} /> : isAdmin ? <Shield className="w-8 h-8" style={{ color: "var(--primary)" }} /> : <Compass className="w-8 h-8" style={{ color: "var(--primary)" }} />}
               <span className="text-sm font-medium text-white/60 uppercase tracking-widest">
-                {isAcente ? "Acente Girişi" : isRehber ? "Rehber Girişi" : "Giriş"}
+                {isAcente ? "Acente Girişi" : isAdmin ? "Admin Girişi" : isRehber ? "Rehber Girişi" : "Giriş"}
               </span>
             </div>
             <h2 className="text-4xl font-bold text-white mb-3">
-              {isAcente ? "Acentenizi Yönetin" : isRehber ? "Kariyerinizi Yönetin" : "Hoş Geldiniz"}
+              {isAcente ? "Acentenizi Yönetin" : isAdmin ? "Yönetim Paneli" : isRehber ? "Kariyerinizi Yönetin" : "Hoş Geldiniz"}
             </h2>
             <p className="text-white/60 text-lg leading-relaxed max-w-sm">
               {isAcente
                 ? "İlan verin, rehber bulun, operasyonlarınızı tek platformdan yönetin."
+                : isAdmin
+                ? "Platform yönetimi, kullanıcı denetimi ve içerik moderasyonu."
                 : isRehber
                 ? "Profilinizi güncelleyin, takvimınızı yönetin, acentelerle iletişim kurun."
                 : "Türkiye'nin tur profesyonelleri platformuna hoş geldiniz."}
@@ -158,7 +175,7 @@ function GirisForm() {
 
           <h1 className="text-2xl font-bold text-white mb-1">Giriş Yap</h1>
           <p className="text-sm text-white/40 mb-8">
-            {isAcente ? "Acente hesabınıza giriş yapın" : isRehber ? "Rehber hesabınıza giriş yapın" : "Hesabınıza erişin"}
+            {isAcente ? "Acente hesabınıza giriş yapın" : isAdmin ? "Admin hesabınıza giriş yapın" : isRehber ? "Rehber hesabınıza giriş yapın" : "Hesabınıza erişin"}
           </p>
 
           {error && (
