@@ -13,7 +13,7 @@ export function Logo({ className, size = "md", href = "/", darkBg = false }: { c
     <Link href={href} className={cn("inline-flex items-center", s.gap, className)}>
       <LogoIcon size={s.icon} />
       <span className={cn("font-bold tracking-tight", darkBg ? "text-white" : "text-gray-900", s.text)}>
-        Rehber<span style={{ color: "var(--primary)" }}>Sepeti</span>
+        Upe<span style={{ color: "var(--primary)" }}>Tour</span>
       </span>
     </Link>
   );
@@ -32,31 +32,18 @@ export function LogoIcon({ size = 36, className }: { size?: number; className?: 
       {/* Arka plan daire */}
       <circle cx="20" cy="20" r="20" style={{ fill: "var(--primary)" }} />
 
-      {/* Sepet gövdesi */}
+      {/* Konum pin gövdesi */}
       <path
-        d="M10 22h20l-2 8H12l-2-8z"
+        d="M20 8C15.582 8 12 11.582 12 16C12 22 20 32 20 32C20 32 28 22 28 16C28 11.582 24.418 8 20 8Z"
         fill="white"
         fillOpacity="0.95"
       />
 
-      {/* Sepet ızgara çizgileri */}
-      <line x1="16" y1="22" x2="15" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
-      <line x1="20" y1="22" x2="20" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
-      <line x1="24" y1="22" x2="25" y2="30" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
-      <line x1="10" y1="25.5" x2="30" y2="25.5" style={{ stroke: "var(--primary)" }} strokeWidth="1.2" />
+      {/* Pin iç daire */}
+      <circle cx="20" cy="16" r="4" style={{ fill: "var(--primary)" }} />
 
-      {/* Sepet sapı */}
-      <path
-        d="M14 22 C14 16 18 13 20 13 C22 13 26 16 26 22"
-        stroke="white"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        fill="none"
-      />
-
-      {/* Pusula iğnesi / konum pin */}
-      <circle cx="20" cy="13" r="3.5" fill="#FFD93D" />
-      <circle cx="20" cy="13" r="1.5" style={{ fill: "var(--primary)" }} />
+      {/* Pin iç nokta */}
+      <circle cx="20" cy="16" r="1.5" fill="white" fillOpacity="0.8" />
     </svg>
   );
 }

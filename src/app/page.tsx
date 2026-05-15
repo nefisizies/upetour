@@ -100,7 +100,7 @@ export default async function Home() {
       <section className="py-24 px-4" style={{ background: "linear-gradient(to bottom, #0c0500, #1a0900)" }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Neden RehberSepeti?</h2>
+            <h2 className="text-4xl font-bold mb-4">Neden UpeTour?</h2>
             <p className="text-white/50 max-w-xl mx-auto">
               Hem rehberler hem acenteler için özel olarak tasarlanmış araçlar
             </p>
@@ -198,7 +198,7 @@ export default async function Home() {
       <footer className="border-t border-white/8 py-8 px-4" style={{ background: "#080300" }}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Logo size="sm" darkBg />
-          <p className="text-sm text-white/30">© 2025 RehberSepeti. Tüm hakları saklıdır.</p>
+          <p className="text-sm text-white/30">© 2026 UpeTour. Tüm hakları saklıdır.</p>
           <div className="flex gap-6 text-sm text-white/40">
             <Link href="/giris?rol=rehber" className="hover:text-white/70 transition-colors">Rehber Girişi</Link>
             <Link href="/giris?rol=acente" className="hover:text-white/70 transition-colors">Acente Girişi</Link>
