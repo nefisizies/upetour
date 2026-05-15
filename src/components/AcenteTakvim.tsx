@@ -248,7 +248,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(turistEkleRow),
     });
-    if (res.ok) { setTuristler((p) => [...p, await res.json()]); setTuristEkleRow(null); }
+    if (res.ok) { const yeni = await res.json(); setTuristler((p) => [...p, yeni]); setTuristEkleRow(null); }
     setTuristKaydediyor(false);
   }
 
@@ -724,7 +724,7 @@ export function AcenteTakvim({ referansRehberler }: { referansRehberler: Referan
                         ))}
                         <td className="px-2 py-1.5 whitespace-nowrap">
                           <div className="flex gap-1">
-                            <button onClick={turistEkle} disabled={turistKaydediyor || !turistEkleRow.ad.trim() || !turistEkleRow.soyad.trim()}
+                            <button onClick={turistEkle} disabled={turistKaydediyor || !turistEkleRow.ad?.trim() || !turistEkleRow.soyad?.trim()}
                               className="text-xs px-2 py-1 rounded text-white disabled:opacity-50"
                               style={{ background: "var(--primary)" }}>Ekle</button>
                             <button onClick={() => setTuristEkleRow(null)}
