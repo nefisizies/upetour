@@ -2,22 +2,22 @@
 
 /* ── Design Tokens (overridden by SiteSettings via <html style>) ── */
 :root {
-  /* Colors */
-  --primary:        #e07b39;
-  --primary-dark:   #c2560d;
-  --primary-light:  color-mix(in srgb, #e07b39 12%, transparent);
-  --hero-from:      #1c0900;
-  --hero-mid:       #7c2d12;
-  --hero-to:        #c2410c;
+  /* Colors — UpeTour brand */
+  --primary:        #0D7377;
+  --primary-dark:   #0A5F63;
+  --primary-light:  color-mix(in srgb, #0D7377 12%, transparent);
+  --hero-from:      #051214;
+  --hero-mid:       #0a3d40;
+  --hero-to:        #0D7377;
   --sidebar-bg:     #ffffff;
+  --accent:         #F4845F;
+  --bg-page:        #F0FAFA;
+  --ink:            #0A1628;
+  --radius-xl:      20px;
+  --shadow-teal:    0 4px 16px color-mix(in srgb, #0D7377 28%, transparent);
 
-  /* Typography */
-  --font-family:   'Inter', sans-serif;
-  --font-inter:    'Inter', sans-serif;
-  --font-nunito:   'Nunito', sans-serif;
-  --font-poppins:  'Poppins', sans-serif;
-  --font-raleway:  'Raleway', sans-serif;
-  --font-montserrat: 'Montserrat', sans-serif;
+  /* Typography — Figtree (variable) */
+  --font-family:   var(--font-figtree, 'Figtree'), system-ui, sans-serif;
 
   /* Cards */
   --card-radius:  1rem;
